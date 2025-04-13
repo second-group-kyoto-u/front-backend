@@ -25,12 +25,15 @@ cp .env.example .env
 ```sh
 docker-compose up --build -d
 ```
-
-## （例）Docker環境での npm run dev 再起動方法
+seedデータの導入・既存のテーブルの初期化
 ```sh
-docker-compose up -d --build frontend
+docker-compose exec backend python scripts/seed.py
 ```
 
+# ログ確認（問題があれば）
+```sh
+docker-compose logs -f backend
+```
 
 ## 状況を確認
 ### フロントエンド
