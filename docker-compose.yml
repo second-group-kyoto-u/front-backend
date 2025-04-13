@@ -9,8 +9,11 @@ services:
       - "5000:5000"
     volumes:
       - ./backend:/app
+      - ./scripts:/app/scripts
     env_file:
-      - .env   
+      - .env  
+    depends_on:
+      - db
 
   frontend:
     build:
@@ -22,3 +25,30 @@ services:
       - VITE_API_URL=${VITE_API_URL}
     depends_on:
       - backend
+
+  db:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: appdb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server --console-address ":9001" /data
+
+volumes:
+  postgres-data:
+  minio-data:

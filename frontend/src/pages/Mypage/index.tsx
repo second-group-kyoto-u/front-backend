@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 function Mypage() {
   const { token, logout } = useAuth()
   const [message, setMessage] = useState('')
+  const [profileImageUrl, setProfileImageUrl] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -24,6 +25,7 @@ function Mypage() {
       .then((res) => {
         console.log("✅ /mypage 成功:", res)
         setMessage(res.message)
+        setProfileImageUrl(res.profile_image_url || '')
       })  
       .catch((err) => {
         console.error("❌ /mypage エラー:", err.response ?? err)
@@ -41,7 +43,10 @@ function Mypage() {
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">マイページ</h2>
-      <p>{message}</p>
+      {message && <p>{message}</p>}
+      {profileImageUrl && (
+        <img src={profileImageUrl} alt="プロフィール画像" className="mt-4 rounded w-40 h-40 object-cover" />
+      )}
       <button onClick={handleLogout} className="mt-4 px-4 py-2 border rounded">
         ログアウト
       </button>
