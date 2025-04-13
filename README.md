@@ -1,4 +1,4 @@
-# Riskdog Backend
+# 本番用(開発の際はdevelopブランチを使って下さい。)
 
 ## 説明
 
