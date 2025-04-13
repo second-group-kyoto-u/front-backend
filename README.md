@@ -39,6 +39,11 @@ docker-compose logs -f backend
 ### フロントエンド
 React: http://localhost:3000
 
+### バケットの確認
+http://localhost:9001 
+
+
+
 ### バックエンド（/api/helloのルートの場合(多分使わないし、使っても拒否されると思う。)）
 Flask: http://localhost:5000/api/login
 
