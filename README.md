@@ -12,9 +12,11 @@
 - [Docker Compose](https://docs.docker.com/compose/)
 
 ## 使い方
-# .env を生成する（ただし、共有した内容を入力・保存した上で実行）
+# .env を生成する
+（ただし、共有した内容を入力・保存した上で実行）
+```sh
 cp .env.example .env
-
+```
 
 ### Dockerの立ち上げ
 1. Docker.app が起動していることを確認
