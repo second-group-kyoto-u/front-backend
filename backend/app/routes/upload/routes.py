@@ -1,37 +1,67 @@
-from flask import Blueprint, request, jsonify
-from app.models.user import db, User
-import boto3, os
+from flask import Blueprint, request, jsonify, current_app
 from werkzeug.utils import secure_filename
+import os
+import uuid
+from app.models import db
+from app.models.file import ImageList
+from app.routes.protected.routes import get_authenticated_user
+import datetime
+from datetime import timezone
+from app.utils.storage import upload_file
 
-upload_bp = Blueprint('upload', __name__)
+upload_bp = Blueprint("upload", __name__)
 
-s3 = boto3.client(
-    's3',
-    endpoint_url=os.getenv('MINIO_ENDPOINT'),
-    aws_access_key_id=os.getenv('MINIO_ACCESS_KEY'),
-    aws_secret_access_key=os.getenv('MINIO_SECRET_KEY'),
-    region_name='us-east-1'
-)
-
-@upload_bp.route('/upload', methods=['POST'])
-def upload():
-    file = request.files.get('file')
-    user_id = request.form.get('user_id')
-    if not file or not user_id:
-        return jsonify({'error': 'ファイルまたはユーザーIDがありません'}), 400
-
-    filename = f"{user_id}/{secure_filename(file.filename)}"
-    bucket = os.getenv('MINIO_BUCKET')
-
-    s3.upload_fileobj(file, bucket, filename)
-
-    image_url = f"{os.getenv('MINIO_ENDPOINT')}/{bucket}/{filename}"
-
-    # DBに保存
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'ユーザーが存在しません'}), 404
-    user.profile_image_url = image_url
+@upload_bp.route("/image", methods=["POST"])
+def upload_image():
+    # ユーザー認証
+    user, error_response, error_code = get_authenticated_user()
+    if error_response:
+        return jsonify(error_response), error_code
+    
+    # ファイルが添付されているか確認
+    if 'file' not in request.files:
+        return jsonify({"error": "ファイルが添付されていません"}), 400
+    
+    file = request.files['file']
+    
+    # ファイル名が空でないか確認
+    if file.filename == '':
+        return jsonify({"error": "ファイル名が空です"}), 400
+    
+    # ファイル拡張子の確認
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+    extension = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+    
+    if extension not in allowed_extensions:
+        return jsonify({"error": "許可されていないファイル形式です"}), 400
+    
+    # ファイル名をセキュアにして一意にする
+    filename = str(uuid.uuid4()) + '.' + extension
+    
+    # コンテンツタイプを判定
+    content_type = file.content_type if hasattr(file, 'content_type') else None
+    
+    # S3/minioにファイルをアップロード
+    file_url = upload_file(file, filename, content_type)
+    
+    if not file_url:
+        return jsonify({"error": "ファイルのアップロードに失敗しました"}), 500
+    
+    # 画像情報をデータベースに保存
+    image = ImageList(
+        id=str(uuid.uuid4()),
+        image_url=file_url,
+        uploaded_by=user.id,
+        upload_date=datetime.datetime.now(timezone.utc)
+    )
+    
+    db.session.add(image)
     db.session.commit()
-
-    return jsonify({'url': image_url})
+    
+    return jsonify({
+        "message": "画像をアップロードしました",
+        "image": {
+            "id": image.id,
+            "url": file_url
+        }
+    })

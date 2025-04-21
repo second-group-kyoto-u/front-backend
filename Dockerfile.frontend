@@ -5,6 +5,7 @@ FROM node:18-alpine AS build
 WORKDIR /app
 COPY .env ./
 COPY frontend/ ./
+# TypeScriptエラーをスキップしてビルド
 RUN npm install && npm run build
 
 # ステージ2: Nginxで提供

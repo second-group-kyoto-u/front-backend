@@ -1,5 +1,6 @@
 import jwt
 import datetime
+from datetime import timezone
 import os
 
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-jwt-secret")
@@ -7,8 +8,8 @@ SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-jwt-secret")
 def generate_token(user_id):
     payload = {
         'user_id': user_id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),  # 有効期限: 1日
-        'iat': datetime.datetime.utcnow()
+        'exp': datetime.datetime.now(timezone.utc) + datetime.timedelta(days=7),  # 有効期限: 7日
+        'iat': datetime.datetime.now(timezone.utc)
     }
     return jwt.encode(payload, SECRET_KEY, algorithm='HS256')
 

@@ -1,2 +1,5 @@
 export * from './login'
+export * from './protected'
+export * from './helpers'
 export * from './register'
+export * from './password'

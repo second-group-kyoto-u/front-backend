@@ -75,6 +75,9 @@ npm config set strict-ssl true
 npm config set registry https://registry.npmjs.org/
 '''
 
+export $(cat .env | grep -v ^# | xargs)
+echo $CORS_ALLOWED   
+
 ## Viteプロジェクトの基本構成
 my-vite-app/
 ├── index.html                 ← エントリHTML(ビルドの起点)
@@ -142,3 +145,4 @@ src/
 <山本>
 
 <陳>
+
