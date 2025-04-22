@@ -23,16 +23,16 @@ cp .env.example .env
 2. 以下で一括起動（-dを付けることで、ターミナルがそのまま使える）
 
 ```sh
-docker-compose up --build -d
+docker compose up --build -d
 ```
 seedデータの導入・既存のテーブルの初期化
 ```sh
-docker-compose exec backend python scripts/seed.py
+docker compose exec backend python scripts/seed.py
 ```
 
 # ログ確認（問題があれば）
 ```sh
-docker-compose logs -f backend
+docker compose logs -f backend
 ```
 
 ## 状況を確認
