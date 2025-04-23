@@ -16,7 +16,7 @@ const EventsPage: React.FC = () => {
         <select 
           className={styles.filterSelect}
           value={filter.status || ''}
-          onChange={(e) => setFilter(prev => ({
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilter((prev: typeof filter) => ({
             ...prev,
             status: e.target.value as 'pending' | 'started' | 'ended' | undefined
           }))}

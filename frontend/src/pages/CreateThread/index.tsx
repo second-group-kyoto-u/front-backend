@@ -28,7 +28,7 @@ function CreateThreadPage() {
   }
 
   const handleRemoveTag = (tag: string) => {
-    setTags(tags.filter((t) => t !== tag))
+    setTags(tags.filter((t: string) => t !== tag))
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +95,7 @@ function CreateThreadPage() {
           <input
             type="text"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
             className="w-full border rounded p-2"
             placeholder="スレッドのタイトル"
             required
@@ -106,7 +106,7 @@ function CreateThreadPage() {
           <label className="block mb-1 font-medium">メッセージ*</label>
           <textarea
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(e.target.value)}
             className="w-full border rounded p-2"
             placeholder="スレッドの最初のメッセージ"
             rows={5}
@@ -135,7 +135,7 @@ function CreateThreadPage() {
             <input
               type="text"
               value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTag(e.target.value)}
               className="flex-1 border rounded-l p-2"
               placeholder="タグを入力"
             />
@@ -150,7 +150,7 @@ function CreateThreadPage() {
 
           {tags.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1">
-              {tags.map((tag) => (
+              {tags.map((tag: string) => (
                 <div
                   key={tag}
                   className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-sm flex items-center"

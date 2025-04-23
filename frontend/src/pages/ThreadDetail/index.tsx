@@ -255,7 +255,7 @@ function ThreadDetailPage() {
             {messageType === 'text' ? (
               <textarea
                 value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNewMessage(e.target.value)}
                 className="w-full border rounded p-2"
                 placeholder="メッセージを入力"
                 rows={3}

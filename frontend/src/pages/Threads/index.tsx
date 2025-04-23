@@ -101,7 +101,7 @@ function ThreadsPage() {
                   
                   {thread.tags.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {thread.tags.map((tag) => (
+                      {thread.tags.map((tag: { id: string; name: string }) => (
                         <span 
                           key={tag.id}
                           className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs"
