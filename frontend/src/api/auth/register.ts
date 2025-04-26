@@ -24,7 +24,10 @@ export const registerUser = async (
   try {
     const res = await axios.post<RegisterResponse>('auth/register', data)
     return res.data
-  } catch (error) {
+  } catch (error: any) {
+    if (error.response && error.response.data && error.response.data.error) {
+      throw new Error(error.response.data.error)
+    }
     throw new Error('ユーザー登録に失敗しました')
   }
-} 
+}
