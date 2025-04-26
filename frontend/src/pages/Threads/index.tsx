@@ -34,7 +34,7 @@ function ThreadsPage() {
   }
 
   const handleViewThread = (threadId: string) => {
-    navigate(`/threads/${threadId}`)
+    navigate(`/thread/${threadId}`)
   }
 
   const handleCreateThread = () => {

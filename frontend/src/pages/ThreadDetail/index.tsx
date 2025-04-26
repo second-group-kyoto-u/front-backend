@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { deleteThread } from '@/api/thread'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { getThreadDetail, postMessage, heartThread, unheartThread, ThreadDetailResponse } from '@/api/thread'
@@ -7,6 +8,7 @@ import { uploadImage } from '@/api/upload'
 function ThreadDetailPage() {
   const { threadId } = useParams<{ threadId: string }>()
   const { token, isAuthenticated } = useAuth()
+  const [authChecked, setAuthChecked] = useState(false)
   const navigate = useNavigate()
   const [threadData, setThreadData] = useState<ThreadDetailResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -15,20 +17,16 @@ function ThreadDetailPage() {
   const [messageType, setMessageType] = useState<'text' | 'image'>('text')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login')
-      return
-    }
-
     if (threadId) {
       fetchThreadDetail()
     }
-  }, [isAuthenticated, threadId])
+  }, [threadId])
 
   const fetchThreadDetail = async () => {
-    if (!token || !threadId) return
+    if (!threadId) return
 
     setLoading(true)
     try {
@@ -107,6 +105,27 @@ function ThreadDetailPage() {
 
   const handleBackToList = () => {
     navigate('/threads')
+  }
+
+  const handleDeleteThread = async () => {
+    if (!threadId) return
+
+    const confirmDelete = window.confirm('本当にこのスレッドを削除しますか？')
+    if (!confirmDelete) return
+
+    setIsDeleting(true)
+    setError('')
+
+    try {
+      await deleteThread(threadId)
+      alert('スレッドを削除しました')
+      navigate('/threads') // スレッド一覧へリダイレクト
+    } catch (err: any) {
+      console.error('スレッド削除エラー:', err)
+      setError('スレッドの削除に失敗しました')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   if (loading) {
@@ -287,6 +306,17 @@ function ThreadDetailPage() {
             {isSubmitting ? '送信中...' : '送信'}
           </button>
         </form>
+      </div>
+
+      {/* 削除ボタン */}
+      <div className="mt-6">
+        <button
+          onClick={handleDeleteThread}
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 disabled:bg-gray-400"
+          disabled={isDeleting}
+        >
+          {isDeleting ? '削除中...' : 'スレッドを削除'}
+        </button>
       </div>
     </div>
   )

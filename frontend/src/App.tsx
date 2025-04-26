@@ -39,7 +39,7 @@ function App(): JSX.Element {
 
         {/* スレッドページ（誰でも閲覧可能） */}
         <Route path="/threads" element={<ThreadsPage />} />
-        <Route path="/threads/:id" element={<ThreadDetailPage />} />
+        <Route path="/thread/:threadId" element={<ThreadDetailPage />} />
 
         {/* スレッド作成（ログイン必須） */}
         <Route

@@ -55,10 +55,12 @@ def get_threads():
 
 @thread_bp.route("/<thread_id>", methods=["GET"])
 def get_thread(thread_id):
-    # ユーザー認証
-    user, error_response, error_code = get_authenticated_user()
-    if error_response:
-        return jsonify(error_response), error_code
+    # 認証トライする（失敗してもOK）
+    user = None
+    try:
+        user, _, _ = get_authenticated_user()
+    except Exception:
+        user = None
     
     # スレッドの取得
     thread = Thread.query.get(thread_id)
@@ -93,11 +95,14 @@ def get_thread(thread_id):
                 'name': tag.tag_name
             })
     
-    # いいねしているかどうかを確認
-    is_hearted = UserHeartThread.query.filter_by(
-        user_id=user.id,
-        thread_id=thread_id
-    ).first() is not None
+    # ログインしている場合だけいいね判定
+    if user:
+        is_hearted = UserHeartThread.query.filter_by(
+            user_id=user.id,
+            thread_id=thread_id
+        ).first() is not None
+    else:
+        is_hearted = False
     
     # thread_dataにタグといいね情報を追加
     thread_data['tags'] = tags
@@ -187,6 +192,44 @@ def create_thread():
         "message": "スレッドを作成しました",
         "thread_id": thread.id
     })
+
+@thread_bp.route("/<thread_id>", methods=["DELETE"])
+def delete_thread(thread_id):
+    # ユーザー認証
+    user, error_response, error_code = get_authenticated_user()
+    if error_response:
+        return jsonify(error_response), error_code
+
+    # スレッドの取得
+    thread = Thread.query.get(thread_id)
+    if not thread:
+        return jsonify({"error": "スレッドが見つかりません"}), 404
+
+    # スレッドの所有者だけが削除できるようにする
+    if thread.author_id != user.id:
+        return jsonify({"error": "このスレッドを削除する権限がありません"}), 403
+
+    # 関連するメッセージを先に削除
+    ThreadMessage.query.filter_by(thread_id=thread_id).delete()
+
+    # 関連するいいねも削除
+    UserHeartThread.query.filter_by(thread_id=thread_id).delete()
+
+    # 関連するタグ関連も削除
+    TagAssociation.query.filter_by(entity_id=thread_id, entity_type='thread').delete()
+
+    # スレッド本体を削除
+    db.session.delete(thread)
+    try:
+        # データ削除処理
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "スレッド削除中にエラーが発生しました"}), 500
+
+
+    return jsonify({"message": "スレッドを削除しました"})
+
 
 @thread_bp.route("/<thread_id>/message", methods=["POST"])
 def post_thread_message(thread_id):
