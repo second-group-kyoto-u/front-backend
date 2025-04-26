@@ -71,7 +71,7 @@ export const getEvent = async (eventId: string) => {
 // イベント一覧取得
 export const getEvents = async (limit: number = 10, offset: number = 0) => {
   try {
-    const response = await axios.get(`protected/events`, {
+    const response = await axios.get(`event/events`, {
       headers: getAuthHeader(),
       params: { limit, offset }
     });

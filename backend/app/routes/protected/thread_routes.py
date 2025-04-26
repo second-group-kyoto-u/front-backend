@@ -12,61 +12,48 @@ thread_bp = Blueprint("thread", __name__)
 
 @thread_bp.route("/threads", methods=["GET"])
 def get_threads():
-    # ユーザー認証
-    user, error_response, error_code = get_authenticated_user()
-    if error_response:
-        return jsonify(error_response), error_code
-    
-    # クエリパラメータ
+    # 認証チェックなし
+    # user, error_response, error_code = get_authenticated_user()
+    # if error_response:
+    #     return jsonify(error_response), error_code
+
     page = request.args.get('page', default=1, type=int)
     per_page = request.args.get('per_page', default=10, type=int)
     area_id = request.args.get('area_id')
     tags = request.args.getlist('tags')
-    
-    # スレッド一覧を取得するクエリ
+
     query = Thread.query
-    
-    # エリアでフィルタリング
+
     if area_id:
         query = query.filter_by(area_id=area_id)
-    
-    # タグでフィルタリング
+
     if tags:
         for tag in tags:
-            # タグマスターからタグIDを取得
             tag_master = TagMaster.query.filter_by(tag_name=tag).first()
             if tag_master:
-                # タグとの関連付けを持つスレッドIDを検索
                 thread_ids = db.session.query(TagAssociation.entity_id).filter_by(
                     tag_id=tag_master.id,
                     entity_type='thread'
                 ).all()
                 thread_ids = [id[0] for id in thread_ids]
-                
-                # 該当するスレッドをフィルタリング
                 query = query.filter(Thread.id.in_(thread_ids))
-    
-    # 総数を取得
+
     total = query.count()
-    
-    # ページングを適用して最新のスレッドを取得
+
     offset = (page - 1) * per_page
     threads = query.order_by(Thread.published_at.desc()).offset(offset).limit(per_page).all()
-    
-    # 結果を整形
+
     result = []
     for thread in threads:
         thread_dict = thread.to_dict()
-        # ユーザーがそのスレッドをいいねしているかどうかを確認
-        thread_dict['is_hearted'] = UserHeartThread.query.filter_by(
-            user_id=user.id,
-            thread_id=thread.id
-        ).first() is not None
+        # ログインしてないのでいいね状態（is_hearted）は Falseにしておく
+        thread_dict['is_hearted'] = False
         result.append(thread_dict)
-    
+
     return jsonify({"threads": result, "total": total})
 
-@thread_bp.route("/thread/<thread_id>", methods=["GET"])
+
+@thread_bp.route("/<thread_id>", methods=["GET"])
 def get_thread(thread_id):
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -122,7 +109,7 @@ def get_thread(thread_id):
         "messages": messages_data
     })
 
-@thread_bp.route("/thread", methods=["POST"])
+@thread_bp.route("/", methods=["POST"])
 def create_thread():
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -201,7 +188,7 @@ def create_thread():
         "thread_id": thread.id
     })
 
-@thread_bp.route("/thread/<thread_id>/message", methods=["POST"])
+@thread_bp.route("/<thread_id>/message", methods=["POST"])
 def post_thread_message(thread_id):
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -247,7 +234,7 @@ def post_thread_message(thread_id):
         "message_id": thread_message.id
     })
 
-@thread_bp.route("/thread/<thread_id>/heart", methods=["POST"])
+@thread_bp.route("/<thread_id>/heart", methods=["POST"])
 def heart_thread(thread_id):
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -282,7 +269,7 @@ def heart_thread(thread_id):
         "thread": thread.to_dict()
     })
 
-@thread_bp.route("/thread/<thread_id>/unheart", methods=["POST"])
+@thread_bp.route("/<thread_id>/unheart", methods=["POST"])
 def unheart_thread(thread_id):
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()

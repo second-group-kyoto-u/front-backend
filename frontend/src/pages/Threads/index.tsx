@@ -13,14 +13,11 @@ function ThreadsPage() {
   const [page, setPage] = useState(1)
   const perPage = 10
 
+  // スレッドページの閲覧は認証なし
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login')
-      return
-    }
-
     fetchThreads()
-  }, [isAuthenticated, page])
+  }, [page])
+  
 
   const fetchThreads = async () => {
     setLoading(true)
@@ -41,7 +38,11 @@ function ThreadsPage() {
   }
 
   const handleCreateThread = () => {
-    navigate('/thread/new')
+    if (!isAuthenticated) {
+      navigate('/login')
+    } else {
+      navigate('/threads/create')
+    }
   }
 
   // ページネーション
