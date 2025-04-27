@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { getThreads, Thread } from '@/api/thread'
+import './styles.css'
 
 function ThreadsPage() {
   const { isAuthenticated } = useAuth()
@@ -55,96 +56,84 @@ function ThreadsPage() {
   }
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold">スレッド一覧</h1>
-        <button 
-          onClick={handleCreateThread}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          新規スレッド作成
-        </button>
+    <div className="threads-container">
+      <div className="threads-header">
+        <div className="threads-title">スレッド</div>
       </div>
 
       {loading ? (
-        <p>読み込み中...</p>
+        <div className="flex justify-center items-center h-40">
+          <p>読み込み中...</p>
+        </div>
       ) : error ? (
-        <p className="text-red-500">{error}</p>
+        <div className="flex justify-center items-center h-40">
+          <p className="text-red-500">{error}</p>
+        </div>
       ) : (
-        <>
-          <div className="space-y-4">
-            {threads.length === 0 ? (
-              <p>スレッドがありません</p>
-            ) : (
-              threads.map((thread) => (
-                <div 
-                  key={thread.id}
-                  className="border p-4 rounded cursor-pointer hover:bg-gray-50"
-                  onClick={() => handleViewThread(thread.id)}
-                >
-                  <div className="flex justify-between">
-                    <h2 className="font-bold">{thread.title}</h2>
-                    <div className="text-gray-500 text-sm">
-                      {new Date(thread.created_at).toLocaleString()}
-                    </div>
+        <div className="threads-list">
+          {threads.length === 0 ? (
+            <p className="text-center p-4">スレッドがありません</p>
+          ) : (
+            threads.map((thread) => (
+              <div 
+                key={thread.id}
+                className="thread-item"
+                onClick={() => handleViewThread(thread.id)}
+              >
+                <div className="thread-author">
+                  <div className="author-avatar"></div>
+                  <div className="author-name">{thread.created_by.user_name}</div>
+                  <div className="flex-grow"></div>
+                  <div className="thread-time">
+                    {new Date(thread.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </div>
-                  
-                  <div className="flex mt-2">
-                    <div className="flex items-center text-sm text-gray-600 mr-4">
-                      <span>作成者: {thread.created_by.user_name}</span>
-                    </div>
-                    
-                    <div className="flex space-x-4 text-sm text-gray-600">
-                      <span>💬 {thread.messages_count}</span>
-                      <span>❤️ {thread.hearts_count}</span>
-                    </div>
-                  </div>
-                  
-                  {thread.tags.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {thread.tags.map((tag: { id: string; name: string }) => (
-                        <span 
-                          key={tag.id}
-                          className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs"
-                        >
-                          {tag.name}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
-              ))
-            )}
-          </div>
-
-          {/* ページネーション */}
-          {threads.length > 0 && (
-            <div className="flex justify-between items-center mt-4">
-              <button
-                onClick={handlePreviousPage}
-                disabled={page === 1}
-                className={`px-3 py-1 rounded ${
-                  page === 1 ? 'bg-gray-300' : 'bg-blue-500 text-white'
-                }`}
-              >
-                前へ
-              </button>
-              <span>
-                {page} / {totalPages} ページ
-              </span>
-              <button
-                onClick={handleNextPage}
-                disabled={page >= totalPages}
-                className={`px-3 py-1 rounded ${
-                  page >= totalPages ? 'bg-gray-300' : 'bg-blue-500 text-white'
-                }`}
-              >
-                次へ
-              </button>
-            </div>
+                
+                <div className="thread-content">
+                  {thread.title}
+                </div>
+                
+                <div className="thread-actions">
+                  <div className="action-button">
+                    <span>❤️</span>
+                    <span>{thread.hearts_count}</span>
+                  </div>
+                  <div className="action-button">
+                    <span>💬</span>
+                    <span>{thread.messages_count}</span>
+                  </div>
+                </div>
+              </div>
+            ))
           )}
-        </>
+        </div>
       )}
+
+      <button 
+        className="create-button"
+        onClick={handleCreateThread}
+      >
+        +
+      </button>
+
+      <div className="navigation">
+        <div className={`nav-item`}>
+          <div>👥</div>
+          <div>イベント</div>
+        </div>
+        <div className={`nav-item active`}>
+          <div>📝</div>
+          <div>スレッド</div>
+        </div>
+        <div className={`nav-item`}>
+          <div>💬</div>
+          <div>トーク</div>
+        </div>
+        <div className={`nav-item`}>
+          <div>👤</div>
+          <div>マイページ</div>
+        </div>
+      </div>
     </div>
   )
 }
