@@ -6,6 +6,7 @@ import ThreadsPage from './pages/Threads'
 import ThreadDetailPage from './pages/ThreadDetail'
 import CreateThreadPage from './pages/CreateThread'
 import EventsPage from './pages/Events'
+import EventDetailPage from './pages/EventDetail'
 import RegisterPage from './pages/Register'
 import './App.css'
 import { ProtectedRoute } from './components/ProtectedRoute'
@@ -53,6 +54,7 @@ function App(): JSX.Element {
 
         {/* イベント（誰でも閲覧可能） */}
         <Route path="/events" element={<EventsPage />} />
+        <Route path="/event/:eventId" element={<EventDetailPage />} />
 
         {/* 登録ページ */}
         <Route path="/register" element={<RegisterPage />} />

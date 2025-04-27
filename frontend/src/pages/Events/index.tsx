@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import EventList from '../../components/Event/EventList';
+import EventList from '@/components/Event/EventList';
 import styles from './Events.module.css';
 
 const EventsPage: React.FC = () => {

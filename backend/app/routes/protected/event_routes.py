@@ -12,10 +12,10 @@ event_bp = Blueprint("event", __name__)
 
 @event_bp.route("/events", methods=["GET"])
 def get_events():
-    # ユーザー認証
-    user, error_response, error_code = get_authenticated_user()
-    if error_response:
-        return jsonify(error_response), error_code
+    # 認証チェックなし
+    # user, error_response, error_code = get_authenticated_user()
+    # if error_response:
+    #     return jsonify(error_response), error_code
     
     # クエリパラメータの取得
     area_id = request.args.get('area_id')
@@ -58,12 +58,12 @@ def get_events():
     
     return jsonify(result)
 
-@event_bp.route("/event/<event_id>", methods=["GET"])
+@event_bp.route("/<event_id>", methods=["GET"])
 def get_event(event_id):
-    # ユーザー認証
-    user, error_response, error_code = get_authenticated_user()
-    if error_response:
-        return jsonify(error_response), error_code
+    # 認証チェックなし
+    # user, error_response, error_code = get_authenticated_user()
+    # if error_response:
+    #     return jsonify(error_response), error_code
     
     # イベントの取得
     event = Event.query.get(event_id)
@@ -74,10 +74,17 @@ def get_event(event_id):
     if event.is_deleted:
         return jsonify({"error": "このイベントは削除されています"}), 404
     
-    # イベントデータを返す
-    return jsonify(event.to_dict())
+    # メッセージも取得！
+    messages = EventMessage.query.filter_by(event_id=event_id).order_by(EventMessage.timestamp.asc()).all()
+    messages_data = [message.to_dict() for message in messages]
 
-@event_bp.route("/event", methods=["POST"])
+    # まとめて返す！
+    return jsonify({
+        "event": event.to_dict(),
+        "messages": messages_data
+    })
+
+@event_bp.route("/", methods=["POST"])
 def create_event():
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -154,7 +161,7 @@ def create_event():
         "event": event.to_dict()
     })
 
-@event_bp.route("/event/<event_id>/join", methods=["POST"])
+@event_bp.route("/<event_id>/join", methods=["POST"])
 def join_event(event_id):
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -208,7 +215,7 @@ def join_event(event_id):
         "event": event.to_dict()
     })
 
-@event_bp.route("/event/<event_id>/leave", methods=["POST"])
+@event_bp.route("/<event_id>/leave", methods=["POST"])
 def leave_event(event_id):
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -257,7 +264,7 @@ def leave_event(event_id):
         "message": "イベントから退出しました"
     })
 
-@event_bp.route("/event/<event_id>/start", methods=["POST"])
+@event_bp.route("/<event_id>/start", methods=["POST"])
 def start_event(event_id):
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -323,7 +330,7 @@ def start_event(event_id):
         "event": event.to_dict()
     })
 
-@event_bp.route("/event/<event_id>/end", methods=["POST"])
+@event_bp.route("/<event_id>/end", methods=["POST"])
 def end_event(event_id):
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
