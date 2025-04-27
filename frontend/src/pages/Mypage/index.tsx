@@ -57,9 +57,6 @@ function Mypage() {
         navigate('/login')
       })
   }, [token])
-  
-  
-  
 
   return (
     <div className="p-4">
