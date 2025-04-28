@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom'
 function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [userName, setUserName] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -20,6 +21,11 @@ function RegisterPage() {
       return
     }
     
+    if (password !== confirmPassword) {
+      setError('パスワードが一致しません')
+      return
+    }
+
     setIsSubmitting(true)
     setError('')
     
