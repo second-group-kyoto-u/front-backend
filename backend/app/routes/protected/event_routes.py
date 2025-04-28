@@ -60,11 +60,14 @@ def get_events():
 
 @event_bp.route("/<event_id>", methods=["GET"])
 def get_event(event_id):
-    # 認証チェックなし
-    # user, error_response, error_code = get_authenticated_user()
-    # if error_response:
-    #     return jsonify(error_response), error_code
+    # トークルームへ遷移する権利があるかの検証に用いる
+    user, error_response, error_code = get_authenticated_user()
     
+    # 認証に失敗しても OK（エラーを返さず、未ログイン状態として進める）
+    if error_response and error_code == 401:
+        user = None
+
+
     # イベントの取得
     event = Event.query.get(event_id)
     if not event:
@@ -78,10 +81,20 @@ def get_event(event_id):
     messages = EventMessage.query.filter_by(event_id=event_id).order_by(EventMessage.timestamp.asc()).all()
     messages_data = [message.to_dict() for message in messages]
 
-    # まとめて返す！
+
+    # イベントの参加者かどうか
+    is_joined = False
+
+    if user:
+        is_joined = UserMemberGroup.query.filter_by(
+            user_id=user.id,
+            event_id=event_id
+    ).first() is not None
+
     return jsonify({
         "event": event.to_dict(),
-        "messages": messages_data
+        "messages": [message.to_dict() for message in messages],
+        "is_joined": is_joined
     })
 
 @event_bp.route("/", methods=["POST"])
@@ -374,3 +387,28 @@ def end_event(event_id):
         "message": "イベントを終了しました",
         "event": event.to_dict()
     }) 
+
+@event_bp.route("/<event_id>/message", methods=["POST"])
+def send_event_message(event_id):
+    user, error_response, error_code = get_authenticated_user()
+    if error_response:
+        return jsonify(error_response), error_code
+
+    data = request.get_json()
+    content = data.get('content')
+    image_id = data.get('image_id')
+    message_type = data.get('message_type', 'text')
+
+    new_message = EventMessage(
+        id=str(uuid.uuid4()),
+        event_id=event_id,
+        sender_user_id=user.id,
+        content=content,
+        timestamp=datetime.now(timezone.utc),
+        message_type=message_type,
+        image_id=image_id,
+    )
+    db.session.add(new_message)
+    db.session.commit()
+
+    return jsonify(new_message.to_dict())

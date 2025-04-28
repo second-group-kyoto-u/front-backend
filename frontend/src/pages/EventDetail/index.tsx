@@ -12,6 +12,7 @@ function EventDetailPage() {
 
   const [eventData, setEventData] = useState<EventType | null>(null)
   const [messages, setMessages] = useState<EventMessageType[]>([])
+  const [isJoined, setIsJoined] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [newMessage, setNewMessage] = useState('')
@@ -31,6 +32,7 @@ function EventDetailPage() {
       const data = await getEvent(eventId)
       setEventData(data.event)
       setMessages(data.messages)
+      setIsJoined(data.is_joined)
     } catch (err: any) {
       console.error('イベント詳細取得エラー:', err)
       setError('イベントの詳細取得に失敗しました')
@@ -104,7 +106,7 @@ function EventDetailPage() {
       )}
 
       <div className="my-6">
-        <h2 className="text-lg font-semibold">メッセージ一覧</h2>
+        <h2 className="text-lg font-semibold">メッセージ一覧(削除予定)</h2>
         <div className="space-y-3 mt-2">
           {messages.map((msg) => (
             <div key={msg.id} className="border p-3 rounded">
@@ -125,7 +127,7 @@ function EventDetailPage() {
       </div>
 
       <div className="my-6">
-        <h2 className="text-lg font-semibold mb-2">メッセージを投稿</h2>
+        <h2 className="text-lg font-semibold mb-2">メッセージを投稿(削除予定)</h2>
         <form onSubmit={handleSubmitMessage} className="space-y-3">
           <div className="flex gap-4">
             <label>
@@ -146,8 +148,20 @@ function EventDetailPage() {
             <input type="file" accept="image/*" onChange={handleFileChange} />
           )}
           <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">送信</button>
-        </form>
+          </form>
+          
       </div>
+      
+      {isJoined && (
+        <div className="mt-6">
+          <button 
+            onClick={() => navigate(`/event/${eventData?.id}/talk`)}
+            className="bg-red-600 text-white text-2xl p-4 rounded shadow-lg">
+            トークルームに入る
+          </button>
+        </div>
+      )}
+      
     </div>
   )
 }
