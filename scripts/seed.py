@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from app import create_app
 from app.models import db
 from app.models.user import User
-from app.models.event import Event, UserMemberGroup, UserHeartEvent, TagMaster, TagAssociation
+from app.models.event import Event, UserMemberGroup, UserHeartEvent, TagMaster, UserTagAssociation, EventTagAssociation, ThreadTagAssociation
 from app.models.area import AreaList
 from app.models.file import ImageList
 from app.models.thread import Thread, ThreadMessage, UserHeartThread
@@ -176,7 +176,8 @@ with app.app_context():
     events = [
         {
             "id": str(uuid.uuid4()),
-            "message": "富士山登山に一緒に行きませんか？初心者歓迎です。",
+            "title": "富士山登山ツアー",
+            "description": "富士山登山に一緒に行きませんか？初心者歓迎です。",
             "image_id": event_images[0] if event_images else None,
             "author_id": user_ids["test@example.com"],
             "area_id": areas[0]["id"],  # 東京
@@ -186,7 +187,8 @@ with app.app_context():
         },
         {
             "id": str(uuid.uuid4()),
-            "message": "大阪でたこ焼きパーティーしませんか？地元の美味しいお店を案内します。",
+            "title": "大阪たこ焼きパーティー",
+            "description": "大阪でたこ焼きパーティーしませんか？地元の美味しいお店を案内します。",
             "image_id": event_images[1] if len(event_images) > 1 else None,
             "author_id": user_ids["yamada@example.com"],
             "area_id": areas[1]["id"],  # 大阪
@@ -196,7 +198,8 @@ with app.app_context():
         },
         {
             "id": str(uuid.uuid4()),
-            "message": "京都の紅葉を撮影しに行きます。カメラ好きの方、ぜひ一緒に！",
+            "title": "京都紅葉撮影会",
+            "description": "京都の紅葉を撮影しに行きます。カメラ好きの方、ぜひ一緒に！",
             "image_id": event_images[2] if len(event_images) > 2 else None,
             "author_id": user_ids["tanaka@example.com"],
             "area_id": areas[2]["id"],  # 京都
@@ -210,7 +213,8 @@ with app.app_context():
     for event_data in events:
         event = Event(
             id=event_data["id"],
-            message=event_data["message"],
+            title=event_data["title"],
+            description=event_data["description"],
             image_id=event_data["image_id"],
             author_user_id=event_data["author_id"],
             area_id=event_data["area_id"],
@@ -238,11 +242,10 @@ with app.app_context():
     
     for event_tag in event_tags:
         for tag_name in event_tag["tags"]:
-            tag_association = TagAssociation(
+            tag_association = EventTagAssociation(
                 id=str(uuid.uuid4()),
                 tag_id=tag_ids[tag_name],
-                entity_id=event_tag["event_id"],
-                entity_type="event",
+                event_id=event_tag["event_id"],
                 created_at=datetime.utcnow()
             )
             db.session.add(tag_association)
@@ -327,11 +330,10 @@ with app.app_context():
     
     for thread_tag in thread_tags:
         for tag_name in thread_tag["tags"]:
-            tag_association = TagAssociation(
+            tag_association = ThreadTagAssociation(
                 id=str(uuid.uuid4()),
                 tag_id=tag_ids[tag_name],
-                entity_id=thread_tag["thread_id"],
-                entity_type="thread",
+                thread_id=thread_tag["thread_id"],
                 created_at=datetime.utcnow()
             )
             db.session.add(tag_association)

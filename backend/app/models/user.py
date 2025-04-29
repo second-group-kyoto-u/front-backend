@@ -30,12 +30,7 @@ class User(db.Model):
     created_threads = db.relationship('Thread', lazy=True, foreign_keys='Thread.author_id')
     
     # タグ関連
-    tags = db.relationship(
-        'TagAssociation', 
-        primaryjoin="and_(TagAssociation.entity_type=='user', foreign(TagAssociation.entity_id)==User.id)",
-        viewonly=True,
-        backref='user_obj'
-    )
+    tags = db.relationship('UserTagAssociation', backref='user', lazy=True)
     
     # メンバーとして参加しているイベント
     joined_events = db.relationship('Event', secondary='user_member_group',

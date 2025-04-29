@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from app.routes.protected.routes import get_authenticated_user
 from app.models.user import User
 from app.models.thread import Thread, ThreadMessage, UserHeartThread
-from app.models.event import TagMaster, TagAssociation
+from app.models.event import TagMaster, ThreadTagAssociation
 from app.models import db
 import uuid
 from datetime import datetime, timezone
@@ -31,9 +31,8 @@ def get_threads():
         for tag in tags:
             tag_master = TagMaster.query.filter_by(tag_name=tag).first()
             if tag_master:
-                thread_ids = db.session.query(TagAssociation.entity_id).filter_by(
-                    tag_id=tag_master.id,
-                    entity_type='thread'
+                thread_ids = db.session.query(ThreadTagAssociation.thread_id).filter_by(
+                    tag_id=tag_master.id
                 ).all()
                 thread_ids = [id[0] for id in thread_ids]
                 query = query.filter(Thread.id.in_(thread_ids))
@@ -81,14 +80,13 @@ def get_thread(thread_id):
     thread_data = thread.to_dict()
     
     # タグを取得
-    thread_tags = TagAssociation.query.filter_by(
-        entity_id=thread_id,
-        entity_type='thread'
-    ).join(TagMaster, TagMaster.id == TagAssociation.tag_id).all()
+    thread_tags = ThreadTagAssociation.query.filter_by(
+        thread_id=thread_id
+    ).join(TagMaster, TagMaster.id == ThreadTagAssociation.tag_id).all()
     
     tags = []
-    for assoc in thread_tags:
-        tag = TagMaster.query.get(assoc.tag_id)
+    for tag_assoc in thread_tags:
+        tag = TagMaster.query.get(tag_assoc.tag_id)
         if tag:
             tags.append({
                 'id': tag.id,
@@ -165,11 +163,10 @@ def create_thread():
             db.session.flush()
         
         # スレッドとタグの関連付け
-        tag_assoc = TagAssociation(
+        tag_assoc = ThreadTagAssociation(
             id=str(uuid.uuid4()),
             tag_id=tag.id,
-            entity_id=thread.id,
-            entity_type='thread',
+            thread_id=thread.id,
             created_at=datetime.now(timezone.utc)
         )
         db.session.add(tag_assoc)
@@ -216,7 +213,7 @@ def delete_thread(thread_id):
     UserHeartThread.query.filter_by(thread_id=thread_id).delete()
 
     # 関連するタグ関連も削除
-    TagAssociation.query.filter_by(entity_id=thread_id, entity_type='thread').delete()
+    ThreadTagAssociation.query.filter_by(thread_id=thread_id).delete()
 
     # スレッド本体を削除
     db.session.delete(thread)

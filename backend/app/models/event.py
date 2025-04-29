@@ -8,7 +8,8 @@ class Event(db.Model):
     __tablename__ = 'event'
     
     id = db.Column(db.String(36), primary_key=True)
-    message = db.Column(db.String(500), nullable=False)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(500), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     image_id = db.Column(db.String(36), db.ForeignKey('image_list.id'))
     current_persons = db.Column(db.Integer, default=1)
@@ -24,12 +25,14 @@ class Event(db.Model):
     image = db.relationship('ImageList', backref='events')
     area = db.relationship('AreaList', backref='events')
     messages = db.relationship('EventMessage', backref='event', lazy=True)
+    tags = db.relationship('EventTagAssociation', backref='event', lazy=True)
     
     def to_dict(self):
         """辞書形式でデータを返す（APIレスポンス用）"""
         return {
             'id': self.id,
-            'message': self.message,
+            'title': self.title,
+            'description': self.description,
             'timestamp': self.timestamp.isoformat() if self.timestamp else None,
             'published_at': self.published_at.isoformat() if self.published_at else None,
             'current_persons': self.current_persons,
@@ -70,14 +73,33 @@ class TagMaster(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     
     # リレーションシップ
-    associations = db.relationship('TagAssociation', backref='tag', lazy=True)
+    user_associations = db.relationship('UserTagAssociation', backref='tag', lazy=True)
+    event_associations = db.relationship('EventTagAssociation', backref='tag', lazy=True)
+    thread_associations = db.relationship('ThreadTagAssociation', backref='tag', lazy=True)
 
 
-class TagAssociation(db.Model):
-    __tablename__ = 'tag_association'
+class UserTagAssociation(db.Model):
+    __tablename__ = 'user_tag_association'
     
     id = db.Column(db.String(36), primary_key=True)
     tag_id = db.Column(db.String(36), db.ForeignKey('tag_master.id'), nullable=False)
-    entity_id = db.Column(db.String(36), nullable=False)
-    entity_type = db.Column(db.String(20), nullable=False)  # user/event/thread
+    user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+
+
+class EventTagAssociation(db.Model):
+    __tablename__ = 'event_tag_association'
+    
+    id = db.Column(db.String(36), primary_key=True)
+    tag_id = db.Column(db.String(36), db.ForeignKey('tag_master.id'), nullable=False)
+    event_id = db.Column(db.String(36), db.ForeignKey('event.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+
+
+class ThreadTagAssociation(db.Model):
+    __tablename__ = 'thread_tag_association'
+    
+    id = db.Column(db.String(36), primary_key=True)
+    tag_id = db.Column(db.String(36), db.ForeignKey('tag_master.id'), nullable=False)
+    thread_id = db.Column(db.String(36), db.ForeignKey('thread.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc)) 

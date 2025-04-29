@@ -1,6 +1,6 @@
 from app.models import db
 from datetime import datetime, timezone
-from app.models.event import TagMaster, TagAssociation
+from app.models.event import TagMaster, ThreadTagAssociation
 
 
 class Thread(db.Model):
@@ -18,6 +18,7 @@ class Thread(db.Model):
     image = db.relationship('ImageList', backref='threads')
     area = db.relationship('AreaList', backref='threads')
     messages = db.relationship('ThreadMessage', backref='thread', lazy=True)
+    tags = db.relationship('ThreadTagAssociation', backref='thread', lazy=True)
     
     @property
     def author(self):
@@ -28,16 +29,12 @@ class Thread(db.Model):
     def to_dict(self):
         """辞書形式でデータを返す（APIレスポンス用）"""
         # 直接tagsをクエリするために必要なインポートを確認
-        from app.models.event import TagMaster, TagAssociation
+        from app.models.event import TagMaster
         
         tags = []
         try:
             # スレッドに関連付けられたタグを取得
-            tag_associations = db.session.query(TagAssociation).filter_by(
-                entity_id=self.id, entity_type='thread'
-            ).all()
-            
-            for assoc in tag_associations:
+            for assoc in self.tags:
                 tag = TagMaster.query.get(assoc.tag_id)
                 if tag:
                     tags.append({

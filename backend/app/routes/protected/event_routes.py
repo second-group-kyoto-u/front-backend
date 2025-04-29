@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app.routes.protected.routes import get_authenticated_user
 from app.models.user import User
-from app.models.event import Event, UserMemberGroup, UserHeartEvent, TagMaster, TagAssociation
+from app.models.event import Event, UserMemberGroup, UserHeartEvent, TagMaster, EventTagAssociation
 from app.models.message import EventMessage, MessageReadStatus
 from app.models import db
 import uuid
@@ -34,11 +34,10 @@ def get_events():
     if tag:
         tag_obj = TagMaster.query.filter_by(tag_name=tag).first()
         if tag_obj:
-            tag_associations = TagAssociation.query.filter_by(
-                tag_id=tag_obj.id,
-                entity_type='event'
+            tag_associations = EventTagAssociation.query.filter_by(
+                tag_id=tag_obj.id
             ).all()
-            event_ids = [assoc.entity_id for assoc in tag_associations]
+            event_ids = [assoc.event_id for assoc in tag_associations]
             query = query.filter(Event.id.in_(event_ids))
     
     # 総件数を取得
@@ -158,11 +157,10 @@ def create_event():
             db.session.flush()
         
         # イベントとタグの関連付け
-        tag_assoc = TagAssociation(
+        tag_assoc = EventTagAssociation(
             id=str(uuid.uuid4()),
             tag_id=tag.id,
-            entity_id=event.id,
-            entity_type='event',
+            event_id=event.id,
             created_at=datetime.now(timezone.utc)
         )
         db.session.add(tag_assoc)

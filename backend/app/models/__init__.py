@@ -8,7 +8,7 @@ from app.models.area import AreaList
 from app.models.file import ImageList
 from app.models.event import (
     Event, UserMemberGroup, UserHeartEvent, 
-    TagMaster, TagAssociation
+    TagMaster, UserTagAssociation, EventTagAssociation, ThreadTagAssociation
 )
 from app.models.thread import (
     Thread, ThreadMessage, 

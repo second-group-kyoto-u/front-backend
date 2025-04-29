@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app.utils.jwt import decode_token
 from app.models.user import User
-from app.models.event import Event, UserMemberGroup, TagMaster, TagAssociation
+from app.models.event import Event, UserMemberGroup, TagMaster, UserTagAssociation
 from app.models.message import FriendRelationship
 from app.models import db
 import uuid
@@ -43,9 +43,8 @@ def mypage():
         return jsonify(error_response), error_code
     
     # ユーザーのタグを取得
-    user_tags = TagAssociation.query.filter_by(
-        entity_id=user.id,
-        entity_type='user'
+    user_tags = UserTagAssociation.query.filter_by(
+        user_id=user.id
     ).all()
     
     favorite_tags = []
