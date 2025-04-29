@@ -12,7 +12,6 @@ function LoginPage() {
   const navigate = useNavigate()
   const { login, isAuthenticated, isLoading } = useAuth()
 
-  // ✅ ログイン済みユーザーはリダイレクト
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
       console.log('✅ ログイン済みなのでマイページへ遷移')
@@ -47,25 +46,31 @@ function LoginPage() {
 
         <form onSubmit={handleSubmit} className={styles.loginForm}>
           <div className={styles.formGroup}>
-            <label htmlFor="email">メールアドレス</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-              required
-            />
+            <div className={styles.inputWrapper}>
+              <input
+                type="email"
+                id="email"
+                placeholder=" "
+                value={email}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                required
+              />
+              <label htmlFor="email">メールアドレス</label>
+            </div>
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="password">パスワード</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-              required
-            />
+            <div className={styles.inputWrapper}>
+              <input
+                type="password"
+                id="password"
+                placeholder=" "
+                value={password}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                required
+              />
+              <label htmlFor="password">パスワード</label>
+            </div>
             <div className={styles.forgotPassword}>
               <Link to="/forgot-password">パスワードを忘れた方はこちら</Link>
             </div>
