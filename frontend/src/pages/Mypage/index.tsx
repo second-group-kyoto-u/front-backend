@@ -90,7 +90,7 @@ function Mypage() {
               <p className={styles.profileMessage}>{userData.profile_message || "自己紹介未設定"}</p>
 
               <div className={styles.buttonGroup}>
-                <button onClick={() => navigate('/EditMypage')} className={styles.editButton}>
+                <button onClick={() => navigate('/edit-mypage')} className={styles.editButton}>
                   プロフィールを編集
                 </button>
                 <button onClick={handleShareProfile} className={styles.shareButton}>
