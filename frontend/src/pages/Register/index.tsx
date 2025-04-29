@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { registerUser } from '@/api/auth/register'
 import { useNavigate, Link } from 'react-router-dom'
 
+//今の新規登録は１ページのままで試作したけど、プロトタイプのように３段階登録に変えるかないか、検討中。
+
 function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

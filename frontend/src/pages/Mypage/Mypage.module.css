@@ -1,108 +1,136 @@
 .pageBackground {
   min-height: 100vh;
-  background-color: #f9f7f1; 
+  background-color: #f9f7f1;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: flex-start;
+  padding: 30px;
 }
 
-.loginContainer {
-  max-width: 400px;
+.container {
+  max-width: 600px;
   width: 100%;
+  background: #ffffff;
   padding: 30px;
-  background-color: #ffffff; 
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.loginTitle {
+.profileHeader {
   text-align: center;
-  color: #5c4033; 
   margin-bottom: 20px;
 }
 
-.loginForm {
-  width: 100%;
+.profileImage {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
 }
 
-.formGroup {
-  margin-bottom: 20px;
-}
-
-.formGroup label {
-  display: block;
-  margin-bottom: 8px;
+.userName {
+  font-size: 24px;
   font-weight: bold;
-  color: #5c4033; 
-}
-
-.formGroup input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #cccccc; 
-  font-size: 16px;
-  color: #cccccc; 
-  box-sizing: border-box;
-}
-
-.forgotPassword {
-  text-align: left;
-  margin-top: 5px;
-}
-
-.forgotPassword a {
-  font-size: 12px;
   color: #5c4033;
-  text-decoration: underline;
+  margin-bottom: 10px;
 }
 
-.loginButton {
-  width: 100%;
-  padding: 12px;
-  background-color: #5c4033; 
-  color: #ffffff; 
-  border: none;
-  border-radius: 9999px; 
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 10px;
+.profileMessage {
+  font-size: 14px;
+  color: #5c4033;
   margin-bottom: 20px;
 }
 
-.loginButton:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 30px;
 }
 
-.error {
-  color: red;
-  text-align: center;
-  margin-bottom: 15px;
-  padding: 10px;
-  background-color: #ffebee;
-  border-radius: 6px;
-}
-
-.divider {
-  height: 1px;
-  background-color: #cccccc;
-  margin: 20px 0;
-}
-
-.registerSection {
-  text-align: center;
-}
-
-.registerButton {
-  display: inline-block;
+.editButton, .shareButton {
   padding: 10px 20px;
-  border: 1px solid #cccccc; 
-  color: #5c4033; 
   background-color: transparent;
-  border-radius: 9999px; 
-  text-decoration: none;
+  color: #5c4033;
+  border: 1px solid #cccccc;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-size: 14px;
   font-weight: bold;
+}
+
+.editButton:hover, .shareButton:hover {
+  background-color: #f0f0f0;
+}
+
+.userInfo {
+  margin-bottom: 30px;
+  color: #5c4033;
   font-size: 16px;
+}
+
+.tagsSection, .eventsSection {
+  margin-bottom: 30px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: bold;
+  color: #5c4033;
+  margin-bottom: 10px;
+}
+
+.tagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  background-color: #e0e0e0;
+  color: #5c4033;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 14px;
+}
+
+.eventList {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.eventCard {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #cccccc;
+}
+
+.eventTitle {
+  font-size: 16px;
+  font-weight: bold;
+  color: #5c4033;
+  margin-bottom: 5px;
+}
+
+.eventDescription {
+  font-size: 14px;
+  color: #666666;
+}
+
+.logoutButton {
+  width: 100%;
+  margin-top: 20px;
+  background-color: #5c4033;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.logoutButton:hover {
+  background-color: #5c4033;
 }
