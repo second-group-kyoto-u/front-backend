@@ -85,6 +85,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    justify-content: center;
   }
   
   .tag {
@@ -97,7 +98,7 @@
   
   .eventList {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 15px;
   }
   
@@ -106,6 +107,8 @@
     padding: 15px;
     border-radius: 8px;
     border: 1px solid #cccccc;
+    flex: 0 0 calc(50% - 7.5px);
+    box-sizing: border-box;
   }
   
   .eventTitle {
