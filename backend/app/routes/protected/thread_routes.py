@@ -12,66 +12,55 @@ thread_bp = Blueprint("thread", __name__)
 
 @thread_bp.route("/threads", methods=["GET"])
 def get_threads():
-    # ユーザー認証
-    user, error_response, error_code = get_authenticated_user()
-    if error_response:
-        return jsonify(error_response), error_code
-    
-    # クエリパラメータ
+    # 認証チェックなし
+    # user, error_response, error_code = get_authenticated_user()
+    # if error_response:
+    #     return jsonify(error_response), error_code
+
     page = request.args.get('page', default=1, type=int)
     per_page = request.args.get('per_page', default=10, type=int)
     area_id = request.args.get('area_id')
     tags = request.args.getlist('tags')
-    
-    # スレッド一覧を取得するクエリ
+
     query = Thread.query
-    
-    # エリアでフィルタリング
+
     if area_id:
         query = query.filter_by(area_id=area_id)
-    
-    # タグでフィルタリング
+
     if tags:
         for tag in tags:
-            # タグマスターからタグIDを取得
             tag_master = TagMaster.query.filter_by(tag_name=tag).first()
             if tag_master:
-                # タグとの関連付けを持つスレッドIDを検索
                 thread_ids = db.session.query(TagAssociation.entity_id).filter_by(
                     tag_id=tag_master.id,
                     entity_type='thread'
                 ).all()
                 thread_ids = [id[0] for id in thread_ids]
-                
-                # 該当するスレッドをフィルタリング
                 query = query.filter(Thread.id.in_(thread_ids))
-    
-    # 総数を取得
+
     total = query.count()
-    
-    # ページングを適用して最新のスレッドを取得
+
     offset = (page - 1) * per_page
     threads = query.order_by(Thread.published_at.desc()).offset(offset).limit(per_page).all()
-    
-    # 結果を整形
+
     result = []
     for thread in threads:
         thread_dict = thread.to_dict()
-        # ユーザーがそのスレッドをいいねしているかどうかを確認
-        thread_dict['is_hearted'] = UserHeartThread.query.filter_by(
-            user_id=user.id,
-            thread_id=thread.id
-        ).first() is not None
+        # ログインしてないのでいいね状態（is_hearted）は Falseにしておく
+        thread_dict['is_hearted'] = False
         result.append(thread_dict)
-    
+
     return jsonify({"threads": result, "total": total})
 
-@thread_bp.route("/thread/<thread_id>", methods=["GET"])
+
+@thread_bp.route("/<thread_id>", methods=["GET"])
 def get_thread(thread_id):
-    # ユーザー認証
-    user, error_response, error_code = get_authenticated_user()
-    if error_response:
-        return jsonify(error_response), error_code
+    # 認証トライする（失敗してもOK）
+    user = None
+    try:
+        user, _, _ = get_authenticated_user()
+    except Exception:
+        user = None
     
     # スレッドの取得
     thread = Thread.query.get(thread_id)
@@ -106,11 +95,14 @@ def get_thread(thread_id):
                 'name': tag.tag_name
             })
     
-    # いいねしているかどうかを確認
-    is_hearted = UserHeartThread.query.filter_by(
-        user_id=user.id,
-        thread_id=thread_id
-    ).first() is not None
+    # ログインしている場合だけいいね判定
+    if user:
+        is_hearted = UserHeartThread.query.filter_by(
+            user_id=user.id,
+            thread_id=thread_id
+        ).first() is not None
+    else:
+        is_hearted = False
     
     # thread_dataにタグといいね情報を追加
     thread_data['tags'] = tags
@@ -122,7 +114,7 @@ def get_thread(thread_id):
         "messages": messages_data
     })
 
-@thread_bp.route("/thread", methods=["POST"])
+@thread_bp.route("/", methods=["POST"])
 def create_thread():
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -201,7 +193,45 @@ def create_thread():
         "thread_id": thread.id
     })
 
-@thread_bp.route("/thread/<thread_id>/message", methods=["POST"])
+@thread_bp.route("/<thread_id>", methods=["DELETE"])
+def delete_thread(thread_id):
+    # ユーザー認証
+    user, error_response, error_code = get_authenticated_user()
+    if error_response:
+        return jsonify(error_response), error_code
+
+    # スレッドの取得
+    thread = Thread.query.get(thread_id)
+    if not thread:
+        return jsonify({"error": "スレッドが見つかりません"}), 404
+
+    # スレッドの所有者だけが削除できるようにする
+    if thread.author_id != user.id:
+        return jsonify({"error": "このスレッドを削除する権限がありません"}), 403
+
+    # 関連するメッセージを先に削除
+    ThreadMessage.query.filter_by(thread_id=thread_id).delete()
+
+    # 関連するいいねも削除
+    UserHeartThread.query.filter_by(thread_id=thread_id).delete()
+
+    # 関連するタグ関連も削除
+    TagAssociation.query.filter_by(entity_id=thread_id, entity_type='thread').delete()
+
+    # スレッド本体を削除
+    db.session.delete(thread)
+    try:
+        # データ削除処理
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "スレッド削除中にエラーが発生しました"}), 500
+
+
+    return jsonify({"message": "スレッドを削除しました"})
+
+
+@thread_bp.route("/<thread_id>/message", methods=["POST"])
 def post_thread_message(thread_id):
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -247,7 +277,7 @@ def post_thread_message(thread_id):
         "message_id": thread_message.id
     })
 
-@thread_bp.route("/thread/<thread_id>/heart", methods=["POST"])
+@thread_bp.route("/<thread_id>/heart", methods=["POST"])
 def heart_thread(thread_id):
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -282,7 +312,7 @@ def heart_thread(thread_id):
         "thread": thread.to_dict()
     })
 
-@thread_bp.route("/thread/<thread_id>/unheart", methods=["POST"])
+@thread_bp.route("/<thread_id>/unheart", methods=["POST"])
 def unheart_thread(thread_id):
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()

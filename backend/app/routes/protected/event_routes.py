@@ -12,10 +12,10 @@ event_bp = Blueprint("event", __name__)
 
 @event_bp.route("/events", methods=["GET"])
 def get_events():
-    # ユーザー認証
-    user, error_response, error_code = get_authenticated_user()
-    if error_response:
-        return jsonify(error_response), error_code
+    # 認証チェックなし
+    # user, error_response, error_code = get_authenticated_user()
+    # if error_response:
+    #     return jsonify(error_response), error_code
     
     # クエリパラメータの取得
     area_id = request.args.get('area_id')
@@ -58,13 +58,16 @@ def get_events():
     
     return jsonify(result)
 
-@event_bp.route("/event/<event_id>", methods=["GET"])
+@event_bp.route("/<event_id>", methods=["GET"])
 def get_event(event_id):
-    # ユーザー認証
+    # トークルームへ遷移する権利があるかの検証に用いる
     user, error_response, error_code = get_authenticated_user()
-    if error_response:
-        return jsonify(error_response), error_code
     
+    # 認証に失敗しても OK（エラーを返さず、未ログイン状態として進める）
+    if error_response and error_code == 401:
+        user = None
+
+
     # イベントの取得
     event = Event.query.get(event_id)
     if not event:
@@ -74,10 +77,27 @@ def get_event(event_id):
     if event.is_deleted:
         return jsonify({"error": "このイベントは削除されています"}), 404
     
-    # イベントデータを返す
-    return jsonify(event.to_dict())
+    # メッセージも取得！
+    messages = EventMessage.query.filter_by(event_id=event_id).order_by(EventMessage.timestamp.asc()).all()
+    messages_data = [message.to_dict() for message in messages]
 
-@event_bp.route("/event", methods=["POST"])
+
+    # イベントの参加者かどうか
+    is_joined = False
+
+    if user:
+        is_joined = UserMemberGroup.query.filter_by(
+            user_id=user.id,
+            event_id=event_id
+    ).first() is not None
+
+    return jsonify({
+        "event": event.to_dict(),
+        "messages": [message.to_dict() for message in messages],
+        "is_joined": is_joined
+    })
+
+@event_bp.route("/", methods=["POST"])
 def create_event():
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -154,7 +174,7 @@ def create_event():
         "event": event.to_dict()
     })
 
-@event_bp.route("/event/<event_id>/join", methods=["POST"])
+@event_bp.route("/<event_id>/join", methods=["POST"])
 def join_event(event_id):
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -208,7 +228,7 @@ def join_event(event_id):
         "event": event.to_dict()
     })
 
-@event_bp.route("/event/<event_id>/leave", methods=["POST"])
+@event_bp.route("/<event_id>/leave", methods=["POST"])
 def leave_event(event_id):
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -257,7 +277,7 @@ def leave_event(event_id):
         "message": "イベントから退出しました"
     })
 
-@event_bp.route("/event/<event_id>/start", methods=["POST"])
+@event_bp.route("/<event_id>/start", methods=["POST"])
 def start_event(event_id):
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -323,7 +343,7 @@ def start_event(event_id):
         "event": event.to_dict()
     })
 
-@event_bp.route("/event/<event_id>/end", methods=["POST"])
+@event_bp.route("/<event_id>/end", methods=["POST"])
 def end_event(event_id):
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -367,3 +387,28 @@ def end_event(event_id):
         "message": "イベントを終了しました",
         "event": event.to_dict()
     }) 
+
+@event_bp.route("/<event_id>/message", methods=["POST"])
+def send_event_message(event_id):
+    user, error_response, error_code = get_authenticated_user()
+    if error_response:
+        return jsonify(error_response), error_code
+
+    data = request.get_json()
+    content = data.get('content')
+    image_id = data.get('image_id')
+    message_type = data.get('message_type', 'text')
+
+    new_message = EventMessage(
+        id=str(uuid.uuid4()),
+        event_id=event_id,
+        sender_user_id=user.id,
+        content=content,
+        timestamp=datetime.now(timezone.utc),
+        message_type=message_type,
+        image_id=image_id,
+    )
+    db.session.add(new_message)
+    db.session.commit()
+
+    return jsonify(new_message.to_dict())

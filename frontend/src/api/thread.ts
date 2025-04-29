@@ -99,6 +99,15 @@ export const createThread = async (
   return res.data
 }
 
+// スレッドを削除するAPI
+export const deleteThread = async (
+  threadId: string
+): Promise<{ message: string }> => {
+  const res = await axios.delete(`thread/${threadId}`)
+  return res.data as { message: string }
+}
+
+
 // スレッドにメッセージを投稿するAPI
 export type PostMessageRequest = {
   content: string
