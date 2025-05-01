@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from app.utils.jwt import generate_token, decode_token
 from app.models.user import get_user_by_email, get_user_by_id, User
 from app.models import db
-from app.utils.email import send_email_verification, send_password_reset_email, verify_token
+from backend.app.utils.email_certification import send_email_verification, send_password_reset_email, verify_token
 import uuid
 from datetime import datetime, timezone
 
@@ -83,6 +83,9 @@ def verify_email(token):
     user = get_user_by_id(user_id)
     if not user:
         return jsonify({"error": "ユーザーが見つかりません"}), 404
+    # 既に登録済みのメールアドレスである場合
+    if user.is_certificated:
+        return jsonify({"error": "既に認証済みのメールアドレスです"}), 409
     
     # メール認証を完了
     user.verify_email()
