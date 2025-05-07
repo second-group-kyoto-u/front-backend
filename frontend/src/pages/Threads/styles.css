@@ -79,7 +79,14 @@
   align-items: center;
   gap: 4px;
   color: #666;
+  cursor: pointer;
+  transition: transform 0.1s ease-in-out;
 }
+
+.action-button:hover {
+  transform: scale(1.1);
+}
+
 
 .create-button {
   position: fixed;

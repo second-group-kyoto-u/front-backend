@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { getThreadDetail, postMessage, heartThread, unheartThread, ThreadDetailResponse } from '@/api/thread'
 import { uploadImage } from '@/api/upload'
+import styles from './ThreadDetail.module.css';
 
 function ThreadDetailPage() {
   const { threadId } = useParams<{ threadId: string }>()

@@ -1,0 +1,101 @@
+.pageBackground {
+    min-height: 100vh;
+    background-color: #f9f7f1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 30px;
+  }
+  
+  .container {
+    max-width: 600px;
+    width: 100%;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .title {
+    text-align: center;
+    color: #5c4033;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .formGroup {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .formGroup label {
+    color: #5c4033;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  .formGroup input,
+  .formGroup textarea,
+  .formGroup select {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #cccccc;
+    font-size: 16px;
+    color: #5c4033;
+    background: #ffffff;
+  }
+  
+  .note {
+    font-size: 12px;
+    color: #999;
+    margin-top: 4px;
+  }
+  
+  .submitButton {
+    margin-top: 20px;
+    background-color: #5c4033;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 9999px; /* 完全圓形的兩側 */
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .submitButton:hover {
+    background-color: #3e2b22;
+  }
+  
+  .visibility-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .visibility-section > .formGroup select {
+    margin-top: 4px;
+  }
+
+  .sectionLabel {
+    font-size: 16px;
+    font-weight: bold;
+    color: #5c4033;
+    margin-bottom: 8px;
+  }
+  
+  .subLabel {
+    font-size: 14px;
+    font-weight: 500;
+    color: #5c4033;
+    margin-bottom: 4px;
+  }
+  
+  

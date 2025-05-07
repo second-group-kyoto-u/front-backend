@@ -14,11 +14,9 @@ function ThreadsPage() {
   const [page, setPage] = useState(1)
   const perPage = 10
 
-  // スレッドページの閲覧は認証なし
   useEffect(() => {
     fetchThreads()
   }, [page])
-  
 
   const fetchThreads = async () => {
     setLoading(true)
@@ -38,6 +36,16 @@ function ThreadsPage() {
     navigate(`/thread/${threadId}`)
   }
 
+  const handleLike = (threadId: string) => {
+    const updatedThreads = threads.map(thread => {
+      if (thread.id === threadId) {
+        return { ...thread, hearts_count: thread.hearts_count + 1 }
+      }
+      return thread
+    })
+    setThreads(updatedThreads)
+  }
+
   const handleCreateThread = () => {
     if (!isAuthenticated) {
       navigate('/login')
@@ -46,7 +54,6 @@ function ThreadsPage() {
     }
   }
 
-  // ページネーション
   const totalPages = Math.ceil(total / perPage)
   const handlePreviousPage = () => {
     if (page > 1) setPage(page - 1)
@@ -75,30 +82,26 @@ function ThreadsPage() {
             <p className="text-center p-4">スレッドがありません</p>
           ) : (
             threads.map((thread) => (
-              <div 
-                key={thread.id}
-                className="thread-item"
-                onClick={() => handleViewThread(thread.id)}
-              >
+              <div key={thread.id} className="thread-item">
                 <div className="thread-author">
                   <div className="author-avatar"></div>
                   <div className="author-name">{thread.created_by.user_name}</div>
                   <div className="flex-grow"></div>
                   <div className="thread-time">
-                    {new Date(thread.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    {new Date(thread.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
-                
+
                 <div className="thread-content">
                   {thread.title}
                 </div>
-                
+
                 <div className="thread-actions">
-                  <div className="action-button">
+                  <div className="action-button" onClick={() => handleLike(thread.id)}>
                     <span>❤️</span>
                     <span>{thread.hearts_count}</span>
                   </div>
-                  <div className="action-button">
+                  <div className="action-button" onClick={() => handleViewThread(thread.id)}>
                     <span>💬</span>
                     <span>{thread.messages_count}</span>
                   </div>
@@ -117,19 +120,19 @@ function ThreadsPage() {
       </button>
 
       <div className="navigation">
-        <div className={`nav-item`}>
+        <div className="nav-item">
           <div>👥</div>
           <div>イベント</div>
         </div>
-        <div className={`nav-item active`}>
+        <div className="nav-item active">
           <div>📝</div>
           <div>スレッド</div>
         </div>
-        <div className={`nav-item`}>
+        <div className="nav-item">
           <div>💬</div>
           <div>トーク</div>
         </div>
-        <div className={`nav-item`}>
+        <div className="nav-item">
           <div>👤</div>
           <div>マイページ</div>
         </div>
@@ -138,4 +141,4 @@ function ThreadsPage() {
   )
 }
 
-export default ThreadsPage 
+export default ThreadsPage

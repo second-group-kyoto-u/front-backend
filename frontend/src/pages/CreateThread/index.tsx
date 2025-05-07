@@ -1,193 +1,119 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth'
 import { createThread } from '@/api/thread'
-import { uploadImage } from '@/api/upload'
+import { useAuth } from '@/hooks/useAuth'
+import styles from './CreateThread.module.css'
 
 function CreateThreadPage() {
-  const { isAuthenticated } = useAuth()
-  const navigate = useNavigate()
-  const [title, setTitle] = useState('')
-  const [message, setMessage] = useState('')
-  const [tags, setTags] = useState<string[]>([])
-  const [newTag, setNewTag] = useState('')
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [tag, setTag] = useState('')
+  const [age, setAge] = useState<'all' | 'teens' | '20s' | '30s' | '40s' | '50s' | '60s+'>('all')
+  const [gender, setGender] = useState<'all' | 'male' | 'female' | 'other'>('all')
+  const [followersOnly, setFollowersOnly] = useState(false)
+  const [content, setContent] = useState('')
   const [error, setError] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  if (!isAuthenticated) {
-    navigate('/login')
-    return null
-  }
-
-  const handleAddTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()])
-      setNewTag('')
-    }
-  }
-
-  const handleRemoveTag = (tag: string) => {
-    setTags(tags.filter((t: string) => t !== tag))
-  }
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0])
-    }
-  }
+  const { token } = useAuth()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (isSubmitting) return
-    if (!title.trim() || !message.trim()) {
-      setError('タイトルとメッセージは必須です')
+    if (!content.trim()) {
+      setError('内容を入力してください')
       return
     }
 
-    setIsSubmitting(true)
     try {
-      let imageId: string | undefined
-
-      if (selectedFile) {
-        // 画像をアップロード
-        const uploadResult = await uploadImage(selectedFile)
-        imageId = uploadResult.image.id
-      }
-
-      // スレッドを作成
-      const result = await createThread({
-        title: title.trim(),
-        message: message.trim(),
-        tags,
-        ...(imageId && { image_id: imageId }),
-      })
-
-      // 作成したスレッドの詳細ページに遷移
-      navigate(`/thread/${result.thread_id}`)
+      await createThread({
+        tag,
+        content,
+        visibility: {
+          age,
+          gender,
+          followersOnly,
+        },
+      }, token!)
+      navigate('/threads')
     } catch (err: any) {
-      console.error('スレッド作成エラー:', err)
       setError('スレッドの作成に失敗しました')
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
-  const handleCancel = () => {
-    navigate('/threads')
-  }
-
   return (
-    <div className="p-4">
-      <div className="mb-4">
-        <button onClick={handleCancel} className="text-blue-500">
-          ← スレッド一覧に戻る
-        </button>
-      </div>
+    <div className={styles.pageBackground}>
+      <div className={styles.container}>
+        <h2 className={styles.title}>スレッド作成</h2>
 
-      <h1 className="text-xl font-bold mb-4">新規スレッド作成</h1>
+        {error && <p className={styles.error}>{error}</p>}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {error && <p className="text-red-500">{error}</p>}
-
-        <div>
-          <label className="block mb-1 font-medium">タイトル*</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
-            className="w-full border rounded p-2"
-            placeholder="スレッドのタイトル"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1 font-medium">メッセージ*</label>
-          <textarea
-            value={message}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(e.target.value)}
-            className="w-full border rounded p-2"
-            placeholder="スレッドの最初のメッセージ"
-            rows={5}
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1 font-medium">画像（任意）</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="w-full"
-          />
-          {selectedFile && (
-            <p className="mt-1 text-sm text-gray-600">
-              選択済み: {selectedFile.name}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label className="block mb-1 font-medium">タグ（任意）</label>
-          <div className="flex">
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
             <input
               type="text"
-              value={newTag}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTag(e.target.value)}
-              className="flex-1 border rounded-l p-2"
-              placeholder="タグを入力"
+              value={tag}
+              onChange={(e) => setTag(e.target.value)}
+              placeholder="種類（タグ）"
             />
-            <button
-              type="button"
-              onClick={handleAddTag}
-              className="bg-blue-500 text-white px-4 py-2 rounded-r"
-            >
-              追加
-            </button>
+          </div>
+          
+          <div className={styles.visibilitySection}>
+            <label className={styles.sectionLabel}>公開範囲</label>
+
+            {/* ユーザー範囲 */}
+            <div className={styles.formGroup}>
+              <label className={styles.subLabel}>ユーザー</label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={followersOnly}
+                  onChange={(e) => setFollowersOnly(e.target.checked)}
+                />
+                フォロワーのみ
+              </label>
+            </div>
+
+            {/* 性別 */}
+            <div className={styles.formGroup}>
+              <label className={styles.subLabel}>性別</label>
+              <select value={gender} onChange={(e) => setGender(e.target.value as any)}>
+                <option value="all">すべての性別</option>
+                <option value="male">男性</option>
+                <option value="female">女性</option>
+                <option value="other">その他</option>
+              </select>
+            </div>
+
+            {/* 年齢 */}
+            <div className={styles.formGroup}>
+              <label className={styles.subLabel}>年齢</label>
+              <select value={age} onChange={(e) => setAge(e.target.value as any)}>
+                <option value="all">すべての年齢</option>
+                <option value="teens">10代</option>
+                <option value="20s">20代</option>
+                <option value="30s">30代</option>
+                <option value="40s">40代</option>
+                <option value="50s">50代</option>
+                <option value="60s+">60代以上</option>
+              </select>
+            </div>
           </div>
 
-          {tags.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {tags.map((tag: string) => (
-                <div
-                  key={tag}
-                  className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-sm flex items-center"
-                >
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveTag(tag)}
-                    className="ml-1 text-gray-500 hover:text-gray-700"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+          <div className={styles.formGroup}>
+            <label>内容</label>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={4}
+              placeholder="いまどうしてる？"
+              required
+            />
+          </div>
 
-        <div className="flex gap-4 pt-4">
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="bg-gray-500 text-white px-4 py-2 rounded"
-          >
-            キャンセル
+          <button type="submit" className={styles.submitButton}>
+            投稿する
           </button>
-          <button
-            type="submit"
-            disabled={isSubmitting || !title.trim() || !message.trim()}
-            className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
-          >
-            {isSubmitting ? '作成中...' : 'スレッドを作成'}
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   )
 }
 
-export default CreateThreadPage 
+export default CreateThreadPage
