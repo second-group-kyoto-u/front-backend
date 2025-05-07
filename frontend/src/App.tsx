@@ -2,6 +2,7 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/Login'
 import Mypage from './pages/Mypage'
+import EditMypage from './pages/EditMypage'
 import ThreadsPage from './pages/Threads'
 import ThreadDetailPage from './pages/ThreadDetail'
 import CreateThreadPage from './pages/CreateThread'
@@ -12,6 +13,7 @@ import RegisterPage from './pages/Register'
 import './App.css'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AuthRoute } from './components/AuthRoute'
+import Layout from './components/Layout'
 
 function App(): JSX.Element {
   console.log('🔧 App - ルーティングレンダリング中')
@@ -34,33 +36,47 @@ function App(): JSX.Element {
           path="/mypage"
           element={
             <ProtectedRoute>
-              <Mypage />
+              <Layout>
+                <Mypage />
+              </Layout>
             </ProtectedRoute>
           }
         />
 
+        {/* プロフィール編集ページ */}
+        <Route 
+          path="/edit-mypage" 
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <EditMypage />
+              </Layout>
+            </ProtectedRoute>
+          } 
+        />
+
         {/* スレッドページ（誰でも閲覧可能） */}
-        <Route path="/threads" element={<ThreadsPage />} />
-        <Route path="/thread/:threadId" element={<ThreadDetailPage />} />
+        <Route path="/threads" element={<Layout><ThreadsPage /></Layout>} />
+        <Route path="/thread/:threadId" element={<Layout><ThreadDetailPage /></Layout>} />
 
         {/* スレッド作成（ログイン必須） */}
         <Route
           path="/threads/create"
           element={
             <ProtectedRoute>
-              <CreateThreadPage />
+              <Layout>
+                <CreateThreadPage />
+              </Layout>
             </ProtectedRoute>
           }
         />
 
         {/* イベント（誰でも閲覧可能） */}
-        <Route path="/events" element={<EventsPage />} />
-        <Route path="/event/:eventId" element={<EventDetailPage />} />
-
+        <Route path="/events" element={<Layout><EventsPage /></Layout>} />
+        <Route path="/event/:eventId" element={<Layout><EventDetailPage /></Layout>} />
 
         {/* イベント参加者用トークルーム */}
-        <Route path="/event/:eventId/talk" element={<EventTalkPage />} />
-
+        <Route path="/event/:eventId/talk" element={<Layout><EventTalkPage /></Layout>} />
 
         {/* 登録ページ */}
         <Route path="/register" element={<RegisterPage />} />
