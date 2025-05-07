@@ -62,9 +62,9 @@ def mypage():
         "user_name": user.user_name,
         "profile_message": user.profile_message or "",
         "profile_image_url": user.user_image_url or "",
-        "age": 28,
-        "location":"東京都",
-        "gender":"男性",
+        "age": 999,
+        "location":"sample area",
+        "gender":"sample gender",
     }
 
     # イベントデータをJSON形式で返す
