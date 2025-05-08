@@ -13,53 +13,46 @@ import RegisterPage from './pages/Register'
 import './App.css'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AuthRoute } from './components/AuthRoute'
-import Layout from './components/Layout'
+import Layout from './components/Layout/Layout.tsx' // 固定メニューを全ページに共通化するためのレイアウト
 
 function App(): JSX.Element {
-  console.log('🔧 App - ルーティングレンダリング中')
-
   return (
     <Router>
       <Routes>
         {/* ログインページ（未ログインユーザー向け） */}
-        <Route 
-          path="/login" 
+        <Route
+          path="/login"
           element={
             <AuthRoute>
               <LoginPage />
             </AuthRoute>
-          } 
-        />
-
-        {/* マイページ（ログイン済みのみ） */}
-        <Route
-          path="/mypage"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Mypage />
-              </Layout>
-            </ProtectedRoute>
           }
         />
 
-        {/* プロフィール編集ページ */}
-        <Route 
-          path="/edit-mypage" 
+        {/* 登録ページ */}
+        <Route path="/register" element={<RegisterPage />} />
+
+        {/* スレッド一覧（誰でも閲覧可能） */}
+        <Route
+          path="/threads"
           element={
-            <ProtectedRoute>
-              <Layout>
-                <EditMypage />
-              </Layout>
-            </ProtectedRoute>
-          } 
+            <Layout>
+              <ThreadsPage />
+            </Layout>
+          }
         />
 
-        {/* スレッドページ（誰でも閲覧可能） */}
-        <Route path="/threads" element={<Layout><ThreadsPage /></Layout>} />
-        <Route path="/thread/:threadId" element={<Layout><ThreadDetailPage /></Layout>} />
+        {/* スレッド詳細 */}
+        <Route
+          path="/thread/:threadId"
+          element={
+            <Layout>
+              <ThreadDetailPage />
+            </Layout>
+          }
+        />
 
-        {/* スレッド作成（ログイン必須） */}
+        {/* スレッド作成（要ログイン） */}
         <Route
           path="/threads/create"
           element={
@@ -71,17 +64,61 @@ function App(): JSX.Element {
           }
         />
 
-        {/* イベント（誰でも閲覧可能） */}
-        <Route path="/events" element={<Layout><EventsPage /></Layout>} />
-        <Route path="/event/:eventId" element={<Layout><EventDetailPage /></Layout>} />
+        {/* イベント一覧（誰でも閲覧可能） */}
+        <Route
+          path="/events"
+          element={
+            <Layout>
+              <EventsPage />
+            </Layout>
+          }
+        />
 
-        {/* イベント参加者用トークルーム */}
-        <Route path="/event/:eventId/talk" element={<Layout><EventTalkPage /></Layout>} />
+        {/* イベント詳細 */}
+        <Route
+          path="/event/:eventId"
+          element={
+            <Layout>
+              <EventDetailPage />
+            </Layout>
+          }
+        />
 
-        {/* 登録ページ */}
-        <Route path="/register" element={<RegisterPage />} />
+        {/* イベントトーク */}
+        <Route
+          path="/event/:eventId/talk"
+          element={
+            <Layout>
+              <EventTalkPage />
+            </Layout>
+          }
+        />
 
-        {/* 初期表示はマイページへ（ログインが必要） */}
+        {/* マイページ */}
+        <Route
+          path="/mypage"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Mypage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* プロフィール編集 */}
+        <Route
+          path="/edit-mypage"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <EditMypage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* 初期表示：マイページへ */}
         <Route
           path="/"
           element={
@@ -91,7 +128,7 @@ function App(): JSX.Element {
           }
         />
 
-        {/* 404ルート（存在しないパス） */}
+        {/* 404 */}
         <Route path="*" element={<div>404 - ページが見つかりません</div>} />
       </Routes>
     </Router>
