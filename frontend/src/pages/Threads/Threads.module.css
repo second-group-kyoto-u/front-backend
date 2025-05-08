@@ -14,7 +14,7 @@
   width: 100%;
   border-bottom: 1px solid #ddd;
   display: flex;
-  justify-content: space-between;
+  justify-content: center; 
   align-items: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
@@ -29,6 +29,7 @@
   flex: 1;
   width: 100%;
   overflow-y: auto;
+  max-height: calc(100vh - 180px); 
   padding: 10px;
 }
 
@@ -75,18 +76,21 @@
 }
 
 .action-button {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
   color: #666;
+  font-size: 14px;
+  border: none;
+  background: none;
   cursor: pointer;
-  transition: transform 0.1s ease-in-out;
+  padding: 4px 8px;
+  transition: transform 0.2s ease;
 }
 
 .action-button:hover {
   transform: scale(1.1);
 }
-
 
 .create-button {
   position: fixed;
@@ -95,14 +99,19 @@
   width: 50px;
   height: 50px;
   border-radius: 25px;
-  background-color: #fff;
-  color: #000;
+  background-color: #5c4033;
+  color: white;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 24px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  border: 1px dashed #ccc;
+  border: none;
+  cursor: pointer;
+}
+
+.create-button:hover {
+  background-color: #3e2b22;
 }
 
 .navigation {
@@ -125,8 +134,19 @@
   align-items: center;
   font-size: 12px;
   color: #666;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.nav-item:hover {
+  color: #000;
+}
+
+.nav-item div {
+  font-size: 10px;
 }
 
 .nav-item.active {
   color: #f44336;
-} 
+  font-weight: bold;
+}
