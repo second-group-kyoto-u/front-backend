@@ -10,8 +10,8 @@ function ThreadsPage() {
   const [threads, setThreads] = useState<Thread[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [total, setTotal] = useState(0)
-  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0) //しばらく使ってない
+  const [page, setPage] = useState(1)　//しばらく使ってない
   const perPage = 10
 
   useEffect(() => {
@@ -40,7 +40,7 @@ function ThreadsPage() {
     isAuthenticated ? navigate('/threads/create') : navigate('/login')
   }
 
-  const handleLike = (e: React.MouseEvent, threadId: string) => {
+  const handleLike = (e: React.MouseEvent<HTMLButtonElement>, threadId: string) => {
     e.stopPropagation()
     setThreads((prev) =>
       prev.map((t) =>
@@ -49,7 +49,7 @@ function ThreadsPage() {
     )
   }
 
-  const handleReply = (e: React.MouseEvent, threadId: string) => {
+  const handleReply = (e: React.MouseEvent<HTMLButtonElement>, threadId: string) => {
     e.stopPropagation()
     navigate(`/thread/${threadId}`)
   }
@@ -116,7 +116,7 @@ function ThreadsPage() {
         <a href="/events" className={styles.navItem}>
           👥<div>イベント</div>
         </a>
-        <a href="/threads" className={`${styles.navItem} ${style.active}`}>
+        <a href="/threads" className={`${styles.navItem} ${styles.active}`}>
           📝<div>スレッド</div>
         </a>
         <a href="/talk" className={styles.navItem}>
