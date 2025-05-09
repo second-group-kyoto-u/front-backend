@@ -76,16 +76,16 @@
   
   .logoutButton {
     width: 100%;
-    margin-top: 30px;
-    background-color: #d9534f;
+    margin-top: 20%;
+    background-color: #5c4033;
     color: white;
     border: none;
     padding: 12px;
-    border-radius: 8px;
+    border-radius: 9999px;
     cursor: pointer;
   }
   
   .logoutButton:hover {
-    background-color: #c9302c;
+    background-color: #5c4033;
   }
   
