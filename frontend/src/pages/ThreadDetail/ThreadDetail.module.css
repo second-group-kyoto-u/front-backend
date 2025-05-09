@@ -17,11 +17,11 @@
   padding: 0;
 }
 
-.threadHeader {
-  background-color: #fff;
-  border-radius: 8px;
+.threadCard {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -33,14 +33,9 @@
   color: #5c4033;
 }
 
-.threadTimestamp {
+.threadMeta {
   font-size: 12px;
   color: #888;
-}
-
-.threadAuthor {
-  font-size: 14px;
-  color: #5c4033;
 }
 
 .tagsContainer {
@@ -72,24 +67,22 @@
   color: #e53935;
 }
 
-.notHearted {
-  background-color: #eee;
-  color: #666;
-}
-
-.messageSection {
+.messageSection,
+.messagesSection {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.messageSection h2 {
+.messageSection h2,
+.sectionTitle {
   color: #5c4033;
   font-size: 18px;
   font-weight: bold;
 }
 
-.messageCard {
+.messageCard,
+.messageBubble {
   background-color: #ffffff;
   border: 1px solid #ddd;
   border-radius: 12px;
@@ -125,11 +118,6 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: box-shadow 0.2s ease;
-}
-
-.postForm:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .postForm h2 {
@@ -150,43 +138,26 @@
   padding: 10px;
   font-size: 14px;
   resize: none;
-  min-height: 60px;
-  transition: all 0.2s ease;
-}
-
-.textarea:focus {
-  border-color: #5c4033;
-  box-shadow: 0 0 0 3px rgba(92, 64, 51, 0.2);
-  outline: none;
-  min-height: 100px;
 }
 
 .fileInput {
   margin-bottom: 8px;
 }
 
-.submitButton {
-  background-color: transparent;
-  color: #5c4033;
-  padding: 10px 20px;
-  border-radius: 9999px;
-  border: 1px solid #cccccc;
+.submitButton,
+.sendButton {
+  background-color: #5c4033;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
   cursor: pointer;
   align-self: flex-end;
   font-weight: bold;
-  font-size: 16px;
-  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-.submitButton:hover:not(:disabled) {
-  background-color: #3e2c23;
-}
-
-.submitButton:active:not(:disabled) {
-  transform: scale(0.96);
-}
-
-.submitButton:disabled {
+.submitButton:disabled,
+.sendButton:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
@@ -195,18 +166,11 @@
   background-color: #e53935;
   color: white;
   padding: 10px 16px;
-  border-radius: 9999px;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
   font-weight: bold;
   align-self: flex-end;
-}
-
-.charCount {
-  font-size: 12px;
-  color: #888;
-  text-align: right;
-  margin-top: -8px;
 }
 
 .loading,
