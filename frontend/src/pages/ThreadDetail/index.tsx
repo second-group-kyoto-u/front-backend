@@ -139,7 +139,21 @@ function ThreadDetailPage() {
           placeholder="返信を入力..."
           rows={3}
         />
-        <input type="file" onChange={handleFileChange} className={styles.fileInput} />
+
+        <label className={styles.uploadLabel}>
+          画像をアップロード
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className={styles.hiddenFileInput}
+          />
+        </label>
+        
+        {selectedFile && (
+          <div className={styles.fileName}>選択済み: {selectedFile.name}</div>
+        )}
+
         <button type="submit" disabled={isSubmitting} className={styles.sendButton}>
           {isSubmitting ? '送信中...' : '返信'}
         </button>
