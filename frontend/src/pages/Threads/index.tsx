@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { getThreads, Thread } from '@/api/thread'
-import style from './Threads.module.css'
+import styles from './Threads.module.css'
 
 function ThreadsPage() {
   const { isAuthenticated } = useAuth()
@@ -55,30 +55,30 @@ function ThreadsPage() {
   }
 
   return (
-    <div className={style.threadsContainer}>
-      <div className={style.threadsHeader}>
-        <div className={style.threadsTitle}>スレッド</div>
+    <div className={styles.threadsContainer}>
+      <div className={styles.threadsHeader}>
+        <div className={styles.threadsTitle}>スレッド</div>
       </div>
 
       {loading ? (
-        <div className={style.loading}>読み込み中...</div>
+        <div className={styles.loading}>読み込み中...</div>
       ) : error ? (
-        <div className={style.error}>{error}</div>
+        <div className={styles.error}>{error}</div>
       ) : (
-        <div className={style.threadsList}>
+        <div className={styles.threadsList}>
           {threads.length === 0 ? (
-            <p className={style.noData}>スレッドがありません</p>
+            <p className={styles.noData}>スレッドがありません</p>
           ) : (
             threads.map((thread) => (
               <div
                 key={thread.id}
-                className={style.threadItem}
+                className={styles.threadItem}
                 onClick={() => handleViewThread(thread.id)}
               >
-                <div className={style.threadAuthor}>
-                  <div className={style.authorAvatar}></div>
-                  <div className={style.authorName}>{thread.created_by.user_name}</div>
-                  <div className={style.threadTime}>
+                <div className={styles.threadAuthor}>
+                  <div className={styles.authorAvatar}></div>
+                  <div className={styles.authorName}>{thread.created_by.user_name}</div>
+                  <div className={styles.threadTime}>
                     {new Date(thread.created_at).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
@@ -86,17 +86,17 @@ function ThreadsPage() {
                   </div>
                 </div>
 
-                <div className={style.threadContent}>{thread.title}</div>
+                <div className={styles.threadContent}>{thread.title}</div>
 
-                <div className={style.threadActions}>
+                <div className={styles.threadActions}>
                   <button
-                    className={style.actionButton}
+                    className={styles.actionButton}
                     onClick={(e) => handleLike(e, thread.id)}
                   >
                     ❤️ {thread.hearts_count}
                   </button>
                   <button
-                    className={style.actionButton}
+                    className={styles.actionButton}
                     onClick={(e) => handleReply(e, thread.id)}
                   >
                     💬 {thread.messages_count}
@@ -108,21 +108,21 @@ function ThreadsPage() {
         </div>
       )}
 
-      <button className={style.createButton} onClick={handleCreateThread}>
+      <button className={styles.createButton} onClick={handleCreateThread}>
         ＋
       </button>
 
-      <div className={style.navigation}>
-        <a href="/events" className={style.navItem}>
+      <div className={styles.navigation}>
+        <a href="/events" className={styles.navItem}>
           👥<div>イベント</div>
         </a>
-        <a href="/threads" className={`${style.navItem} ${style.active}`}>
+        <a href="/threads" className={`${styles.navItem} ${style.active}`}>
           📝<div>スレッド</div>
         </a>
-        <a href="/talk" className={style.navItem}>
+        <a href="/talk" className={styles.navItem}>
           💬<div>トーク</div>
         </a>
-        <a href="/mypage" className={style.navItem}>
+        <a href="/mypage" className={styles.navItem}>
           👤<div>マイページ</div>
         </a>
       </div>
