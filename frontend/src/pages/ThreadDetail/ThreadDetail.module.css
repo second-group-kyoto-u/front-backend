@@ -166,14 +166,15 @@
 }
 
 .submitButton {
-  background-color: #5c4033;
-  color: white;
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: none;
+  background-color: transparent;
+  color: #5c4033;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  border: 1px solid #cccccc;
   cursor: pointer;
   align-self: flex-end;
   font-weight: bold;
+  font-size: 16px;
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
@@ -194,7 +195,7 @@
   background-color: #e53935;
   color: white;
   padding: 10px 16px;
-  border-radius: 8px;
+  border-radius: 9999px;
   border: none;
   cursor: pointer;
   font-weight: bold;
