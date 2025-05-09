@@ -7,7 +7,7 @@ import { uploadImage } from '@/api/upload'
 import styles from './ThreadDetail.module.css'
 
 function ThreadDetailPage() {
-  const { threadId } = useParams<{ threadId: string }>()
+  const { threadId } = useParams<{ threadId?: string }>()
   const { token } = useAuth()
   const [threadData, setThreadData] = useState<ThreadDetailResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -20,14 +20,13 @@ function ThreadDetailPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (threadId) fetchThreadDetail()
+    if (threadId) fetchThreadDetail(threadId)
   }, [threadId])
 
-  const fetchThreadDetail = async () => {
-    if (!threadId) return
+  const fetchThreadDetail = async (id: string) => {
     setLoading(true)
     try {
-      const data = await getThreadDetail(threadId, token)
+      const data = await getThreadDetail(id, token)
       setThreadData(data)
     } catch {
       setError('スレッドの詳細取得に失敗しました')
@@ -42,7 +41,7 @@ function ThreadDetailPage() {
       threadData.thread.is_hearted
         ? await unheartThread(threadId, token)
         : await heartThread(threadId, token)
-      fetchThreadDetail()
+      fetchThreadDetail(threadId)
     } catch {
       setError('いいね処理に失敗しました')
     }
@@ -69,7 +68,7 @@ function ThreadDetailPage() {
         await postMessage(threadId, { content: uploadResult.image.id, message_type: 'image' }, token)
         setSelectedFile(null)
       }
-      fetchThreadDetail()
+      fetchThreadDetail(threadId)
     } catch {
       setError('メッセージの投稿に失敗しました')
     } finally {
@@ -78,13 +77,28 @@ function ThreadDetailPage() {
   }
 
   const handleDeleteThread = async () => {
-    if (!threadId || !window.confirm('本当にこのスレッドを削除しますか？')) return
+    if (!threadId) {
+      setError('スレッドIDが存在しません')
+      return
+    }
+
+    if (!token) {
+      setError('認証情報がありません')
+      return
+    }
+
+    const confirmed = window.confirm('本当にこのスレッドを削除しますか？')
+    if (!confirmed) return
+
     setIsDeleting(true)
+    setError('')
+
     try {
-      await deleteThread(threadId)
+      await deleteThread(threadId, token)
       alert('スレッドを削除しました')
       navigate('/threads')
-    } catch {
+    } catch (err) {
+      console.error('スレッド削除エラー:', err)
       setError('スレッドの削除に失敗しました')
     } finally {
       setIsDeleting(false)
@@ -165,7 +179,7 @@ function ThreadDetailPage() {
         {messageType === 'text' ? (
           <textarea
             value={newMessage}
-            onChange={e => setNewMessage(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNewMessage(e.target.value)}
             className={styles.textarea}
             placeholder="メッセージを入力"
             rows={3}

@@ -40,7 +40,7 @@ function ThreadsPage() {
     isAuthenticated ? navigate('/threads/create') : navigate('/login')
   }
 
-  const handleLike = (e: React.MouseEvent<HTMLButtonElement>, threadId: string) => {
+  const handleLike = (e: React.MouseEvent, threadId: string) => {
     e.stopPropagation()
     setThreads((prev) =>
       prev.map((t) =>
@@ -49,7 +49,7 @@ function ThreadsPage() {
     )
   }
 
-  const handleReply = (e: React.MouseEvent<HTMLButtonElement>, threadId: string) => {
+  const handleReply = (e: React.MouseEvent, threadId: string) => {
     e.stopPropagation()
     navigate(`/thread/${threadId}`)
   }
