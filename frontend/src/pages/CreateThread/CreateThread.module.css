@@ -8,7 +8,7 @@
   }
   
   .container {
-    max-width: 500px;
+    max-width: 600px;
     width: 100%;
     background: #ffffff;
     padding: 30px;
@@ -21,12 +21,6 @@
     color: #5c4033;
     font-size: 24px;
     font-weight: bold;
-    margin-bottom: 20px;
-  }
-  
-  .message {
-    text-align: center;
-    color: #5c4033;
     margin-bottom: 20px;
   }
   
@@ -58,34 +52,50 @@
     background: #ffffff;
   }
   
+  .note {
+    font-size: 12px;
+    color: #999;
+    margin-top: 4px;
+  }
+  
   .submitButton {
     margin-top: 20px;
-    background-color: transparent;
-    color: #5c4033;
-    border: 1px solid #cccccc;
-    padding: 10px 20px;
-    border-radius: 9999px;
+    background-color: #5c4033;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 9999px; /* 完全圓形的兩側 */
     font-weight: bold;
     font-size: 16px;
     cursor: pointer;
   }
   
   .submitButton:hover {
-    background-color: #f0f0f0;
+    background-color: #3e2b22;
   }
   
-  .logoutButton {
-    width: 100%;
-    margin-top: 20%;
-    background-color: #5c4033;
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 9999px;
-    cursor: pointer;
+  .visibility-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
   
-  .logoutButton:hover {
-    background-color: #5c4033;
+  .visibility-section > .formGroup select {
+    margin-top: 4px;
   }
+
+  .sectionLabel {
+    font-size: 16px;
+    font-weight: bold;
+    color: #5c4033;
+    margin-bottom: 8px;
+  }
+  
+  .subLabel {
+    font-size: 14px;
+    font-weight: 500;
+    color: #5c4033;
+    margin-bottom: 4px;
+  }
+  
   

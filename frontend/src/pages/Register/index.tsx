@@ -12,6 +12,7 @@ function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
 
+  /*const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => { ... }*/
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
 
