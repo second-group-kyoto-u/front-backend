@@ -10,61 +10,89 @@ from PIL import Image
 # reader = easyocr.Reader(['ja', 'en'])
 
 # 画像を読み込む(実験段階では画像をパスで指定しているが、実際はユーザが画像を送ってDBに登録？した画像を用いる)
-image_path = 'mynumber.jpg'
-image = cv2.imread(image_path)
+# image_path = 'mynumber.jpg'
+# image = cv2.imread(image_path)
 
-# YOLOで生年月日欄を検出
-model = YOLO('best.pt')
-results = model(image_path, conf=0.25)
-# YOLOで検出された領域のうち、最もスコアが高い1つを対象にする
-# box = results[0].boxes.xyxy[0].cpu().numpy().astype(int)
-# x1, y1, x2, y2 = box
-# cropped = image[y1:y2, x1:x2]
-# cv2.imwrite('cropped_birth.jpg', cropped)
+# # YOLOで生年月日欄を検出
+# model = YOLO('best.pt')
+# results = model(image_path, conf=0.25)
+# # YOLOで検出された領域のうち、最もスコアが高い1つを対象にする
+# # box = results[0].boxes.xyxy[0].cpu().numpy().astype(int)
+# # x1, y1, x2, y2 = box
+# # cropped = image[y1:y2, x1:x2]
+# # cv2.imwrite('cropped_birth.jpg', cropped)
 
-print(results)
-
-# # OCR実行
-# reader = easyocr.Reader(['ja'])
-# text_results = reader.readtext("学生証.jpg", contrast_ths=0.05, adjust_contrast=0.7, decoder='beamsearch', detail=0)  # テキストのみ抽出
-# joined_text = ''.join(text_results)
-
-# # --------------------------
-# # STEP 4: 生年月日を抽出し、年齢を計算
-# # --------------------------
-# def convert_to_date(text):
-#     # 和暦または西暦対応
-#     m = re.search(r'(昭和|平成|令和)?\s*(\d+)\s*[年\.]?\s*(\d+)\s*[月\.]?\s*(\d+)', text)
-#     if not m:
-#         return None
-#     era, year, month, day = m.groups()
-#     year, month, day = int(year), int(month), int(day)
-    
-#     if era == '昭和':
-#         year += 1925
-#     elif era == '平成':
-#         year += 1988
-#     elif era == '令和':
-#         year += 2018
-#     elif not era and year > 1900:  # 西暦
-#         pass
-#     else:
-#         return None
-    
-#     try:
-#         return datetime(year, month, day)
-#     except ValueError:
-#         return None
-
-# birth_date = convert_to_date(joined_text)
-
-# if birth_date:
-#     today = datetime.today()
-#     age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-#     print(f'抽出された生年月日: {birth_date.strftime("%Y-%m-%d")}')
-#     print(f'現在の年齢: {age}歳')
-# else:
-#     print('生年月日の抽出に失敗しました。')
+# print(results)
 
 
+# 処理を一つの関数に書く
+def age_certify(image):
+    # OCR実行
+    reader = easyocr.Reader(['ja'])
+    results = reader.readtext(image, contrast_ths=0.05, adjust_contrast=0.7, decoder='beamsearch', detail=0)  # テキストのみ抽出
+    # フラット化＆前後連結しておく
+    texts = [t.strip() for t in results if t.strip()]
+    windows = [''.join(texts[i:i+3]) for i in range(len(texts)-2)]
 
+    ocr_corrections = {
+        '呂': '8',
+    }
+    def correct_text(text):
+        for wrong, right in ocr_corrections.items():
+            text = text.replace(wrong, right)
+        return text
+
+    corrected_windows = [correct_text(text) for text in windows]
+    # print(corrected_windows)
+
+    # 和暦パターン
+    wareki_pattern = re.compile(r'(昭和|平成|令和)(\d{1,2})年\s*(\d{1,2})月\s*(\d{1,2})日')
+    # 西暦パターン
+    seireki_pattern = re.compile(r'(\d{4})[./年\s]*(\d{1,2})[./月\s]*(\d{1,2})日?')
+
+    candidate_dates = []
+
+    for chunk in corrected_windows:
+        # 和暦チェック
+        m = wareki_pattern.search(chunk)
+        # print(m)
+        if m:
+            era, y, m_, d = m.group(1), int(m.group(2)), int(m.group(3)), int(m.group(4))
+            if era == '昭和':
+                year = 1925 + y
+            elif era == '平成':
+                year = 1988 + y
+            elif era == '令和':
+                year = 2018 + y
+            try:
+                date = datetime(year, m_, d)
+                print(date)
+                candidate_dates.append(date)
+            except:
+                continue
+            continue  # 両方マッチしないように（重複防止）
+
+        # 西暦チェック
+        m = seireki_pattern.search(chunk)
+        if m:
+            y, m_, d = map(int, m.groups())
+            print(y, m, d)
+            try:
+                date = datetime(y, m_, d)
+                candidate_dates.append(date)
+            except:
+                continue
+    age = 0
+    # 最古の日付を生年月日とみなす
+    if candidate_dates:
+        birthdate = min(candidate_dates)
+        today = datetime.today()
+        age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+    #     print(f"推定生年月日: {birthdate.strftime('%Y年%m月%d日')}")
+    #     print(f"推定年齢: {age}歳")
+    # else:
+    #     print("日付情報が見つかりませんでした。")
+    return age
+
+
+# print(age_certify('mynumber.jpg'))
