@@ -3,114 +3,141 @@ import { useEffect, useState } from 'react'
 import { fetchProtected } from '@/api/auth/protected'
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
+import styles from './Mypage.module.css'
 
 interface UserData {
   id: string;
   user_name: string;
   profile_message: string;
   profile_image_url: string;
+  age: number;
+  location: string;
+  gender: string;
+}
+
+interface EventData {
+  id: string;
+  title: string;
+  description: string;
 }
 
 interface MypageResponse {
   user: UserData;
   joined_events_count: number;
   favorite_tags: string[];
+  created_events: EventData[];
   message: string;
 }
 
 function Mypage() {
   const { token, logout } = useAuth()
   const [userData, setUserData] = useState<UserData | null>(null)
-  const [message, setMessage] = useState('')
-  const [joinedEventsCount, setJoinedEventsCount] = useState(0)
   const [favoriteTags, setFavoriteTags] = useState<string[]>([])
+  const [createdEvents, setCreatedEvents] = useState<EventData[]>([])
+  const [message, setMessage] = useState('')
   const navigate = useNavigate()
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
-  
 
   useEffect(() => {
-    console.log('🧪 useEffect 発火: token =', token)
-  
-    if (token === null) return
-  
     if (!token) {
-      console.warn("⚠️ トークンが存在しません")
-      setMessage('トークンがありません')
+      logout()
+      navigate('/login')
       return
     }
   
     fetchProtected()
-      .then((res: MypageResponse) => {
-        console.log("✅ /protected/mypage 成功:", res)
-        setMessage(res.message)
-        setUserData(res.user)
-        setJoinedEventsCount(res.joined_events_count)
-        setFavoriteTags(res.favorite_tags)
-      })  
+      .then((res) => {
+        // 🔵 【注意】現在のfetchProtected()の戻り値型(ProtectedResponse)は、
+        // 期待するデータ型(MypageResponse)と一致していません。
+        // （特にcreated_eventsフィールドが存在しないため、型エラーになります）
+        // 仮対応として型アサーション(as MypageResponse)を使用していますが、
+        // 将来的にはバックエンドのレスポンス仕様を確認・統一する必要があります。
+        const data = res as MypageResponse
+        setUserData(data.user)
+        setFavoriteTags(data.favorite_tags)
+        setCreatedEvents(data.created_events)
+        setMessage(data.message)
+      })
       .catch((err) => {
-        console.error("❌ /protected/mypageエラー:", err.response ?? err)
-        setMessage('認証エラー')
+        console.error("❌ 認証エラー:", err)
         logout()
         navigate('/login')
       })
   }, [token])
   
-  
-  
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
+
+  const handleShareProfile = () => {
+    navigator.clipboard.writeText(window.location.href)
+      .then(() => alert('プロフィールURLをコピーしました'))
+      .catch(() => alert('コピーに失敗しました'))
+  }
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">マイページ</h2>
-      
-      {message && <p className="mb-4">{message}</p>}
-      
-      {userData && (
-        <div className="mb-6">
-          <div className="flex items-center mb-4">
-            {userData.profile_image_url && (
-              <img 
-                src={userData.profile_image_url} 
-                alt="プロフィール画像" 
-                className="w-20 h-20 rounded-full object-cover mr-4" 
-              />
-            )}
-            <div>
-              <h3 className="text-lg font-semibold">{userData.user_name}</h3>
-              <p className="text-gray-600">{userData.profile_message}</p>
+    <div className={styles.pageBackground}>
+      <div className={styles.container}>
+        {message && <p className={styles.message}>{message}</p>}
+        {userData && (
+          <>
+            <div className={styles.profileHeader}>
+              {userData.profile_image_url && (
+                <img src={userData.profile_image_url} alt="プロフィール画像" className={styles.profileImage} />
+              )}
+              <h2 className={styles.userName}>{userData.user_name}</h2>
+              <p className={styles.profileMessage}>{userData.profile_message || "自己紹介未設定"}</p>
+
+              <div className={styles.buttonGroup}>
+                <button onClick={() => navigate('/edit-mypage')} className={styles.editButton}>
+                  プロフィールを編集
+                </button>
+                <button onClick={handleShareProfile} className={styles.shareButton}>
+                  プロフィールをシェア
+                </button>
+              </div>
             </div>
-          </div>
-          
-          <div className="mb-4">
-            <p className="font-medium">参加中のイベント数: {joinedEventsCount}</p>
-          </div>
-          
-          {favoriteTags.length > 0 && (
-            <div>
-              <p className="font-medium mb-2">お気に入りタグ:</p>
-              <div className="flex flex-wrap gap-2">
+
+            <div className={styles.userInfo}>
+              <p><strong>年齢:</strong> {userData.age}歳</p>
+              <p><strong>居住地:</strong> {userData.location}</p>
+              <p><strong>性別:</strong> {userData.gender}</p>
+            </div>
+
+            <div className={styles.tagsSection}>
+              <p className={styles.sectionTitle}>旅のキーワード</p>
+              <div className={styles.tagsList}>
                 {favoriteTags.map(tag => (
-                  <span 
-                    key={tag} 
-                    className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"
-                  >
-                    {tag}
-                  </span>
+                  <span key={tag} className={styles.tag}>{tag}</span>
                 ))}
               </div>
             </div>
-          )}
-        </div>
-      )}
-      
-      <button 
-        onClick={handleLogout} 
-        className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-      >
-        ログアウト
-      </button>
+
+            <div className={styles.eventsSection}>
+              <p className={styles.sectionTitle}>主催イベント</p>
+              {createdEvents.length > 0 ? (
+                <div className={styles.eventList}>
+                  {createdEvents.map(event => (
+                    <div key={event.id} className={styles.eventCard}>
+                      <h3 className={styles.eventTitle}>{event.title}</h3>
+                      <p className={styles.eventDescription}>{event.description}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>まだ主催したイベントがありません</p>
+              )}
+            </div>
+
+            <button onClick={handleLogout} className={styles.logoutButton}>
+              ログアウト
+            </button>
+          </>
+        )}
+
+        {!userData && <p>読み込み中...</p>}
+      </div>
     </div>
   )
 }

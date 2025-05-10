@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { getThreads, Thread } from '@/api/thread'
-import './styles.css'
+import styles from './Threads.module.css'
 
 function ThreadsPage() {
   const { isAuthenticated } = useAuth()
@@ -10,15 +10,13 @@ function ThreadsPage() {
   const [threads, setThreads] = useState<Thread[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [total, setTotal] = useState(0)
-  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0) //しばらく使ってない
+  const [page, setPage] = useState(1)　//しばらく使ってない
   const perPage = 10
 
-  // スレッドページの閲覧は認証なし
   useEffect(() => {
     fetchThreads()
   }, [page])
-  
 
   const fetchThreads = async () => {
     setLoading(true)
@@ -39,69 +37,70 @@ function ThreadsPage() {
   }
 
   const handleCreateThread = () => {
-    if (!isAuthenticated) {
-      navigate('/login')
-    } else {
-      navigate('/threads/create')
-    }
+    isAuthenticated ? navigate('/threads/create') : navigate('/login')
   }
 
-  // ページネーション
-  const totalPages = Math.ceil(total / perPage)
-  const handlePreviousPage = () => {
-    if (page > 1) setPage(page - 1)
+  const handleLike = (e: React.MouseEvent, threadId: string) => {
+    e.stopPropagation()
+    setThreads((prev) =>
+      prev.map((t) =>
+        t.id === threadId ? { ...t, hearts_count: t.hearts_count + 1 } : t
+      )
+    )
   }
-  const handleNextPage = () => {
-    if (page < totalPages) setPage(page + 1)
+
+  const handleReply = (e: React.MouseEvent, threadId: string) => {
+    e.stopPropagation()
+    navigate(`/thread/${threadId}`)
   }
 
   return (
-    <div className="threads-container">
-      <div className="threads-header">
-        <div className="threads-title">スレッド</div>
+    <div className={styles.threadsContainer}>
+      <div className={styles.threadsHeader}>
+        <div className={styles.threadsTitle}>スレッド</div>
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-40">
-          <p>読み込み中...</p>
-        </div>
+        <div className={styles.loading}>読み込み中...</div>
       ) : error ? (
-        <div className="flex justify-center items-center h-40">
-          <p className="text-red-500">{error}</p>
-        </div>
+        <div className={styles.error}>{error}</div>
       ) : (
-        <div className="threads-list">
+        <div className={styles.threadsList}>
           {threads.length === 0 ? (
-            <p className="text-center p-4">スレッドがありません</p>
+            <p className={styles.noData}>スレッドがありません</p>
           ) : (
             threads.map((thread) => (
-              <div 
+              <div
                 key={thread.id}
-                className="thread-item"
+                className={styles.threadItem}
                 onClick={() => handleViewThread(thread.id)}
               >
-                <div className="thread-author">
-                  <div className="author-avatar"></div>
-                  <div className="author-name">{thread.created_by.user_name}</div>
-                  <div className="flex-grow"></div>
-                  <div className="thread-time">
-                    {new Date(thread.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                <div className={styles.threadAuthor}>
+                  <div className={styles.authorAvatar}></div>
+                  <div className={styles.authorName}>{thread.created_by.user_name}</div>
+                  <div className={styles.threadTime}>
+                    {new Date(thread.created_at).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
                   </div>
                 </div>
-                
-                <div className="thread-content">
-                  {thread.title}
-                </div>
-                
-                <div className="thread-actions">
-                  <div className="action-button">
-                    <span>❤️</span>
-                    <span>{thread.hearts_count}</span>
-                  </div>
-                  <div className="action-button">
-                    <span>💬</span>
-                    <span>{thread.messages_count}</span>
-                  </div>
+
+                <div className={styles.threadContent}>{thread.title}</div>
+
+                <div className={styles.threadActions}>
+                  <button
+                    className={styles.actionButton}
+                    onClick={(e) => handleLike(e, thread.id)}
+                  >
+                    ❤️ {thread.hearts_count}
+                  </button>
+                  <button
+                    className={styles.actionButton}
+                    onClick={(e) => handleReply(e, thread.id)}
+                  >
+                    💬 {thread.messages_count}
+                  </button>
                 </div>
               </div>
             ))
@@ -109,33 +108,26 @@ function ThreadsPage() {
         </div>
       )}
 
-      <button 
-        className="create-button"
-        onClick={handleCreateThread}
-      >
-        +
+      <button className={styles.createButton} onClick={handleCreateThread}>
+        ＋
       </button>
 
-      <div className="navigation">
-        <div className={`nav-item`}>
-          <div>👥</div>
-          <div>イベント</div>
-        </div>
-        <div className={`nav-item active`}>
-          <div>📝</div>
-          <div>スレッド</div>
-        </div>
-        <div className={`nav-item`}>
-          <div>💬</div>
-          <div>トーク</div>
-        </div>
-        <div className={`nav-item`}>
-          <div>👤</div>
-          <div>マイページ</div>
-        </div>
+      <div className={styles.navigation}>
+        <a href="/events" className={styles.navItem}>
+          👥<div>イベント</div>
+        </a>
+        <a href="/threads" className={`${styles.navItem} ${styles.active}`}>
+          📝<div>スレッド</div>
+        </a>
+        <a href="/talk" className={styles.navItem}>
+          💬<div>トーク</div>
+        </a>
+        <a href="/mypage" className={styles.navItem}>
+          👤<div>マイページ</div>
+        </a>
       </div>
     </div>
   )
 }
 
-export default ThreadsPage 
+export default ThreadsPage

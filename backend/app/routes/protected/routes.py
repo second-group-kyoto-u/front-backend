@@ -61,12 +61,27 @@ def mypage():
         "id": user.id,
         "user_name": user.user_name,
         "profile_message": user.profile_message or "",
-        "profile_image_url": user.user_image_url or ""
+        "profile_image_url": user.user_image_url or "",
+        "age": 28,
+        "location":"東京都",
+        "gender":"男性",
     }
+
+    # イベントデータをJSON形式で返す
+    created_events = [
+    {
+        "id": event.id,
+        "title": event.title,
+        "description": event.description
+    }
+    for event in Event.query.filter_by(author_user_id=user.id).all()
+]
+
     
     return jsonify({
         "user": user_data,
         "joined_events_count": joined_events_count,
         "favorite_tags": favorite_tags,
+        "created_events": created_events,
         "message": f"ようこそ、{user.user_name}さん！"
     })

@@ -12,7 +12,6 @@ function LoginPage() {
   const navigate = useNavigate()
   const { login, isAuthenticated, isLoading } = useAuth()
 
-  // ✅ ログイン済みユーザーはリダイレクト
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
       console.log('✅ ログイン済みなのでマイページへ遷移')
@@ -41,39 +40,56 @@ function LoginPage() {
   }
 
   return (
-    <div className={styles.loginContainer}>
-      <h1>ログイン</h1>
-      <form onSubmit={handleSubmit} className={styles.loginForm}>
-        <div className={styles.formGroup}>
-          <label htmlFor="email">メールアドレス</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label htmlFor="password">パスワード</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        {error && <div className={styles.error}>{error}</div>}
-        <button type="submit" disabled={loading} className={styles.loginButton}>
-          {loading ? 'ログイン中...' : 'ログイン'}
-        </button>
-      </form>
+    <div className={styles.pageBackground}>
+      <div className={styles.loginContainer}>
+        <h1 className={styles.loginTitle}>ログイン</h1>
 
-      <div className={styles.links}>
-        <Link to="/threads" className={styles.featureLink}>スレッド一覧を見る</Link>
-        <Link to="/events" className={styles.featureLink}>イベント一覧を見る</Link>
-        <p>アカウントをお持ちでない方は <Link to="/register">新規登録</Link></p>
+        <form onSubmit={handleSubmit} className={styles.loginForm}>
+          <div className={styles.formGroup}>
+            <div className={styles.inputWrapper}>
+              <input
+                type="email"
+                id="email"
+                placeholder=" "
+                value={email}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                required
+              />
+              <label htmlFor="email">メールアドレス</label>
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <div className={styles.inputWrapper}>
+              <input
+                type="password"
+                id="password"
+                placeholder=" "
+                value={password}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                required
+              />
+              <label htmlFor="password">パスワード</label>
+            </div>
+            <div className={styles.forgotPassword}>
+              <Link to="/forgot-password">パスワードを忘れた方はこちら</Link>
+            </div>
+          </div>
+
+          {error && <div className={styles.error}>{error}</div>}
+
+          <button type="submit" disabled={loading} className={styles.loginButton}>
+            {loading ? 'ログイン中...' : 'ログイン'}
+          </button>
+        </form>
+
+        <div className={styles.divider}></div>
+
+        <div className={styles.registerSection}>
+          <Link to="/register" className={styles.registerButton}>
+            新規登録
+          </Link>
+        </div>
       </div>
     </div>
   )

@@ -1,0 +1,40 @@
+.pageWrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  .content {
+    flex-grow: 1;
+    padding-bottom: 60px; 
+  }
+  
+  .fixedNav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #fff;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .navItem {
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    text-decoration: none;
+  }
+  
+  .navItem div {
+    font-size: 10px;
+  }
+  
+  .active {
+    color: #f44336;
+    font-weight: bold;
+  }
+  

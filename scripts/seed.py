@@ -1,6 +1,7 @@
 import sys, os
 import uuid
 from datetime import datetime, timedelta
+from sqlalchemy import text
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -56,11 +57,23 @@ def upload_image(bucket, path, key):
 
 app = create_app()
 
+## テーブルのリセット
 with app.app_context():
-    # データベースをリセット
-    db.drop_all()
-    db.create_all()
+    conn = db.engine.connect()
     
+    # 外部キー制約を無効化
+    conn.execute(text("SET FOREIGN_KEY_CHECKS=0"))
+
+    # 明示的にメタデータをdrop
+    db.metadata.drop_all(bind=conn)
+
+    # 外部キー制約を再び有効化
+    conn.execute(text("SET FOREIGN_KEY_CHECKS=1"))
+    conn.close()
+    db.create_all()
+
+    
+
     # バケットを作成
     create_buckets()
     
