@@ -1,7 +1,8 @@
 from app.models import db
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from app.models.event import TagMaster, ThreadTagAssociation
 
+JST = timezone(timedelta(hours=9))  # 日本時間タイムゾーン
 
 class Thread(db.Model):
     __tablename__ = 'thread'
@@ -11,7 +12,7 @@ class Thread(db.Model):
     message = db.Column(db.String(500), nullable=False)
     image_id = db.Column(db.String(36), db.ForeignKey('image_list.id'))
     area_id = db.Column(db.String(36), db.ForeignKey('area_list.area_id'))
-    published_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    published_at = db.Column(db.DateTime, default=datetime.now(JST))
     author_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     
     # リレーションシップ
@@ -28,12 +29,10 @@ class Thread(db.Model):
     
     def to_dict(self):
         """辞書形式でデータを返す（APIレスポンス用）"""
-        # 直接tagsをクエリするために必要なインポートを確認
         from app.models.event import TagMaster
         
         tags = []
         try:
-            # スレッドに関連付けられたタグを取得
             for assoc in self.tags:
                 tag = TagMaster.query.get(assoc.tag_id)
                 if tag:
@@ -41,11 +40,9 @@ class Thread(db.Model):
                         'id': tag.id,
                         'name': tag.tag_name
                     })
-        except Exception as e:
-            # エラーが発生した場合は空のリストを使用
+        except Exception:
             tags = []
-            
-        # 画像URLを取得（より明示的な方法）
+        
         image_url = None
         if self.image_id:
             from app.models.file import ImageList
@@ -71,7 +68,7 @@ class Thread(db.Model):
             'hearts_count': len(self.hearted_by) if hasattr(self, 'hearted_by') else 0,
             'messages_count': len(self.messages) if hasattr(self, 'messages') else 0,
             'tags': tags,
-            'is_hearted': False  # デフォルト値、実際の値はAPI呼び出し時に設定する
+            'is_hearted': False
         }
 
 
@@ -82,23 +79,19 @@ class ThreadMessage(db.Model):
     thread_id = db.Column(db.String(36), db.ForeignKey('thread.id'), nullable=False)
     sender_user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     content = db.Column(db.String(500), nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    timestamp = db.Column(db.DateTime, default=datetime.now(JST))
     image_id = db.Column(db.String(36), db.ForeignKey('image_list.id'))
     message_type = db.Column(db.String(20), default='text')  # text/image/system
     message_metadata = db.Column(db.JSON)
     
-    # リレーションシップ
     image = db.relationship('ImageList', backref='thread_messages')
     
     @property
     def sender(self):
-        # Userモデルを遅延インポート
         from app.models.user import User
         return User.query.get(self.sender_user_id)
     
     def to_dict(self):
-        """辞書形式でデータを返す（APIレスポンス用）"""
-        # 画像URLを取得（より明示的な方法）
         image_url = None
         if self.image_id and self.message_type == 'image':
             from app.models.file import ImageList
@@ -125,4 +118,4 @@ class UserHeartThread(db.Model):
     __tablename__ = 'user_heart_thread'
     
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), primary_key=True)
-    thread_id = db.Column(db.String(36), db.ForeignKey('thread.id'), primary_key=True) 
+    thread_id = db.Column(db.String(36), db.ForeignKey('thread.id'), primary_key=True)

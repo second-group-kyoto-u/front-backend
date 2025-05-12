@@ -1,0 +1,435 @@
+.eventsContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.searchBar {
+  margin-bottom: 20px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e1e1e1;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #f9f9f9;
+}
+
+.filtersContainer {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.filterSelect {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: white;
+  font-size: 14px;
+}
+
+.eventSection {
+  margin-bottom: 30px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.viewMoreButton {
+  background: none;
+  border: none;
+  color: #4a90e2;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.eventCardWrapper {
+  height: 100%;
+  min-height: 280px;
+  display: flex;
+}
+
+@media (min-width: 768px) {
+  .cardGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.loadingContainer,
+.errorContainer,
+.emptyContainer {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.eventCard {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  height: 100%;
+  width: 100%;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.eventCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.eventImageContainer {
+  position: relative;
+  height: 160px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.eventImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.eventLabel {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.pendingLabel {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.startedLabel {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.endedLabel {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.eventTitle {
+  margin: 0;
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  height: 40px;
+  color: #333;
+}
+
+.eventContent {
+  padding: 12px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.eventInfo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+  margin-top: auto;
+}
+
+.eventArea {
+  background-color: #e9f5fe;
+  color: #3291e6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.eventPersons {
+  font-weight: 500;
+}
+
+.eventTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.eventTag {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.eventTagMore {
+  font-size: 11px;
+  color: #6b7280;
+  padding: 2px 4px;
+  font-weight: 500;
+}
+
+/* 追加ボタン */
+.createButton {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  background-color: #4a90e2;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border: none;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.createButton:hover {
+  background-color: #357ac2;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+/* 背景設定 */
+.pageBackground {
+  min-height: 100vh;
+  background-color: #f9f7f1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+  padding-bottom: 80px; /* フッターナビのスペースを確保 */
+}
+
+/* イベント作成ページのスタイル */
+.createEventContainer {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.createEventHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  color: #5c4033;
+  cursor: pointer;
+  margin-right: 15px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+  color: #5c4033;
+}
+
+.createEventForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.imageUploadContainer {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.imageUploadLabel {
+  display: block;
+  width: 100%;
+  height: 200px;
+  border: 2px dashed #cccccc;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.uploadPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999999;
+}
+
+.uploadPlaceholder span:first-child {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.uploadProgressContainer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background-color: #e1e1e1;
+}
+
+.uploadProgressBar {
+  height: 100%;
+  background-color: #4a90e2;
+  transition: width 0.3s;
+}
+
+.imageInput {
+  display: none;
+}
+
+.imagePreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.formGroup {
+  margin-bottom: 15px;
+}
+
+.formTimeGroup {
+  display: flex;
+  gap: 10px;
+}
+
+.formTimeGroup > div {
+  flex: 1;
+}
+
+.formLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #5c4033;
+}
+
+.formInput,
+.formSelect {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.formTextarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  resize: vertical;
+}
+
+.formActions {
+  margin-top: 30px;
+}
+
+.submitButton {
+  width: 100%;
+  padding: 12px;
+  background-color: #5c4033;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.submitButton:hover {
+  background-color: #4a3229;
+}
+
+.submitButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tagButton {
+  padding: 6px 12px;
+  border: 1px solid #cccccc;
+  border-radius: 999px;
+  background-color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.tagSelected {
+  background-color: #5c4033;
+  color: white;
+  border-color: #5c4033;
+}
+
+.errorContainer {
+  background-color: #ffebee;
+  color: #d32f2f;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+} 

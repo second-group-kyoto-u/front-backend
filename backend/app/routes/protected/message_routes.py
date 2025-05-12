@@ -5,8 +5,10 @@ from app.models.event import Event, UserMemberGroup
 from app.models.message import EventMessage, MessageReadStatus
 from app.models import db
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import json
+
+JST = timezone(timedelta(hours=9))
 
 message_bp = Blueprint("message", __name__)
 
@@ -66,7 +68,7 @@ def get_event_messages(event_id):
             read_status = MessageReadStatus(
                 message_id=message.id,
                 user_id=user.id,
-                read_at=datetime.now(timezone.utc)
+                read_at=datetime.now(JST)
             )
             db.session.add(read_status)
     
@@ -119,7 +121,7 @@ def send_event_message(event_id):
         event_id=event_id,
         sender_user_id=user.id,
         content=content,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(JST),
         image_id=image_id,
         message_type=message_type,
         metadata=json.dumps(metadata) if metadata else None

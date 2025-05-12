@@ -1,26 +1,430 @@
+/* 背景設定 */
+.pageBackground {
+  min-height: 100vh;
+  background-color: #f9f7f1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+  padding-bottom: 80px; /* フッターナビのスペースを確保 */
+}
+
 .eventsContainer {
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .pageTitle {
-  font-size: 1.8rem;
+  font-size: 24px;
   font-weight: 600;
-  margin-bottom: 1.5rem;
-  color: #333;
+  margin-bottom: 20px;
+  color: #5c4033;
+}
+
+.searchBar {
+  margin-bottom: 20px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e1e1e1;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #f9f9f9;
 }
 
 .filtersContainer {
   display: flex;
-  margin-bottom: 1.5rem;
-  gap: 1rem;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
 }
 
 .filterSelect {
-  padding: 0.5rem;
+  padding: 8px 12px;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 6px;
   background-color: white;
-  min-width: 200px;
+  font-size: 14px;
+}
+
+.eventSection {
+  margin-bottom: 30px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: #5c4033;
+}
+
+.viewMoreButton {
+  background: none;
+  border: none;
+  color: #4a90e2;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.eventCardWrapper {
+  height: 100%;
+  min-height: 280px;
+  display: flex;
+}
+
+@media (min-width: 768px) {
+  .cardGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.loadingContainer,
+.errorContainer,
+.emptyContainer {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.eventCard {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  height: 100%;
+  width: 100%;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.eventCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.eventImageContainer {
+  position: relative;
+  height: 160px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.eventImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.eventLabel {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.pendingLabel {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.startedLabel {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.endedLabel {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.eventTitle {
+  margin: 0;
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  height: 40px;
+  color: #333;
+}
+
+.eventContent {
+  padding: 12px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.eventInfo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+  margin-top: auto;
+}
+
+.eventArea {
+  background-color: #e9f5fe;
+  color: #3291e6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.eventPersons {
+  font-weight: 500;
+}
+
+.eventTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.eventTag {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.eventTagMore {
+  font-size: 11px;
+  color: #6b7280;
+  padding: 2px 4px;
+  font-weight: 500;
+}
+
+/* 追加ボタン */
+.createButton {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  background-color: #4a90e2;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border: none;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.createButton:hover {
+  background-color: #357ac2;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+/* イベント作成ページのスタイル */
+.createEventContainer {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.createEventHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  color: #4a90e2;
+  font-size: 16px;
+  cursor: pointer;
+  margin-right: 15px;
+  padding: 0;
+}
+
+.createEventForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.imageUploadContainer {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+}
+
+.imageUploadLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.uploadPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  gap: 8px;
+}
+
+.uploadPlaceholder span:first-child {
+  font-size: 32px;
+}
+
+.uploadProgressContainer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background-color: #f0f0f0;
+  overflow: hidden;
+}
+
+.uploadProgressBar {
+  height: 100%;
+  background-color: #4a90e2;
+  transition: width 0.3s ease;
+}
+
+.imageInput {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+.imagePreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formTimeGroup {
+  display: flex;
+  gap: 20px;
+}
+
+.formTimeGroup > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formLabel {
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+}
+
+.formInput,
+.formTextarea,
+.formSelect {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  background-color: #fff;
+}
+
+.formTextarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.formActions {
+  margin-top: 10px;
+}
+
+.submitButton {
+  width: 100%;
+  padding: 12px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.submitButton:hover {
+  background-color: #357ac2;
+}
+
+.submitButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tagButton {
+  padding: 6px 12px;
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tagSelected {
+  background-color: #e1f0ff;
+  border-color: #4a90e2;
+  color: #4a90e2;
 } 

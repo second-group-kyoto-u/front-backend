@@ -10,15 +10,22 @@ export type ImageUploadResponse = {
 }
 
 export const uploadImage = async (
-  file: File
+  file: File,
+  token?: string
 ): Promise<ImageUploadResponse> => {
   const formData = new FormData()
   formData.append('file', file)
 
+  const headers: Record<string, string> = {
+    'Content-Type': 'multipart/form-data',
+  }
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
   const res = await axios.post<ImageUploadResponse>('upload/image', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+    headers
   })
   return res.data
 } 

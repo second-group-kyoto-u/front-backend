@@ -1,10 +1,11 @@
 # アプリケーション内でユーザーに関するデータ構造と処理をまとめる場所
 from app.models import db
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.orm import foreign
 
+JST = timezone(timedelta(hours=9))  # 日本時間 (JST) を定義
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -21,8 +22,8 @@ class User(db.Model):
     # 認証関連の新しいフィールド
     email_verified = db.Column(db.Boolean, default=False)
     email_verified_at = db.Column(db.DateTime)
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, default=datetime.now(JST))
+    updated_at = db.Column(db.DateTime, default=datetime.now(JST), onupdate=datetime.now(JST))
     last_login_at = db.Column(db.DateTime)
     
     # リレーションシップ
@@ -81,12 +82,12 @@ class User(db.Model):
     def verify_email(self):
         """メールアドレスを認証済みにする"""
         self.email_verified = True
-        self.email_verified_at = datetime.now(timezone.utc)
+        self.email_verified_at = datetime.now(JST)
         self.is_certificated = True  # 既存のフィールドも更新
     
     def record_login(self):
         """ログイン日時を記録する"""
-        self.last_login_at = datetime.now(timezone.utc)
+        self.last_login_at = datetime.now(JST)
     
     def to_dict(self):
         """辞書形式でデータを返す（APIレスポンス用）"""

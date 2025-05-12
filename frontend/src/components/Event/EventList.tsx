@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { EventType, getEvents } from '../../api/event';
+import { EventType, getEvents } from '@/api/event';
 import EventCard from './EventCard';
 
 interface EventListProps {
@@ -9,12 +9,6 @@ interface EventListProps {
     area_id?: string;
     status?: 'pending' | 'started' | 'ended';
   };
-}
-
-// APIレスポンスの型を定義
-interface EventsResponse {
-  events: EventType[];
-  total: number;
 }
 
 /**
@@ -30,26 +24,15 @@ const EventList: React.FC<EventListProps> = ({ limit = 10, filter }) => {
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        const response = await getEvents(limit, 0) as EventsResponse;
+        const options = {
+          per_page: limit,
+          ...filter
+        };
+        const response = await getEvents(options);
         
-        // フィルタリング（フロントエンドでの実装）
-        let filteredEvents = response.events;
-        
-        if (filter) {
-          if (filter.area_id) {
-            filteredEvents = filteredEvents.filter(
-              (event: EventType) => event.area?.id === filter.area_id
-            );
-          }
-          
-          if (filter.status) {
-            filteredEvents = filteredEvents.filter(
-              (event: EventType) => event.status === filter.status
-            );
-          }
+        if (response && response.events) {
+          setEvents(response.events);
         }
-        
-        setEvents(filteredEvents);
       } catch (err) {
         setError('イベントの取得に失敗しました');
         console.error(err);
@@ -78,15 +61,16 @@ const EventList: React.FC<EventListProps> = ({ limit = 10, filter }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <>
       {events.map((event) => (
-        <EventCard 
-          key={event.id} 
-          event={event} 
-          onClick={() => handleEventClick(event.id)} 
-        />
+        <div key={event.id}>
+          <EventCard 
+            event={event} 
+            onClick={() => handleEventClick(event.id)} 
+          />
+        </div>
       ))}
-    </div>
+    </>
   );
 };
 
