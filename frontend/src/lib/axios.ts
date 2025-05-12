@@ -6,7 +6,7 @@ console.log("🔧 API URL:", import.meta.env.VITE_API_URL)
 const instance = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api/',
   timeout: 10000,
-  withCredentials: false,  // ✅ 不要（トークンはヘッダーで送信するため）
+  withCredentials: true,  // CORS設定のためにtrueに変更
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -31,7 +31,7 @@ instance.interceptors.request.use(
     }
     
     // withCredentialsを必ず有効にする
-    // config.withCredentials = true;
+    config.withCredentials = true;
     
     console.log('🚀 リクエスト送信:', config.method?.toUpperCase(), config.url, 
                 'withCredentials:', config.withCredentials);

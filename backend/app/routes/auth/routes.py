@@ -4,7 +4,9 @@ from app.models.user import get_user_by_email, get_user_by_id, User
 from app.models import db
 from app.utils.email import send_email_verification, send_password_reset_email, verify_token
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+
+JST = timezone(timedelta(hours=9))  # 日本標準時
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -16,14 +18,11 @@ def login():
 
     user = get_user_by_email(email)
     if not user:
-        # セキュリティのために具体的なエラー原因を隠す
         return jsonify({"error": "メールアドレスが異なっています。"}), 401
 
     if not user.check_password(password):
-        # セキュリティのために具体的なエラー原因を隠す
         return jsonify({"error": "パスワードが異なっています。"}), 401
 
-    # ログイン日時を記録
     user.record_login()
     db.session.commit()
     
@@ -37,16 +36,13 @@ def register():
     password = data.get('password')
     user_name = data.get('userName')
     
-    # バリデーション
     if not email or not password or not user_name:
         return jsonify({"error": "必須フィールドが不足しています"}), 400
     
-    # メールアドレスの重複チェック
     existing_user = get_user_by_email(email)
     if existing_user:
         return jsonify({"error": "このメールアドレスは既に登録されています"}), 400
     
-    # 新規ユーザー作成
     user = User(
         id=str(uuid.uuid4()),
         user_name=user_name,
@@ -54,17 +50,15 @@ def register():
         profile_message="",
         is_certificated=False,
         email_verified=False,
-        created_at=datetime.now(timezone.utc)
+        created_at=datetime.now(JST)
     )
     user.set_password(password)
     
     db.session.add(user)
     db.session.commit()
     
-    # メール認証メールを送信
     send_email_verification(user)
     
-    # ログイントークン発行
     token = generate_token(user.id)
     return jsonify({
         "token": token, 
@@ -74,7 +68,6 @@ def register():
 
 @auth_bp.route('/verify-email/<token>', methods=['GET'])
 def verify_email(token):
-    # トークンを検証
     payload = verify_token(token)
     if not payload or payload.get('action') != 'email_verification':
         return jsonify({"error": "無効または期限切れのトークンです"}), 400
@@ -84,7 +77,6 @@ def verify_email(token):
     if not user:
         return jsonify({"error": "ユーザーが見つかりません"}), 404
     
-    # メール認証を完了
     user.verify_email()
     db.session.commit()
     
@@ -100,17 +92,14 @@ def forgot_password():
     
     user = get_user_by_email(email)
     if not user:
-        # セキュリティ上の理由から、ユーザーが存在しなくても同じメッセージを返す
         return jsonify({"message": "パスワードリセットの手順をメールで送信しました"}), 200
     
-    # パスワードリセットメールを送信
     send_password_reset_email(user)
     
     return jsonify({"message": "パスワードリセットの手順をメールで送信しました"})
 
 @auth_bp.route('/reset-password/<token>', methods=['POST'])
 def reset_password(token):
-    # トークンを検証
     payload = verify_token(token)
     if not payload or payload.get('action') != 'password_reset':
         return jsonify({"error": "無効または期限切れのトークンです"}), 400
@@ -126,7 +115,6 @@ def reset_password(token):
     if not user:
         return jsonify({"error": "ユーザーが見つかりません"}), 404
     
-    # パスワードを更新
     user.set_password(new_password)
     db.session.commit()
     
@@ -147,7 +135,6 @@ def resend_verification():
     if user.email_verified:
         return jsonify({"message": "既にメール認証が完了しています"}), 200
     
-    # 認証メールを再送
     send_email_verification(user)
     
     return jsonify({"message": "認証メールを再送しました"})

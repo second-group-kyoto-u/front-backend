@@ -5,8 +5,10 @@ from app.models.thread import Thread, ThreadMessage, UserHeartThread
 from app.models.event import TagMaster, ThreadTagAssociation
 from app.models import db
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import json
+
+JST = timezone(timedelta(hours=9))
 
 thread_bp = Blueprint("thread", __name__)
 
@@ -141,7 +143,7 @@ def create_thread():
         message=message,
         image_id=image_id,
         area_id=area_id,
-        published_at=datetime.now(timezone.utc),
+        published_at=datetime.now(JST),
         author_id=user.id
     )
     
@@ -157,7 +159,7 @@ def create_thread():
                 id=str(uuid.uuid4()),
                 tag_name=tag_name,
                 is_active=True,
-                created_at=datetime.now(timezone.utc)
+                created_at=datetime.now(JST)
             )
             db.session.add(tag)
             db.session.flush()
@@ -167,7 +169,7 @@ def create_thread():
             id=str(uuid.uuid4()),
             tag_id=tag.id,
             thread_id=thread.id,
-            created_at=datetime.now(timezone.utc)
+            created_at=datetime.now(JST)
         )
         db.session.add(tag_assoc)
     
@@ -177,7 +179,7 @@ def create_thread():
         thread_id=thread.id,
         sender_user_id=user.id,
         content=message,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(JST),
         image_id=image_id,
         message_type='text'
     )
@@ -262,7 +264,7 @@ def post_thread_message(thread_id):
         thread_id=thread_id,
         sender_user_id=user.id,
         content=content,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(JST),
         image_id=image_id,
         message_type=message_type
     )

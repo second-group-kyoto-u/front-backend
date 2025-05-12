@@ -4,8 +4,11 @@ from app.models.user import User
 from app.models.message import FriendRelationship, DirectMessage
 from app.models import db
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import json
+
+JST = timezone(timedelta(hours=9))
+
 
 friend_bp = Blueprint("friend", __name__)
 
@@ -138,7 +141,7 @@ def send_friend_request():
             if existing_relationship.user_id == friend_id:
                 # 承認する
                 existing_relationship.status = 'accepted'
-                existing_relationship.updated_at = datetime.now(timezone.utc)
+                existing_relationship.updated_at = datetime.now(JST)
                 db.session.commit()
                 
                 return jsonify({
@@ -156,8 +159,8 @@ def send_friend_request():
         user_id=user.id,
         friend_id=friend_id,
         status='pending',
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc)
+        created_at=datetime.now(JST),
+        updated_at=datetime.now(JST)
     )
     
     db.session.add(relationship)
@@ -191,7 +194,7 @@ def accept_friend_request(request_id):
     
     # リクエスト承認
     request.status = 'accepted'
-    request.updated_at = datetime.now(timezone.utc)
+    request.updated_at = datetime.now(JST)
     
     db.session.commit()
     
@@ -223,7 +226,7 @@ def reject_friend_request(request_id):
     
     # リクエスト拒否
     request.status = 'rejected'
-    request.updated_at = datetime.now(timezone.utc)
+    request.updated_at = datetime.now(JST)
     
     db.session.commit()
     
@@ -270,7 +273,7 @@ def get_direct_messages(friend_id):
     for message in messages:
         if message.receiver_id == user.id and not message.is_read:
             message.is_read = True
-            message.read_at = datetime.now(timezone.utc)
+            message.read_at = datetime.now(JST)
     
     db.session.commit()
     
@@ -329,7 +332,7 @@ def send_direct_message():
         image_id=image_id,
         message_type=message_type,
         metadata=json.dumps(metadata) if metadata else None,
-        sent_at=datetime.now(timezone.utc),
+        sent_at=datetime.now(JST),
         is_read=False
     )
     

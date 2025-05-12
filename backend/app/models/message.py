@@ -1,6 +1,7 @@
 from app.models import db
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
+JST = timezone(timedelta(hours=9))  # 日本時間タイムゾーンを定義
 
 class EventMessage(db.Model):
     __tablename__ = 'event_message'
@@ -9,9 +10,9 @@ class EventMessage(db.Model):
     event_id = db.Column(db.String(36), db.ForeignKey('event.id'), nullable=False)
     sender_user_id = db.Column(db.String(36), db.ForeignKey('user.id'))
     content = db.Column(db.String(500))
-    timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    timestamp = db.Column(db.DateTime, default=datetime.now(JST))
     image_id = db.Column(db.String(36), db.ForeignKey('image_list.id'))
-    message_type = db.Column(db.String(20), default='text')  # text/image/system
+    message_type = db.Column(db.String(20), default='text')  # text/image/system/bot
     message_metadata = db.Column(db.JSON)
     
     # リレーションシップ
@@ -39,7 +40,7 @@ class MessageReadStatus(db.Model):
     
     message_id = db.Column(db.String(36), db.ForeignKey('event_message.id'), primary_key=True)
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), primary_key=True)
-    read_at = db.Column(db.DateTime, default=datetime.utcnow)
+    read_at = db.Column(db.DateTime, default=datetime.now(JST))
     
     # リレーションシップ
     user = db.relationship('User', backref='read_messages')
@@ -52,8 +53,8 @@ class FriendRelationship(db.Model):
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     friend_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     status = db.Column(db.String(20), default='pending')  # pending/accepted/rejected
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, default=datetime.now(JST))
+    updated_at = db.Column(db.DateTime, default=datetime.now(JST), onupdate=datetime.now(JST))
     
     def to_dict(self):
         """辞書形式でデータを返す（APIレスポンス用）"""
@@ -75,9 +76,9 @@ class DirectMessage(db.Model):
     receiver_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     content = db.Column(db.String(500))
     image_id = db.Column(db.String(36), db.ForeignKey('image_list.id'))
-    message_type = db.Column(db.String(20), default='text')  # text/image/system
+    message_type = db.Column(db.String(20), default='text')  # text/image/system/bot
     message_metadata = db.Column(db.JSON)
-    sent_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    sent_at = db.Column(db.DateTime, default=datetime.now(JST))
     is_read = db.Column(db.Boolean, default=False)
     read_at = db.Column(db.DateTime)
     

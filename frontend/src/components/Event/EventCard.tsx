@@ -1,9 +1,10 @@
 import React from 'react';
-import { EventType } from '../../api/event';
+import { EventType } from '@/api/event';
+import styles from '@/pages/Events/Events.module.css';
 
 interface EventCardProps {
   event: EventType;
-  onClick?: () => void;
+  onClick: () => void;
 }
 
 /**
@@ -11,81 +12,87 @@ interface EventCardProps {
  * イベントの基本情報を表示するカードUI
  */
 const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
-  // イベントのステータスに応じたラベルとスタイル
-  const getStatusLabel = () => {
-    switch(event.status) {
-      case 'pending':
-        return <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">開催予定</span>;
-      case 'started':
-        return <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">開催中</span>;
-      case 'ended':
-        return <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">終了</span>;
-      default:
-        return null;
-    }
+  // イベントのタイトルを取得（title か message の適切な方を使用）
+  const getTitle = () => {
+    return event.title || event.message || '無題のイベント';
   };
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('ja-JP', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(date);
+  // 画像URLを処理する関数
+  const processImageUrl = (url: string | null): string => {
+    if (!url) return 'https://via.placeholder.com/400x200?text=No+Image';
+    
+    // MinIOのURLを修正
+    if (url.includes('localhost:9000')) {
+      // URLがlocalhostのMinioを指している場合
+      const parsed = new URL(url);
+      const newUrl = `http://${window.location.hostname}:9000${parsed.pathname}`;
+      return newUrl;
+    }
+    
+    return url;
   };
+
+  // 画像のロード時のエラーハンドリング
+  const handleImageError = (e: any) => {
+    const target = e.target as HTMLImageElement;
+    target.onerror = null; // 無限ループを防ぐ
+    target.src = 'https://via.placeholder.com/400x200?text=No+Image';
+  };
+
+  // イベント情報をコンソールに出力（デバッグ用）
+  console.log('イベントデータ:', {
+    id: event.id,
+    title: getTitle(),
+    imageUrl: event.image_url,
+    tags: event.tags,
+    processedImageUrl: processImageUrl(event.image_url)
+  });
 
   return (
-    <div 
-      className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer bg-white"
-      onClick={onClick}
-    >
-      {event.image_url && (
-        <div className="h-40 overflow-hidden">
-          <img 
-            src={event.image_url} 
-            alt={event.message} 
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
-      <div className="p-4">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="font-medium text-lg line-clamp-2">{event.message}</h3>
-          {getStatusLabel()}
-        </div>
+    <div className={styles.eventCard} onClick={onClick}>
+      <div className={styles.eventImageContainer}>
+        <img 
+          src={processImageUrl(event.image_url)} 
+          alt={getTitle()} 
+          className={styles.eventImage}
+          onError={handleImageError}
+        />
+        <span className={`${styles.eventLabel} ${
+          event.status === 'pending' 
+            ? styles.pendingLabel
+            : event.status === 'started'
+              ? styles.startedLabel
+              : styles.endedLabel
+        }`}>
+          {event.status === 'pending' ? '開催予定' : 
+           event.status === 'started' ? '開催中' : '終了'}
+        </span>
+      </div>
+      <div className={styles.eventContent}>
+        <h3 className={styles.eventTitle}>{getTitle()}</h3>
         
-        <div className="text-sm text-gray-600 mb-3">
-          {formatDate(event.published_at)}
-        </div>
-        
-        <div className="flex justify-between items-center">
-          <div className="flex items-center">
-            {event.author?.user_image_url ? (
-              <img 
-                src={event.author.user_image_url} 
-                alt={event.author.user_name}
-                className="w-6 h-6 rounded-full mr-2"
-              />
-            ) : (
-              <div className="w-6 h-6 rounded-full bg-gray-200 mr-2"></div>
+        {/* タグの表示 */}
+        {event.tags && event.tags.length > 0 && (
+          <div className={styles.eventTags}>
+            {event.tags.slice(0, 3).map((tag) => (
+              <span key={tag.id} className={styles.eventTag}>
+                {tag.tag_name}
+              </span>
+            ))}
+            {event.tags.length > 3 && (
+              <span className={styles.eventTagMore}>+{event.tags.length - 3}</span>
             )}
-            <span className="text-sm">{event.author?.user_name}</span>
-          </div>
-          
-          <div className="text-sm">
-            <span className="font-medium">{event.current_persons}</span>
-            <span className="text-gray-500">/{event.limit_persons}人</span>
-          </div>
-        </div>
-        
-        {event.area && (
-          <div className="mt-2 text-xs text-gray-500">
-            <span>エリア: {event.area.name}</span>
           </div>
         )}
+        
+        <div className={styles.eventInfo}>
+          {event.area && (
+            <span className={styles.eventArea}>{event.area.name}</span>
+          )}
+          <span className={styles.eventPersons}>
+            {event.current_persons}/{event.limit_persons}人
+          </span>
+        </div>
       </div>
     </div>
   );

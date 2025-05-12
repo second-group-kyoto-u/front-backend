@@ -136,3 +136,16 @@
   background-color: #f0f0f0;
   color: #4a3229;
 }
+
+/* 既存のスタイルに追加 */
+
+.redirectInfo {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  color: #856404;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  text-align: center;
+}

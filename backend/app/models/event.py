@@ -1,8 +1,9 @@
 from app.models import db
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from app.models.area import AreaList
 from app.models.file import ImageList
 
+JST = timezone(timedelta(hours=9))  # 日本時間タイムゾーンを定義
 
 class Event(db.Model):
     __tablename__ = 'event'
@@ -10,7 +11,7 @@ class Event(db.Model):
     id = db.Column(db.String(36), primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(500), nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    timestamp = db.Column(db.DateTime, default=datetime.now(JST))
     image_id = db.Column(db.String(36), db.ForeignKey('image_list.id'))
     current_persons = db.Column(db.Integer, default=1)
     limit_persons = db.Column(db.Integer)
@@ -18,7 +19,7 @@ class Event(db.Model):
     is_deleted = db.Column(db.Boolean, default=False)
     author_user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     area_id = db.Column(db.String(36), db.ForeignKey('area_list.area_id'))
-    published_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    published_at = db.Column(db.DateTime, default=datetime.now(JST))
     status = db.Column(db.String(20), default='pending')  # pending/started/ended
     
     # リレーションシップ
@@ -53,7 +54,12 @@ class UserMemberGroup(db.Model):
     
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), primary_key=True)
     event_id = db.Column(db.String(36), db.ForeignKey('event.id'), primary_key=True)
-    joined_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    joined_at = db.Column(db.DateTime, default=datetime.now(JST))
+    
+    # 追加： Userモデルとの関連付け
+    user = db.relationship('User', backref=db.backref('memberships', lazy=True))
+    # Eventモデルとの関連付け
+    event = db.relationship('Event', backref=db.backref('memberships', lazy=True))
 
 
 class UserHeartEvent(db.Model):
@@ -70,7 +76,7 @@ class TagMaster(db.Model):
     tag_name = db.Column(db.String(50), nullable=False, unique=True)
     category = db.Column(db.String(50))
     is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, default=datetime.now(JST))
     
     # リレーションシップ
     user_associations = db.relationship('UserTagAssociation', backref='tag', lazy=True)
@@ -84,7 +90,7 @@ class UserTagAssociation(db.Model):
     id = db.Column(db.String(36), primary_key=True)
     tag_id = db.Column(db.String(36), db.ForeignKey('tag_master.id'), nullable=False)
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, default=datetime.now(JST))
 
 
 class EventTagAssociation(db.Model):
@@ -93,7 +99,7 @@ class EventTagAssociation(db.Model):
     id = db.Column(db.String(36), primary_key=True)
     tag_id = db.Column(db.String(36), db.ForeignKey('tag_master.id'), nullable=False)
     event_id = db.Column(db.String(36), db.ForeignKey('event.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, default=datetime.now(JST))
 
 
 class ThreadTagAssociation(db.Model):
@@ -102,4 +108,4 @@ class ThreadTagAssociation(db.Model):
     id = db.Column(db.String(36), primary_key=True)
     tag_id = db.Column(db.String(36), db.ForeignKey('tag_master.id'), nullable=False)
     thread_id = db.Column(db.String(36), db.ForeignKey('thread.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc)) 
+    created_at = db.Column(db.DateTime, default=datetime.now(JST))

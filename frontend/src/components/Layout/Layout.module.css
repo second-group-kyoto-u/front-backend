@@ -38,3 +38,16 @@
     font-weight: bold;
   }
   
+  .debugInfo {
+    background-color: #ff9800;
+    color: white;
+    padding: 5px 10px;
+    text-align: center;
+    font-size: 14px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+  }
+  

@@ -5,7 +5,9 @@ from email.mime.multipart import MIMEMultipart
 from email.utils import formatdate
 import jwt
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
+JST = timezone(timedelta(hours=9))
 
 # 環境変数から設定を取得
 SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.example.com')
@@ -48,11 +50,11 @@ def send_email(to_email, subject, html_content):
 
 def generate_token(data, expires_in=24):
     """JWT認証トークンを生成する"""
-    expiration = datetime.utcnow() + timedelta(hours=expires_in)
+    expiration = datetime.now(JST) + timedelta(hours=expires_in)
     payload = {
         **data,
         'exp': expiration,
-        'iat': datetime.utcnow()
+        'iat': datetime.now(JST)
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
     return token
