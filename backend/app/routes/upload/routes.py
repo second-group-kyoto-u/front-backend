@@ -5,7 +5,6 @@ import uuid
 from app.models import db
 from app.models.file import ImageList
 from app.routes.protected.routes import get_authenticated_user
-import datetime
 from datetime import datetime, timezone, timedelta
 from app.utils.storage import upload_file
 
@@ -54,7 +53,7 @@ def upload_image():
         id=str(uuid.uuid4()),
         image_url=file_url,
         uploaded_by=user.id,
-        upload_date=datetime.datetime.now(JST)
+        upload_date=datetime.now(JST)
     )
     
     db.session.add(image)
