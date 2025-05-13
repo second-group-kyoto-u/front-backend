@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createThread } from '@/api/thread'
 import { useAuth } from '@/hooks/useAuth'
@@ -6,11 +6,12 @@ import styles from './CreateThread.module.css'
 
 function CreateThreadPage() {
   const [tag, setTag] = useState('')
-  const [age, setAge] = useState<'all' | 'teens' | '20s' | '30s' | '40s' | '50s' | '60s+'>('all')
-  const [gender, setGender] = useState<'all' | 'male' | 'female' | 'other'>('all')
   const [followersOnly, setFollowersOnly] = useState(false)
   const [content, setContent] = useState('')
   const [error, setError] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { token } = useAuth()
   const navigate = useNavigate()
 
@@ -22,25 +23,57 @@ function CreateThreadPage() {
     }
 
     try {
-      await createThread({
+      const newThread = await createThread({
         tag,
         content,
         visibility: {
-          age,
-          gender,
+          age: 'all',
+          gender: 'all',
           followersOnly,
         },
       }, token!)
-      navigate('/threads')
+    
+      // 🎯 作成したスレッドを ThreadsPage に渡す
+      navigate('/threads', { state: { newThread } })
     } catch (err: any) {
       setError('スレッドの作成に失敗しました')
     }
+    
+  }
+
+  const handleImageUploadClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const cancelImage = () => {
+    setSelectedFile(null)
+    setPreviewUrl(null)
   }
 
   return (
     <div className={styles.pageBackground}>
       <div className={styles.container}>
-        <h2 className={styles.title}>スレッド作成</h2>
+        <div className={styles.headerRow}>
+          <button
+            className={styles.backButton}
+            onClick={() => navigate('/threads')}
+          >
+            ←
+          </button>
+          <h2 className={styles.title}>スレッド作成</h2>
+        </div>
 
         {error && <p className={styles.error}>{error}</p>}
 
@@ -51,49 +84,26 @@ function CreateThreadPage() {
               value={tag}
               onChange={(e) => setTag(e.target.value)}
               placeholder="種類（タグ）"
+              list="tag-options"
             />
+            <datalist id="tag-options">
+              <option value="旅行" />
+              <option value="グルメ" />
+              <option value="趣味" />
+              <option value="友達募集" />
+              <option value="相談" />
+            </datalist>
           </div>
-          
-          <div className={styles.visibilitySection}>
-            <label className={styles.sectionLabel}>公開範囲</label>
 
-            {/* ユーザー範囲 */}
-            <div className={styles.formGroup}>
-              <label className={styles.subLabel}>ユーザー</label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={followersOnly}
-                  onChange={(e) => setFollowersOnly(e.target.checked)}
-                />
-                フォロワーのみ
-              </label>
-            </div>
-
-            {/* 性別 */}
-            <div className={styles.formGroup}>
-              <label className={styles.subLabel}>性別</label>
-              <select value={gender} onChange={(e) => setGender(e.target.value as any)}>
-                <option value="all">すべての性別</option>
-                <option value="male">男性</option>
-                <option value="female">女性</option>
-                <option value="other">その他</option>
-              </select>
-            </div>
-
-            {/* 年齢 */}
-            <div className={styles.formGroup}>
-              <label className={styles.subLabel}>年齢</label>
-              <select value={age} onChange={(e) => setAge(e.target.value as any)}>
-                <option value="all">すべての年齢</option>
-                <option value="teens">10代</option>
-                <option value="20s">20代</option>
-                <option value="30s">30代</option>
-                <option value="40s">40代</option>
-                <option value="50s">50代</option>
-                <option value="60s+">60代以上</option>
-              </select>
-            </div>
+          <div className={styles.formGroup}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={followersOnly}
+                onChange={(e) => setFollowersOnly(e.target.checked)}
+              />
+              フォロワーのみ
+            </label>
           </div>
 
           <div className={styles.formGroup}>
@@ -104,8 +114,45 @@ function CreateThreadPage() {
               rows={4}
               placeholder="いまどうしてる？"
               required
+              className={styles.textarea}
             />
           </div>
+
+          <div className={styles.formGroup}>
+            <input
+              type="file"
+              id="thread-image"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              className={styles.imageInput}
+            />
+            <button
+              type="button"
+              onClick={handleImageUploadClick}
+              className={styles.imageUploadButton}
+            >
+              ＋画像を追加
+            </button>
+          </div>
+
+          {previewUrl && (
+            <div className={styles.imagePreviewWrapper}>
+              <img
+                src={previewUrl}
+                alt="プレビュー"
+                className={styles.imagePreview}
+                style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px' }}
+              />
+              <button
+                type="button"
+                onClick={cancelImage}
+                className={styles.cancelPreviewButton}
+              >
+                × 画像を削除
+              </button>
+            </div>
+          )}
 
           <button type="submit" className={styles.submitButton}>
             投稿する
