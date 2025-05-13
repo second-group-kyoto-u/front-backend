@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { getThreads, Thread } from '@/api/thread'
+import { useLocation } from 'react-router-dom' // 🎯 location 経由で state を受け取る
 import styles from './Threads.module.css'
 
 function ThreadsPage() {
@@ -10,13 +11,25 @@ function ThreadsPage() {
   const [threads, setThreads] = useState<Thread[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [total, setTotal] = useState(0) //しばらく使ってない
-  const [page, setPage] = useState(1)　//しばらく使ってない
+  const [fadingThreadId, setFadingThreadId] = useState<string | null>(null)
+  const location = useLocation()
+  const newThread = location.state?.newThread // 🎯 新規スレッドが存在するかチェック
+  const [total, setTotal] = useState(0) // しばらく使ってない
+  const [page, setPage] = useState(1)  // しばらく使ってない
   const perPage = 10
 
   useEffect(() => {
     fetchThreads()
   }, [page])
+
+  useEffect(() => {
+    // 🎯 新しいスレッドがあれば先頭に追加し、state をクリアする
+    if (newThread) {
+      setThreads(prev => [newThread, ...prev])
+      window.history.replaceState({}, '') // ✅ 再レンダリング時に重複追加されないように
+      console.log(newThread)
+    }
+  }, [newThread])  
 
   const fetchThreads = async () => {
     setLoading(true)
@@ -33,7 +46,10 @@ function ThreadsPage() {
   }
 
   const handleViewThread = (threadId: string) => {
-    navigate(`/thread/${threadId}`)
+    setFadingThreadId(threadId)
+    setTimeout(() => {
+      navigate(`/thread/${threadId}`)
+    }, 400) // アニメーションと一致させる
   }
 
   const handleCreateThread = () => {
@@ -51,7 +67,7 @@ function ThreadsPage() {
 
   const handleReply = (e: React.MouseEvent, threadId: string) => {
     e.stopPropagation()
-    navigate(`/thread/${threadId}`)
+    handleViewThread(threadId)
   }
 
   return (
@@ -72,12 +88,30 @@ function ThreadsPage() {
             threads.map((thread) => (
               <div
                 key={thread.id}
-                className={styles.threadItem}
+                className={`
+                  ${styles.threadItem}
+                  ${fadingThreadId && fadingThreadId !== thread.id ? styles.fadeOut : ''}
+                  ${newThread && thread.id === newThread.id ? styles.fadeIn : ''}
+                `}
                 onClick={() => handleViewThread(thread.id)}
               >
+
                 <div className={styles.threadAuthor}>
-                  <div className={styles.authorAvatar}></div>
-                  <div className={styles.authorName}>{thread.created_by.user_name}</div>
+                  <a
+                    href={`/user/${thread.created_by.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className={styles.authorLink}
+                  >
+                    <img
+                      className={styles.authorAvatar}
+                      src={thread.created_by.profile_image_url || '/default-avatar.png'}
+                      onError={(e) => {
+                        e.currentTarget.src = '/default-avatar.png'
+                      }}
+                      alt={`${thread.created_by.user_name}のプロフィール画像`}
+                    />
+                    <div className={styles.authorName}>{thread.created_by.user_name}</div>
+                  </a>
                   <div className={styles.threadTime}>
                     {new Date(thread.created_at).toLocaleTimeString([], {
                       hour: '2-digit',

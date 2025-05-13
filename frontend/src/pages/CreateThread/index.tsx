@@ -62,6 +62,27 @@ function CreateThreadPage() {
     setPreviewUrl(null)
   }
 
+  const handleImageUploadClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const cancelImage = () => {
+    setSelectedFile(null)
+    setPreviewUrl(null)
+  }
+
   return (
     <div className={styles.pageBackground}>
       <div className={styles.container}>
