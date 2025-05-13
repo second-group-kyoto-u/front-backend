@@ -10,8 +10,9 @@ function ThreadsPage() {
   const [threads, setThreads] = useState<Thread[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [total, setTotal] = useState(0) //しばらく使ってない
-  const [page, setPage] = useState(1)　//しばらく使ってない
+  const [fadingThreadId, setFadingThreadId] = useState<string | null>(null)
+  const [total, setTotal] = useState(0) // しばらく使ってない
+  const [page, setPage] = useState(1)  // しばらく使ってない
   const perPage = 10
 
   useEffect(() => {
@@ -33,7 +34,10 @@ function ThreadsPage() {
   }
 
   const handleViewThread = (threadId: string) => {
-    navigate(`/thread/${threadId}`)
+    setFadingThreadId(threadId)
+    setTimeout(() => {
+      navigate(`/thread/${threadId}`)
+    }, 400) // アニメーションと一致させる
   }
 
   const handleCreateThread = () => {
@@ -51,7 +55,7 @@ function ThreadsPage() {
 
   const handleReply = (e: React.MouseEvent, threadId: string) => {
     e.stopPropagation()
-    navigate(`/thread/${threadId}`)
+    handleViewThread(threadId)
   }
 
   return (
@@ -70,7 +74,11 @@ function ThreadsPage() {
             <p className={styles.noData}>スレッドがありません</p>
           ) : (
             threads.map((thread) => (
-              <div key={thread.id} className={styles.threadItem}>
+              <div
+                key={thread.id}
+                className={`${styles.threadItem} ${fadingThreadId && fadingThreadId !== thread.id ? styles.fadeOut : ''}`}
+                onClick={() => handleViewThread(thread.id)}
+              >
                 <div className={styles.threadAuthor}>
                   <a
                     href={`/user/${thread.created_by.id}`}

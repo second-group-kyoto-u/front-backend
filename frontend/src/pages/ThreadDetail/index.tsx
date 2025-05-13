@@ -163,10 +163,11 @@ function ThreadDetailPage() {
         {threadData.messages.length === 0 ? (
           <p>まだ返信はありません</p>
         ) : (
-          threadData.messages.map(msg => (
+          threadData.messages.map((msg, index) => (
             <div
               key={msg.id}
-              className={styles.threadItem}
+              className={`${styles.threadItem} ${styles.messageAppear}`}
+              style={{ animationDelay: `${index * 60}ms` }}
               onClick={handleClickItem}
             >
               <div className={styles.threadAuthor}>
