@@ -75,9 +75,23 @@ function ThreadsPage() {
                 className={styles.threadItem}
                 onClick={() => handleViewThread(thread.id)}
               >
+                
                 <div className={styles.threadAuthor}>
-                  <div className={styles.authorAvatar}></div>
-                  <div className={styles.authorName}>{thread.created_by.user_name}</div>
+                  <a
+                    href={`/user/${thread.created_by.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className={styles.authorLink}
+                  >
+                    <img
+                      className={styles.authorAvatar}
+                      src={thread.created_by.profile_image_url || '/default-avatar.png'}
+                      onError={(e) => {
+                        e.currentTarget.src = '/default-avatar.png'
+                      }}
+                      alt={`${thread.created_by.user_name}のプロフィール画像`}
+                    />
+                    <div className={styles.authorName}>{thread.created_by.user_name}</div>
+                  </a>
                   <div className={styles.threadTime}>
                     {new Date(thread.created_at).toLocaleTimeString([], {
                       hour: '2-digit',
@@ -85,6 +99,7 @@ function ThreadsPage() {
                     })}
                   </div>
                 </div>
+
 
                 <div className={styles.threadContent}>{thread.title}</div>
 
