@@ -27,20 +27,25 @@
   gap: 12px;
   overflow-y: auto;
   padding: 0 12px 100px;
+  transition: opacity 0.4s ease;
 }
 
 .threadItem {
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 12px;
+  background-color: transparent;
   padding: 16px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  transition: box-shadow 0.2s ease;
+  border-radius: 12px;
   cursor: pointer;
+  position: relative;
 }
 
 .threadItem:hover {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.threadItem.fadeOut {
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
 }
 
 .threadAuthor {
@@ -53,8 +58,8 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
+  object-fit: cover;
   background-color: #e0e0e0;
-  margin-right: 10px;
 }
 
 .authorName {
@@ -64,15 +69,33 @@
   margin-right: auto;
 }
 
+.authorLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.authorLink:hover .authorName {
+  text-decoration: underline;
+}
+
 .threadTime {
   font-size: 12px;
   color: #5c4033;
+  margin-left: auto;
 }
 
 .threadContent {
   font-size: 16px;
   color: #5c4033;
-  margin-top: 8px;
+  padding: 0;
+  border-radius: 0;
+  display: block;
+  margin-top: 6px;
+  background-color: transparent;
+  text-align: left;
 }
 
 .threadActions {
@@ -120,7 +143,6 @@
   background-color: #3e2b22;
 }
 
-
 .navigation {
   position: fixed;
   bottom: 0;
@@ -156,4 +178,33 @@
   padding: 20px;
   font-size: 14px;
   color: #5c4033;
+}
+
+@keyframes fadeInAnimation {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fadeIn {
+  animation: fadeInAnimation 0.5s ease-out;
+}
+
+/*ThreadDetailへの遷移*/
+.threadDetailMessage {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeSlideIn 0.4s forwards;
+}
+
+@keyframes fadeSlideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
