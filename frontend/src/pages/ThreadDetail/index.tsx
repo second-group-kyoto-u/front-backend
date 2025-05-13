@@ -94,33 +94,75 @@ function ThreadDetailPage() {
     <div className={styles.threadContainer}>
       <button onClick={() => navigate('/threads')} className={styles.backButton}>← 戻る</button>
 
-      <div className={styles.threadCard}>
-        <h1 className={styles.threadTitle}>{threadData.thread.title}</h1>
-        <p className={styles.threadMeta}>作成者: {threadData.thread.created_by.user_name}・{new Date(threadData.thread.created_at).toLocaleString()}</p>
-        {threadData.thread.tags.length > 0 && (
-          <div className={styles.tagsContainer}>
-            {threadData.thread.tags.map(tag => (
-              <span key={tag.id} className={styles.tag}>{tag.name}</span>
-            ))}
+      <div className={styles.threadItem}>
+        <div className={styles.threadAuthor}>
+          <a
+            href={`/user/${threadData.thread.created_by.id}`}
+            onClick={(e) => e.stopPropagation()}
+            className={styles.authorLink}
+          >
+            <img
+              className={styles.authorAvatar}
+              src={threadData.thread.created_by.profile_image_url || '/default-avatar.png'}
+              onError={(e) => {
+                e.currentTarget.src = '/default-avatar.png'
+              }}
+              alt={`${threadData.thread.created_by.user_name}のプロフィール画像`}
+            />
+            <div className={styles.authorName}>{threadData.thread.created_by.user_name}</div>
+          </a>
+          <div className={styles.threadTime}>
+            {new Date(threadData.thread.created_at).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
           </div>
-        )}
-        <button
-          onClick={handleHeart}
-          className={threadData.thread.is_hearted ? styles.hearted : styles.heartButton}
-        >
-          {threadData.thread.is_hearted ? '❤️' : '🤍'} {threadData.thread.hearts_count}
-        </button>
+        </div>
+
+        <div className={styles.threadContent}>{threadData.thread.title}</div>
+
+        <div className={styles.threadActions}>
+          <button
+            onClick={handleHeart}
+            className={threadData.thread.is_hearted ? styles.hearted : styles.heartButton}
+          >
+            {threadData.thread.is_hearted ? '❤️' : '🤍'} {threadData.thread.hearts_count}
+          </button>
+        </div>
       </div>
 
+      <hr className={styles.divider} />
+
       <section className={styles.messagesSection}>
-        <h2 className={styles.sectionTitle}>メッセージ</h2>
         {threadData.messages.length === 0 ? (
           <p>まだ返信はありません</p>
         ) : (
           threadData.messages.map(msg => (
-            <div key={msg.id} className={styles.messageBubble}>
-              <div className={styles.messageMeta}>{msg.created_by.user_name}・{new Date(msg.created_at).toLocaleString()}</div>
-              <div className={styles.messageContent}>
+            <div key={msg.id} className={styles.threadItem}>
+              <div className={styles.threadAuthor}>
+                <a
+                  href={`/user/${msg.created_by.id}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className={styles.authorLink}
+                >
+                  <img
+                    className={styles.authorAvatar}
+                    src={msg.created_by.profile_image_url || '/default-avatar.png'}
+                    onError={(e) => {
+                      e.currentTarget.src = '/default-avatar.png'
+                    }}
+                    alt={`${msg.created_by.user_name}のプロフィール画像`}
+                  />
+                  <div className={styles.authorName}>{msg.created_by.user_name}</div>
+                </a>
+                <div className={styles.threadTime}>
+                  {new Date(msg.created_at).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </div>
+              </div>
+              <div className={styles.threadContent}>
                 {msg.message_type === 'text'
                   ? <p>{msg.content}</p>
                   : <img src={msg.content} alt="画像" className={styles.messageImage} />}
@@ -149,7 +191,7 @@ function ThreadDetailPage() {
             className={styles.hiddenFileInput}
           />
         </label>
-        
+
         {selectedFile && (
           <div className={styles.fileName}>選択済み: {selectedFile.name}</div>
         )}
