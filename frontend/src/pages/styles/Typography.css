@@ -1,0 +1,71 @@
+/* Typography.module.css */
+
+:root {
+    --font-base: 'Noto Sans JP', sans-serif;
+    --font-weight-normal: 400;
+    --font-weight-bold: 700;
+    --letter-spacing-base: 0.05em;
+    --line-height-base: 1.6;
+  }
+  
+/* 見出し */
+.Title_Learge {
+    font-family: var(--font-base);
+    font-size: 22px;
+    line-height: 28px;
+    }
+  
+.Title_Medium {
+    font-family: var(--font-base);
+    font-size: 16px;
+    font-weight: Medium;
+    line-height: 24px;
+    }
+
+.Title_Small {
+    font-family: var(--font-base);
+    font-size: 16px;
+    font-weight: Medium;
+    line-height: 24px;
+    }
+
+/* ラベル */
+.Label_Learge {
+    font-family: var(--font-base);
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 20px;
+    }
+  
+.Label_Medium {
+    font-family: var(--font-base);
+    font-size: 12px;
+    font-weight: Medium;
+    line-height: 16px;
+    }
+
+.Label_Small {
+    font-family: var(--font-base);
+    font-size: 11px;
+    font-weight: Medium;
+    line-height: 16px;
+    }
+
+/* 本文 */
+.Body_Large {
+    font-family: var(--font-base);
+    font-size: 16px;
+    line-height: 24px;
+    }
+  
+.Body_Medium {
+    font-family: var(--font-base);
+    font-size: 14px;
+    line-height: 20px;
+    }
+
+.Body_Small {
+    font-family: var(--font-base);
+    font-size: 12px;
+    line-height: 16px;
+    }

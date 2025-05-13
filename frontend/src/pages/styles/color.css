@@ -1,0 +1,30 @@
+/* src/styles/color.css */
+:root {
+    --color-primary: #8e4c32;
+    --color-on_primary: #fff;
+    --color-primary_container: #ffdbce;
+    --color-on_primary_container:#370e00;
+
+    --color-secondary: #77574b;
+    --color-on_secondary: #fff;
+    --color-secondary_container: #ffdbce;
+    --color-on_secondary_container:#2c160d;
+
+    --color-tertiary: #685e30;
+    --color-on_tertiary: #fff;
+    --color-tertiary_container: #f1e3a8;
+    --color-on_secondary_container:#211b00;
+
+    --color-error: #ba1a1a;
+    --color-on_error: #fff;
+    --color-error_container: #ffdad6;
+    --color-on_error_container:#410002;
+
+    --color-surface: #fff8f6;
+    --color-on_surface: #231a16;
+    --color-surface_varient: #f5ded6;
+    --color-on_surface_varient: #53433e;
+ 
+    --color-outline: #85736d;
+    --color-outline_varient: #d8c2bb;
+  }
