@@ -1,5 +1,12 @@
 import { useEffect, useState, useRef } from 'react'
-import { deleteThread, getThreadDetail, postMessage, heartThread, unheartThread, ThreadDetailResponse } from '@/api/thread'
+import {
+  deleteThread,
+  getThreadDetail,
+  postMessage,
+  heartThread,
+  unheartThread,
+  ThreadDetailResponse
+} from '@/api/thread'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { uploadImage } from '@/api/upload'
@@ -90,10 +97,13 @@ function ThreadDetailPage() {
   if (error) return <div className={styles.error}>{error}</div>
   if (!threadData) return <div className={styles.error}>スレッドが見つかりません</div>
 
+  const uniqueUserCount = new Set(threadData.messages.map(msg => msg.created_by.id)).size
+
   return (
     <div className={styles.threadContainer}>
       <button onClick={() => navigate('/threads')} className={styles.backButton}>← 戻る</button>
 
+      {/* 原始スレッドの表示 */}
       <div className={styles.threadItem}>
         <div className={styles.threadAuthor}>
           <a
@@ -118,9 +128,7 @@ function ThreadDetailPage() {
             })}
           </div>
         </div>
-
         <div className={styles.threadContent}>{threadData.thread.title}</div>
-
         <div className={styles.threadActions}>
           <button
             onClick={handleHeart}
@@ -128,11 +136,15 @@ function ThreadDetailPage() {
           >
             {threadData.thread.is_hearted ? '❤️' : '🤍'} {threadData.thread.hearts_count}
           </button>
+          <div className={styles.replyCount}>
+            💬 {uniqueUserCount}
+          </div>
         </div>
       </div>
 
       <hr className={styles.divider} />
 
+      {/* メッセージ表示 */}
       <section className={styles.messagesSection}>
         {threadData.messages.length === 0 ? (
           <p>まだ返信はありません</p>
