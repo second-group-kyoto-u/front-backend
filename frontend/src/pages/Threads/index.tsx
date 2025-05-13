@@ -70,12 +70,7 @@ function ThreadsPage() {
             <p className={styles.noData}>スレッドがありません</p>
           ) : (
             threads.map((thread) => (
-              <div
-                key={thread.id}
-                className={styles.threadItem}
-                onClick={() => handleViewThread(thread.id)}
-              >
-                
+              <div key={thread.id} className={styles.threadItem}>
                 <div className={styles.threadAuthor}>
                   <a
                     href={`/user/${thread.created_by.id}`}
@@ -99,7 +94,6 @@ function ThreadsPage() {
                     })}
                   </div>
                 </div>
-
 
                 <div className={styles.threadContent}>{thread.title}</div>
 

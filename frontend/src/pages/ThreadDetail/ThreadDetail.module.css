@@ -4,75 +4,124 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 24px;
 }
 
 .backButton {
   color: #5c4033;
-  background: none;
-  border: none;
-  font-size: 14px;
+  background-color: rgba(92, 64, 51, 0.1);
+  border: 2px solid #5c4033;
+  font-size: 20px;
+  border-radius: 9999px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  text-align: left;
   padding: 0;
+  margin-bottom: 16px;
+  z-index: 20;
 }
 
-.threadCard {
+.threadItem {
   background-color: #ffffff;
   border: 1px solid #ddd;
   border-radius: 12px;
   padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s ease;
+  cursor: pointer;
+  position: relative;
 }
 
-.threadTitle {
-  font-size: 20px;
+.threadItem:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.threadAuthor {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.authorAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #e0e0e0;
+}
+
+.authorName {
   font-weight: bold;
   color: #5c4033;
+  font-size: 14px;
+  margin-right: auto;
 }
 
-.threadMeta {
-  font-size: 12px;
-  color: #5c4033;
-}
-
-.tagsContainer {
+.authorLink {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
 }
 
-.tag {
-  background-color: #e6dfd5;
-  color: #5c4033;
-  padding: 4px 10px;
-  border-radius: 9999px;
+.authorLink:hover .authorName {
+  text-decoration: underline;
+}
+
+.threadTime {
   font-size: 12px;
+  color: #5c4033;
+  margin-left: auto;
 }
 
-.heartButton {
-  display: inline-flex;
+.threadContent {
+  font-size: 16px;
+  color: #5c4033;
+  padding: 0;
+  border-radius: 0;
+  display: block;
+  margin-top: 6px;
+  background-color: transparent;
+  text-align: left;
+}
+
+.threadActions {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.actionButton {
+  display: flex;
   align-items: center;
   gap: 4px;
   color: #5c4033;
   font-size: 14px;
-  border: none;
   background: none;
+  border: none;
   cursor: pointer;
-  padding: 4px 8px;
-  transition: transform 0.2s ease;
 }
 
-.hearted {
+.actionButton:hover {
   text-decoration: underline;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 24px 0;
 }
 
 .messagesSection {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 80px; /* space for input */
 }
 
 .sectionTitle {
@@ -82,9 +131,7 @@
 }
 
 .messageBubble {
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 12px;
+  background-color: transparent;
   padding: 12px 16px;
 }
 
@@ -97,16 +144,20 @@
 
 .messageContent {
   margin-top: 8px;
-  font-size: 14px;
+  font-size: 16px;
   color: #5c4033;
   white-space: pre-wrap;
+  background-color: #FFDBCE;
+  padding: 0;
+  border-radius: 12px;
+  text-align: left;
 }
 
 .messageImage {
-  max-width: 100%;
-  max-height: 400px;
+  max-width: 200px;
+  max-height: 300px;
   object-fit: contain;
-  margin-top: 8px;
+  border-radius: 8px;
 }
 
 .replyForm {
@@ -117,47 +168,69 @@
   gap: 12px;
 }
 
-.textarea {
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #cccccc;
-  font-size: 16px;
-  color: #5c4033;
-  background: #ffffff;
+.fixedReplyForm {
+  display: flex;
+  padding: 12px;
+  background-color: white;
+  border-top: 1px solid #eee;
+  position: sticky;
+  bottom: 0;
 }
 
-.uploadLabel {
-  display: inline-block;
-  background-color: transparent;
-  color: #5c4033;
-  padding: 8px 16px;
-  border: 1px solid #cccccc;
-  border-radius: 9999px;
+.attachButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #888;
   cursor: pointer;
-  font-weight: bold;
-  text-align: center;
-  width: fit-content;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.hiddenFileInput {
+.attachButton:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.messageInput {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 24px;
+  padding: 8px 16px;
+  font-size: 16px;
+  resize: none;
+  outline: none;
+  max-height: 120px;
+  min-height: 40px;
+  background: transparent;
+}
+
+.messageInput:focus {
+  border-color: #5c4033;
+}
+
+.imageInput {
   display: none;
-}
-
-.fileName {
-  font-size: 12px;
-  color: #5c4033;
-  margin-top: 8px;
 }
 
 .sendButton {
   background-color: #5c4033;
   color: white;
-  padding: 10px 16px;
-  border-radius: 9999px;
   border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin-left: 8px;
   cursor: pointer;
-  align-self: flex-end;
-  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sendButton:hover {
+  background-color: #f4e7dd;
 }
 
 .sendButton:disabled {
@@ -165,15 +238,20 @@
   cursor: not-allowed;
 }
 
-.deleteButton {
-  background-color: #e53935;
-  color: white;
-  padding: 10px 16px;
-  border-radius: 8px;
+.cancelPreviewButton {
+  background-color: #ccc;
+  color: #5c4033;
   border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
-  align-self: flex-end;
+  margin-top: 8px;
+  align-self: flex-start;
+}
+
+.cancelPreviewButton:hover {
+  background-color: #bbb;
 }
 
 .loading,

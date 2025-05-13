@@ -54,7 +54,7 @@
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  margin-right: 10px;
+  background-color: #e0e0e0;
 }
 
 .authorName {
@@ -76,23 +76,15 @@
   text-decoration: underline;
 }
 
-.authorAvatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  background-color: #e0e0e0;
-}
-
 .threadTime {
   font-size: 12px;
   color: #5c4033;
+  margin-left: auto;
 }
 
 .threadContent {
   font-size: 14px;
   color: #5c4033;
-  background-color: #f4e7dd;
   padding: 10px 14px;
   border-radius: 12px;
   display: inline-block;
@@ -143,7 +135,6 @@
 .createButton:hover {
   background-color: #3e2b22;
 }
-
 
 .navigation {
   position: fixed;
