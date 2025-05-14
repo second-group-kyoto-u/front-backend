@@ -8,7 +8,7 @@
   }
   
   .container {
-    max-width: 600px;
+    max-width: 800px;
     width: 100%;
     background: #ffffff;
     padding: 30px;
@@ -33,6 +33,15 @@
     font-size: 24px;
     font-weight: bold;
     color: #5c4033;
+    margin-bottom: 10px;
+  }
+
+  .verified {
+    background-color: #4caf50;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
     margin-bottom: 10px;
   }
   
@@ -77,8 +86,10 @@
   .sectionTitle {
     font-size: 18px;
     font-weight: bold;
+    margin-bottom: 15px;
     color: #5c4033;
-    margin-bottom: 10px;
+    border-bottom: 2px solid #5c4033;
+    padding-bottom: 5px;
   }
   
   .tagsList {
@@ -97,18 +108,23 @@
   }
   
   .eventList {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 15px;
   }
   
   .eventCard {
-    background-color: #f9f9f9;
-    padding: 15px;
+    background-color: #f9f6f2;
     border-radius: 8px;
-    border: 1px solid #cccccc;
-    flex: 0 0 calc(50% - 7.5px);
-    box-sizing: border-box;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .eventCard:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   
   .eventTitle {
@@ -120,7 +136,12 @@
   
   .eventDescription {
     font-size: 14px;
-    color: #666666;
+    color: #666;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
   }
   
   .logoutButton {
