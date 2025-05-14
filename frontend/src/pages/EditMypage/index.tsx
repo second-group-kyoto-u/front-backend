@@ -75,7 +75,15 @@ function EditMypage() {
   return (
     <div className={styles.pageBackground}>
       <div className={styles.container}>
-        <h2 className={styles.title}>プロフィール編集</h2>
+        <div className={styles.headerRow}>
+          <button
+            className={styles.backButton}
+            onClick={() => navigate('/mypage')}
+          >
+            ←
+          </button>
+          <h2 className={styles.title}>プロフィール編集</h2>
+        </div>
 
         {message && <p className={styles.message}>{message}</p>}
 
