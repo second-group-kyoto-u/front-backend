@@ -232,24 +232,6 @@ export const createEvent = async (data: {
   }
 };
 
-// イメージのアップロード
-export const uploadEventImage = async (file: File) => {
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    const response = await axios.post('upload/event-image', formData, {
-      headers: {
-        ...getAuthHeader(),
-        'Content-Type': 'multipart/form-data'
-      }
-    });
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
 // 自分が参加しているイベント一覧を取得
 export const getJoinedEvents = async () => {
   try {

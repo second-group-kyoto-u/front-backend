@@ -28,4 +28,30 @@ export const uploadImage = async (
     headers
   })
   return res.data
-} 
+}
+
+// イベント用画像アップロードAPI
+export type EventImageUploadResponse = {
+  image_id: string;
+};
+
+export const uploadEventImage = async (
+  file: File,
+  token?: string
+): Promise<EventImageUploadResponse> => {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'multipart/form-data',
+  }
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  const res = await axios.post<EventImageUploadResponse>('upload/event-image', formData, {
+    headers
+  })
+  return res.data
+}

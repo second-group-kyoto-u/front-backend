@@ -100,6 +100,10 @@ def create_app():
     from app.routes.user_routes import user_bp
     app.register_blueprint(user_bp, url_prefix="/api/user")
 
+    from app.routes.area_routes import area_bp
+    app.register_blueprint(area_bp, url_prefix="/api/area")
+
+
     # modelsに定義されたモデルクラスと見て、対応するテーブルをデータベースに作成し、appではモデルクラスを介してデータベーステーブルと対話する。
     with app.app_context():
         db.create_all()

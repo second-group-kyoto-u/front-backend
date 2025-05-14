@@ -136,20 +136,25 @@ def create_event():
     
     # リクエストデータの取得
     data = request.get_json()
-    message = data.get('message')
+    title = data.get('title')
+    description = data.get('description')
     image_id = data.get('image_id')
     limit_persons = data.get('limit_persons', 10)
     area_id = data.get('area_id')
     tags = data.get('tags', [])
     
     # 必須項目のバリデーション
-    if not message:
-        return jsonify({"error": "メッセージは必須です"}), 400
+    if not title:
+       return jsonify({"error": "タイトルは必須です"}), 400
+    
+    if not description:
+        return jsonify({"error": "イベントの詳細は必須です"}), 400
     
     # 新規イベントの作成
     event = Event(
         id=str(uuid.uuid4()),
-        message=message,
+        title=title,
+        description=description,
         image_id=image_id,
         current_persons=1,  # 作成者を含む
         limit_persons=limit_persons,

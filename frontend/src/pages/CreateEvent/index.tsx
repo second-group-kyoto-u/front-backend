@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createEvent, uploadEventImage } from '@/api/event';
+import { createEvent } from '@/api/event';
+import { uploadEventImage } from '@/api/upload';
+import { getAreas, Area } from '@/api/area';
 import styles from './CreateEvent.module.css';
 
 // APIでタグを取得するべきだが、簡略化のためここで定義
@@ -8,23 +10,12 @@ const AVAILABLE_TAGS = [
   '自然', 'グルメ', 'アウトドア', 'スポーツ', '文化', 'ショッピング', '観光', '歴史'
 ];
 
-interface AreaType {
-  id: string;
-  name: string;
-}
 
-// APIでエリアを取得するべきだが、簡略化のためここで定義
-const AVAILABLE_AREAS: AreaType[] = [
-  { id: '1', name: '東京' },
-  { id: '2', name: '大阪' },
-  { id: '3', name: '京都' },
-  { id: '4', name: '沖縄' },
-  { id: '5', name: '北海道' },
-];
 
 const CreateEventPage: React.FC = () => {
   const navigate = useNavigate();
   
+  const [areas, setAreas] = useState<Area[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -44,6 +35,19 @@ const CreateEventPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const fetchedAreas = await getAreas();
+        setAreas(fetchedAreas);
+        console.log("送信されるarea_id", formData.area_id);
+      } catch (err) {
+        console.error('エリアの取得に失敗しました', err);
+      }
+    })();
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -313,7 +317,7 @@ const CreateEventPage: React.FC = () => {
               required
             >
               <option value="">選択してください</option>
-              {AVAILABLE_AREAS.map(area => (
+              {areas.map(area => (
                 <option key={area.id} value={area.id}>
                   {area.name}
                 </option>
