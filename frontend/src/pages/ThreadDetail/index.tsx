@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
 import {
-  deleteThread,
   getThreadDetail,
   postMessage,
   heartThread,
@@ -10,23 +9,30 @@ import {
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { uploadImage } from '@/api/upload'
-import { Paperclip, Send } from 'lucide-react'
 import styles from './ThreadDetail.module.css'
 
 function ThreadDetailPage() {
   const { threadId } = useParams<{ threadId?: string }>()
-  const { token, user } = useAuth()
+  const { token } = useAuth()
   const navigate = useNavigate()
   const [threadData, setThreadData] = useState<ThreadDetailResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [newMessage, setNewMessage] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [selectedFilePreview, setSelectedFilePreview] = useState<string | null>(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  const cancelFileSelection = () => {
+    setSelectedFile(null)
+    setSelectedFilePreview(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
 
   useEffect(() => {
     if (threadId) fetchThreadDetail(threadId)
@@ -73,48 +79,55 @@ function ThreadDetailPage() {
     if (!token || !threadId || isSubmitting) return
     if (!newMessage.trim() && !selectedFile) return
     setIsSubmitting(true)
-    try {
-      if (selectedFile) {
-        const uploadResult = await uploadImage(selectedFile, token)
-        await postMessage(threadId, { content: uploadResult.image.id, message_type: 'image' }, token)
-        setSelectedFile(null)
-        setPreviewUrl(null)
-      } else {
-        await postMessage(threadId, { content: newMessage, message_type: 'text' }, token)
-        setNewMessage('')
-      }
-      fetchThreadDetail(threadId)
+    setUploadProgress(0)
 
-      if (inputRef.current) {
-        inputRef.current.blur()
+    try {
+      let message_type = 'text'
+      let content = newMessage
+
+      if (selectedFile) {
+        const uploadResult = await uploadImage(selectedFile, token, (progress) => {
+          setUploadProgress(progress)
+        })
+
+        if (newMessage.trim()) {
+          content = JSON.stringify({ text: newMessage, image: uploadResult.image.id })
+          message_type = 'mixed'
+        } else {
+          content = uploadResult.image.id
+          message_type = 'image'
+        }
       }
+
+      await postMessage(threadId, { content, message_type }, token)
+      setNewMessage('')
+      cancelFileSelection()
+      fetchThreadDetail(threadId)
+      inputRef.current?.blur()
     } catch {
       setError('メッセージの投稿に失敗しました')
     } finally {
       setIsSubmitting(false)
+      setUploadProgress(0)
     }
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      const reader = new FileReader();
+      const file = e.target.files[0]
+      setSelectedFile(file)
+      const reader = new FileReader()
       reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+        setSelectedFilePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
     }
-  };
-
-  const handleClickItem = () => {
-    inputRef.current?.focus()
   }
 
+  const handleClickItem = () => inputRef.current?.focus()
+
   const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === containerRef.current) {
-      inputRef.current?.blur()
-    }
+    if (e.target === containerRef.current) inputRef.current?.blur()
   }
 
   if (loading) return <div className={styles.loading}>読み込み中...</div>
@@ -127,11 +140,7 @@ function ThreadDetailPage() {
 
       <div className={styles.threadItem} onClick={handleClickItem}>
         <div className={styles.threadAuthor}>
-          <a
-            href={`/user/${threadData.thread.created_by.id}`}
-            onClick={(e) => e.stopPropagation()}
-            className={styles.authorLink}
-          >
+          <a href={`/user/${threadData.thread.created_by.id}`} onClick={(e) => e.stopPropagation()} className={styles.authorLink}>
             <img
               className={styles.authorAvatar}
               src={threadData.thread.created_by.profile_image_url || '/default-avatar.png'}
@@ -140,20 +149,12 @@ function ThreadDetailPage() {
             />
             <div className={styles.authorName}>{threadData.thread.created_by.user_name}</div>
           </a>
-          <div className={styles.threadTime}>
-            {new Date(threadData.thread.created_at).toLocaleTimeString([], {
-              hour: '2-digit', minute: '2-digit',
-            })}
-          </div>
+          <div className={styles.threadTime}>{new Date(threadData.thread.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
         </div>
         <div className={styles.threadContent}>{threadData.thread.title}</div>
         <div className={styles.threadActions}>
-          <button className={styles.actionButton} onClick={handleHeart}>
-            ❤️ {threadData.thread.hearts_count}
-          </button>
-          <button className={styles.actionButton} onClick={() => inputRef.current?.focus()}>
-            💬 {threadData.thread.messages_count}
-          </button>
+          <button className={styles.actionButton} onClick={handleHeart}>❤️ {threadData.thread.hearts_count}</button>
+          <button className={styles.actionButton} onClick={() => inputRef.current?.focus()}>💬 {threadData.thread.messages_count}</button>
         </div>
       </div>
 
@@ -163,43 +164,53 @@ function ThreadDetailPage() {
         {threadData.messages.length === 0 ? (
           <p>まだ返信はありません</p>
         ) : (
-          threadData.messages.map((msg, index) => (
-            <div
-              key={msg.id}
-              className={`${styles.threadItem} ${styles.messageAppear}`}
-              style={{ animationDelay: `${index * 60}ms` }}
-              onClick={handleClickItem}
-            >
-              <div className={styles.threadAuthor}>
-                <a
-                  href={`/user/${msg.created_by.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className={styles.authorLink}
-                >
-                  <img
-                    className={styles.authorAvatar}
-                    src={msg.created_by.profile_image_url || '/default-avatar.png'}
-                    onError={(e) => { e.currentTarget.src = '/default-avatar.png' }}
-                    alt={`${msg.created_by.user_name}のプロフィール画像`}
-                  />
-                  <div className={styles.authorName}>{msg.created_by.user_name}</div>
-                </a>
-                <div className={styles.threadTime}>
-                  {new Date(msg.created_at).toLocaleTimeString([], {
-                    hour: '2-digit', minute: '2-digit',
-                  })}
+          threadData.messages.map((msg, index) => {
+            const content = msg.message_type === 'mixed' ? JSON.parse(msg.content) : msg.content
+            return (
+              <div key={msg.id} className={`${styles.threadItem} ${styles.messageAppear}`} style={{ animationDelay: `${index * 60}ms` }} onClick={handleClickItem}>
+                <div className={styles.threadAuthor}>
+                  <a href={`/user/${msg.created_by.id}`} onClick={(e) => e.stopPropagation()} className={styles.authorLink}>
+                    <img
+                      className={styles.authorAvatar}
+                      src={msg.created_by.profile_image_url || '/default-avatar.png'}
+                      onError={(e) => { e.currentTarget.src = '/default-avatar.png' }}
+                      alt={`${msg.created_by.user_name}のプロフィール画像`}
+                    />
+                    <div className={styles.authorName}>{msg.created_by.user_name}</div>
+                  </a>
+                  <div className={styles.threadTime}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+                <div className={styles.threadContent}>
+                  {msg.message_type === 'text' && <p>{msg.content}</p>}
+                  {msg.message_type === 'image' && <img src={`/image/${msg.content}`} alt="画像" className={styles.messageImage} onError={(e) => { e.currentTarget.src = '/fallback.png' }} />}
+                  {msg.message_type === 'mixed' && (
+                    <>
+                      {content.text && <p>{content.text}</p>}
+                      {content.image && <img src={`/image/${content.image}`} alt="画像" className={styles.messageImage} onError={(e) => { e.currentTarget.src = '/fallback.png' }} />}
+                    </>
+                  )}
                 </div>
               </div>
-              <div className={styles.threadContent}>
-                {msg.message_type === 'text'
-                  ? <p>{msg.content}</p>
-                  : <img src={msg.content} alt="画像" className={styles.messageImage} />}
-              </div>
-            </div>
-          ))
+            )
+          })
         )}
         <div id="replyBox" />
       </section>
+
+      {uploadProgress > 0 && uploadProgress < 100 && (
+        <div className={styles.uploadProgress}>
+          <div className={styles.uploadProgressBar} style={{ width: `${uploadProgress}%` }} />
+          <span className={styles.uploadProgressText}>アップロード中...</span>
+        </div>
+      )}
+
+      {selectedFile && (
+        <div className={styles.selectedFile}>
+          {selectedFilePreview && <img src={selectedFilePreview} alt="プレビュー" className={styles.imagePreview} />}
+          <span className={styles.selectedFileName}>{selectedFile.name}</span>
+          <button onClick={cancelFileSelection} className={styles.cancelFileButton} aria-label="ファイル選択をキャンセル">×</button>
+        </div>
+      )}
 
       <form className={styles.fixedReplyForm} onSubmit={handleSubmit}>
         <input
@@ -214,9 +225,7 @@ function ThreadDetailPage() {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           className={styles.attachButton}
-        >
-          📎
-        </button>
+        >📎</button>
 
         <textarea
           ref={inputRef}
@@ -233,11 +242,8 @@ function ThreadDetailPage() {
           type="submit"
           className={styles.sendButton}
           disabled={isSubmitting || (!newMessage.trim() && !selectedFile)}
-        >
-          →
-        </button>
+        >→</button>
       </form>
-
     </div>
   )
 }
