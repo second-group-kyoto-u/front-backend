@@ -613,6 +613,40 @@ def get_friends_events():
         "events": events_data
     })
 
+@event_bp.route("/joined-events", methods=["GET", "OPTIONS"])
+def get_joined_events():
+    if request.method == "OPTIONS":
+        # プリフライトリクエストに対しては何もしないで 200 を返す
+        response = make_response('', 200)
+        response.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin', '*')
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+
+    """認証済みユーザーが参加しているイベントのリストを返す"""
+    user, error_response, error_code = get_authenticated_user()
+    if error_response:
+        return jsonify(error_response), error_code
+
+    memberships = UserMemberGroup.query.filter_by(user_id=user.id).all()
+    event_ids = [m.event_id for m in memberships]
+
+    events = Event.query.filter(
+        Event.id.in_(event_ids),
+        Event.is_deleted == False
+    ).order_by(Event.published_at.desc()).all()
+
+    event_data = [
+        {
+            "id": e.id,
+            "title": e.title,
+            "description": e.description
+        } for e in events
+    ]
+
+    return jsonify({"events": event_data})
+
 @event_bp.route('/<event_id>/bot/trivia', methods=['POST'])
 def event_bot_trivia(event_id):
     """

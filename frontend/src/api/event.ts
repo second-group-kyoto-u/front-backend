@@ -250,6 +250,18 @@ export const uploadEventImage = async (file: File) => {
   }
 };
 
+// 自分が参加しているイベント一覧を取得
+export const getJoinedEvents = async () => {
+  try {
+    const response = await axios.get('event/joined-events', {
+      headers: getAuthHeader()
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // botの豆知識生成API
 export const generateBotTrivia = async (eventId: string, data?: {
   topic?: string;

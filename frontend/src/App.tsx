@@ -12,6 +12,7 @@ import CreateEventPage from './pages/CreateEvent'
 import EventDetailPage from './pages/EventDetail'
 import EventTalkPage from './pages/EventTalk'
 import RegisterPage from './pages/Register'
+import TalkListPage from './pages/TalkList'
 import './App.css'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AuthRoute } from './components/AuthRoute'
@@ -130,6 +131,17 @@ function App(): JSX.Element {
             </Layout>
           }
         />
+
+        {/* 参加中のイベントトークとDMの表示 */}
+        <Route 
+          path="/talk" 
+          element={
+            <Layout>
+              <TalkListPage />
+            </Layout>
+          }
+        />
+
 
         {/* ユーザープロフィール */}
         <Route
