@@ -15,7 +15,7 @@ from app.models.event import Event, UserMemberGroup, UserHeartEvent, TagMaster, 
 from app.models.area import AreaList
 from app.models.file import ImageList
 from app.models.thread import Thread, ThreadMessage, UserHeartThread
-from app.models.message import EventMessage, FriendRelationship
+from app.models.message import EventMessage, FriendRelationship, DirectMessage
 import boto3
 from werkzeug.utils import secure_filename
 from botocore.exceptions import ClientError
@@ -161,7 +161,9 @@ with app.app_context():
             "password": "123",
             "birthdate": datetime(1990, 1, 1),
             "profile": "旅行が好きです。よろしくお願いします。",
-            "image_path": TEST_IMAGE_PATH
+            "image_path": TEST_IMAGE_PATH,
+            "gender": "male",
+            "living_place": "東京都新宿区"
         },
         {
             "id": str(uuid.uuid4()),
@@ -170,7 +172,9 @@ with app.app_context():
             "password": "123",
             "birthdate": datetime(1985, 5, 15),
             "profile": "写真撮影が趣味です。一緒に素敵な景色を見に行きましょう。",
-            "image_path": TEST_IMAGE_PATH
+            "image_path": TEST_IMAGE_PATH,
+            "gender": "male",
+            "living_place": "東京都中央区"
         },
         {
             "id": str(uuid.uuid4()),
@@ -179,7 +183,9 @@ with app.app_context():
             "password": "123",
             "birthdate": datetime(1992, 10, 20),
             "profile": "食べ歩きが大好きです。おいしいお店探しましょう！",
-            "image_path": TEST_IMAGE_PATH
+            "image_path": TEST_IMAGE_PATH,
+            "gender": "female",
+            "living_place": "大阪府大阪市"
         },
         # 動物画像を使ったユーザーを追加
         {
@@ -189,7 +195,9 @@ with app.app_context():
             "password": "123",
             "birthdate": datetime(1988, 3, 15),
             "profile": "乗馬が趣味です。自然の中で過ごすのが好きです。",
-            "image_path": os.path.join(os.path.dirname(__file__), "users", "ウマ.png")
+            "image_path": os.path.join(os.path.dirname(__file__), "users", "ウマ.png"),
+            "gender": "male",
+            "living_place": "北海道帯広市"
         },
         {
             "id": str(uuid.uuid4()),
@@ -198,7 +206,9 @@ with app.app_context():
             "password": "123",
             "birthdate": datetime(1995, 7, 25),
             "profile": "山登りが得意です。高山でも元気に動き回ります！",
-            "image_path": os.path.join(os.path.dirname(__file__), "users", "オコジョ.png")
+            "image_path": os.path.join(os.path.dirname(__file__), "users", "オコジョ.png"),
+            "gender": "male",
+            "living_place": "北海道旭川市"
         },
         {
             "id": str(uuid.uuid4()),
@@ -207,7 +217,9 @@ with app.app_context():
             "password": "123",
             "birthdate": datetime(1993, 12, 24),
             "profile": "寒い地域が大好きです。クリスマスシーズンが特に忙しいです。",
-            "image_path": os.path.join(os.path.dirname(__file__), "users", "トナカイ.png")
+            "image_path": os.path.join(os.path.dirname(__file__), "users", "トナカイ.png"),
+            "gender": "female",
+            "living_place": "北海道札幌市"
         },
         {
             "id": str(uuid.uuid4()),
@@ -216,7 +228,9 @@ with app.app_context():
             "password": "123",
             "birthdate": datetime(1991, 4, 1),
             "profile": "早起きが得意です。朝の散歩ツアーを企画しています。",
-            "image_path": os.path.join(os.path.dirname(__file__), "users", "ニワトリ.png")
+            "image_path": os.path.join(os.path.dirname(__file__), "users", "ニワトリ.png"),
+            "gender": "male",
+            "living_place": "東京都世田谷区"
         },
         {
             "id": str(uuid.uuid4()),
@@ -225,7 +239,9 @@ with app.app_context():
             "password": "123",
             "birthdate": datetime(1989, 8, 10),
             "profile": "岩場での休憩が趣味です。日向ぼっこが大好き。",
-            "image_path": os.path.join(os.path.dirname(__file__), "users", "ハイラックス.png")
+            "image_path": os.path.join(os.path.dirname(__file__), "users", "ハイラックス.png"),
+            "gender": "female",
+            "living_place": "沖縄県那覇市"
         },
         {
             "id": str(uuid.uuid4()),
@@ -234,7 +250,9 @@ with app.app_context():
             "password": "123",
             "birthdate": datetime(1996, 2, 14),
             "profile": "小さな隠れ家が大好きです。種集めが趣味です。",
-            "image_path": os.path.join(os.path.dirname(__file__), "users", "ハムスター.png")
+            "image_path": os.path.join(os.path.dirname(__file__), "users", "ハムスター.png"),
+            "gender": "male",
+            "living_place": "東京都中野区"
         },
         {
             "id": str(uuid.uuid4()),
@@ -243,7 +261,9 @@ with app.app_context():
             "password": "123",
             "birthdate": datetime(1987, 6, 30),
             "profile": "砂漠ツアーガイドをしています。暑さに強いです。",
-            "image_path": os.path.join(os.path.dirname(__file__), "users", "ラクダ.png")
+            "image_path": os.path.join(os.path.dirname(__file__), "users", "ラクダ.png"),
+            "gender": "male",
+            "living_place": "沖縄県石垣市"
         },
         {
             "id": str(uuid.uuid4()),
@@ -252,7 +272,9 @@ with app.app_context():
             "password": "123",
             "birthdate": datetime(1994, 9, 5),
             "profile": "モフモフした毛が自慢です。編み物ワークショップを開催しています。",
-            "image_path": os.path.join(os.path.dirname(__file__), "users", "黒い羊.png")
+            "image_path": os.path.join(os.path.dirname(__file__), "users", "黒い羊.png"),
+            "gender": "female",
+            "living_place": "北海道ニセコ町"
         }
     ]
     
@@ -264,6 +286,8 @@ with app.app_context():
             user_name=user_data["name"],
             birthdate=user_data["birthdate"],
             profile_message=user_data["profile"],
+            gender=user_data["gender"],
+            living_place=user_data["living_place"],
             is_certificated=True
         )
         user.set_password(user_data["password"])
@@ -658,9 +682,12 @@ with app.app_context():
             "current": 1,
             "published_at": datetime.now(JST) - timedelta(days=3),
             "tags": ["文化", "ショッピング"]
-        }
+        },
+        
+        # 山岳トレッキングのメッセージ
     ]
     
+    # イベントの作成とIDの取得
     event_ids = []
     for event_data in events:
         tags = event_data.pop("tags", [])  # tagsキーを取り出して削除
@@ -837,6 +864,15 @@ with app.app_context():
             "area_id": areas[4]["id"],  # 北海道
             "author_id": user_ids["yamada@example.com"],
             "published_at": datetime.now(JST)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "title": "沖縄の海を楽しむおすすめスポット",
+            "message": "沖縄旅行で海を楽しめるおすすめスポットを教えてください！シュノーケリングやダイビングに興味があります。",
+            "image_id": None,
+            "area_id": areas[3]["id"],  # 沖縄
+            "author_id": user_ids["hyrax@example.com"],
+            "published_at": datetime.now(JST) - timedelta(hours=5)
         }
     ]
     
@@ -860,7 +896,8 @@ with app.app_context():
     # スレッドタグを設定
     thread_tags = [
         {"thread_id": thread_ids[0], "tags": ["文化", "自然"]},
-        {"thread_id": thread_ids[1], "tags": ["自然", "アウトドア"]}
+        {"thread_id": thread_ids[1], "tags": ["自然", "アウトドア"]},
+        {"thread_id": thread_ids[2], "tags": ["自然", "アウトドア", "スポーツ"]}
     ]
     
     for thread_tag in thread_tags:
@@ -891,28 +928,385 @@ with app.app_context():
     
     # スレッドメッセージを作成
     thread_messages = [
+        # 京都のおすすめ観光スポットスレッド
         {
             "id": str(uuid.uuid4()),
             "thread_id": thread_ids[0],
             "sender_user_id": user_ids["test@example.com"],
-            "content": "京都のおすすめ観光スポットを教えてください！",
-            "timestamp": datetime.now(JST) - timedelta(days=1),
+            "content": "京都のおすすめ観光スポットを教えてください！初めて行くので地元の方のおすすめが知りたいです。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=2),
             "message_type": "text"
         },
         {
             "id": str(uuid.uuid4()),
             "thread_id": thread_ids[0],
             "sender_user_id": user_ids["tanaka@example.com"],
-            "content": "清水寺は必見です！夕方の景色が特に美しいです。",
+            "content": "清水寺は必見です！夕方の景色が特に美しいです。夕焼けの時間帯がおすすめですよ。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=1, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[0],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "伏見稲荷大社も外せないスポットです。千本鳥居の写真は絶対に撮りたいですね！",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=1),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[0],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "早朝の嵐山竹林は人が少なくて静かに散策できておすすめです。朝活するならぜひ！",
+            "timestamp": datetime.now(JST) - timedelta(days=1, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[0],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "みなさん、ありがとうございます！清水寺、伏見稲荷、嵐山竹林を予定に入れます。京都でおすすめのカフェや食事処はありますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=1, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[0],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "祇園にある和カフェ「茶寮」がとても素敵ですよ。お抹茶パフェが人気です！",
+            "timestamp": datetime.now(JST) - timedelta(days=1, minutes=15),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[0],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "先斗町の「京味」という居酒屋がおすすめです。京都の郷土料理が手頃な価格で楽しめます。",
+            "timestamp": datetime.now(JST) - timedelta(hours=23),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[0],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "祇園四条駅近くの「抹茶館」のパフェもおすすめです。暑い日には冷たい抹茶スイーツが最高です。",
+            "timestamp": datetime.now(JST) - timedelta(hours=22),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[0],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "これは嬉しいです！カフェと食事の情報もありがとうございます。京都の服装について何かアドバイスはありますか？9月中旬に行く予定です。",
+            "timestamp": datetime.now(JST) - timedelta(hours=21),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[0],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "9月の京都はまだ暑いことが多いですが、朝晩は少し涼しくなります。カーディガンなど羽織るものがあると安心です。",
+            "timestamp": datetime.now(JST) - timedelta(hours=20),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[0],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "寺社仏閣を回る際は歩きやすい靴が必須です！また、急な雨に備えて折りたたみ傘があると便利ですよ。",
+            "timestamp": datetime.now(JST) - timedelta(hours=19),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[0],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "京都は交通手段も大事です。市バスの一日乗車券があると便利ですよ。主要な観光地をほぼカバーしています。",
+            "timestamp": datetime.now(JST) - timedelta(hours=18),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[0],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "市バスの一日乗車券は必須ですね！みなさん本当にありがとうございます。これだけ情報があれば京都旅行が楽しみになりました！",
             "timestamp": datetime.now(JST) - timedelta(hours=12),
+            "message_type": "text"
+        },
+        
+        # 北海道旅行のアドバイススレッド
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "北海道旅行で絶対に行くべき場所は？冬に1週間ほど行く予定です。",
+            "timestamp": datetime.now(JST) - timedelta(hours=10),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "冬の北海道なら札幌雪まつりは外せません！2月上旬に開催されるので、その時期であれば必見です。",
+            "timestamp": datetime.now(JST) - timedelta(hours=9, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "ニセコでのスキーやスノーボードもおすすめ！パウダースノーは世界的に有名です。",
+            "timestamp": datetime.now(JST) - timedelta(hours=9, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "冬の小樽運河の夜景は幻想的で美しいです。雪と灯りのコントラストが素敵ですよ。",
+            "timestamp": datetime.now(JST) - timedelta(hours=9),
             "message_type": "text"
         },
         {
             "id": str(uuid.uuid4()),
             "thread_id": thread_ids[1],
             "sender_user_id": user_ids["yamada@example.com"],
-            "content": "北海道旅行で絶対に行くべき場所は？",
-            "timestamp": datetime.now(JST),
+            "content": "札幌雪まつりの時期に合わせられそうです！スキーは初心者ですが、ニセコは初心者でも楽しめますか？",
+            "timestamp": datetime.now(JST) - timedelta(hours=8, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "ニセコは初心者向けのコースもあるので大丈夫ですよ！レッスンも充実していて、外国人インストラクターも多いです。",
+            "timestamp": datetime.now(JST) - timedelta(hours=8, minutes=15),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "知床も素晴らしいですが、冬は天候によってアクセスが難しいことがあるので注意が必要です。",
+            "timestamp": datetime.now(JST) - timedelta(hours=8),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "旭山動物園もおすすめです。冬ならではのペンギンの散歩や動物たちの様子が見られます。",
+            "timestamp": datetime.now(JST) - timedelta(hours=7, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "旭山動物園は行きたいと思っていました！ありがとうございます。北海道でのグルメのおすすめはありますか？",
+            "timestamp": datetime.now(JST) - timedelta(hours=7, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "札幌のスープカレーは必食です！「らっきょ」や「Picante」など名店が多いですよ。",
+            "timestamp": datetime.now(JST) - timedelta(hours=7, minutes=15),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "小樽ではもちろん海鮮！「小樽三角市場」で新鮮な海鮮丼を食べるのがおすすめです。",
+            "timestamp": datetime.now(JST) - timedelta(hours=7),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "冬の北海道は寒いので、温かいラーメンも良いですよ。札幌の味噌ラーメンは特に有名です。「すみれ」や「白樺山荘」がおすすめ！",
+            "timestamp": datetime.now(JST) - timedelta(hours=6, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "函館の夜景も美しいですよ。函館山からの景色は日本三大夜景の一つです。",
+            "timestamp": datetime.now(JST) - timedelta(hours=6, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "みなさん本当にありがとうございます！これだけの情報があれば北海道旅行が楽しみになりました。スープカレーとラーメンは絶対に食べてみます！",
+            "timestamp": datetime.now(JST) - timedelta(hours=6),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "冬の北海道は服装も重要です！厚手のダウンやブーツ、手袋、マフラーなど、しっかりした防寒具が必要ですよ。",
+            "timestamp": datetime.now(JST) - timedelta(hours=5),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "そうそう、靴は滑り止めのしっかりしたものがおすすめです。道路が凍結していることが多いので。",
+            "timestamp": datetime.now(JST) - timedelta(hours=4, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[1],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "防寒対策もしっかりします！本当にありがとうございました。素敵な北海道旅行にします！",
+            "timestamp": datetime.now(JST) - timedelta(hours=4),
+            "message_type": "text"
+        },
+        
+        # 沖縄の海を楽しむおすすめスポットスレッド
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "沖縄旅行で海を楽しめるおすすめスポットを教えてください！シュノーケリングやダイビングに興味があります。",
+            "timestamp": datetime.now(JST) - timedelta(hours=5),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["rakuda@example.com"],
+            "content": "沖縄本島なら青の洞窟が有名ですよ！透明度が高く、魚も多いのでシュノーケリング初心者でも楽しめます。",
+            "timestamp": datetime.now(JST) - timedelta(hours=4, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "慶良間諸島も絶対おすすめ！特に渡嘉敷島は「ケラマブルー」と呼ばれる美しい海の色が見られます。",
+            "timestamp": datetime.now(JST) - timedelta(hours=4, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "宮古島の与那覇前浜ビーチも透明度抜群！シュノーケリングだけでなく、ただ海を眺めているだけでも癒されます。",
+            "timestamp": datetime.now(JST) - timedelta(hours=4, minutes=15),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "みなさんありがとうございます！ダイビングは初心者なのですが、初心者向けのダイビングスポットはありますか？",
+            "timestamp": datetime.now(JST) - timedelta(hours=4),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "真栄田岬（まえだみさき）は初心者向けのダイビングスクールがたくさんあります。青の洞窟に潜るツアーもありますよ。",
+            "timestamp": datetime.now(JST) - timedelta(hours=3, minutes=50),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "恩納村のビーチも初心者向け。サンゴや熱帯魚がたくさん見られて、浅いところからでも楽しめます。",
+            "timestamp": datetime.now(JST) - timedelta(hours=3, minutes=40),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "水納島は浅瀬でも色とりどりの魚が見られます。島自体も小さくて素朴な雰囲気が素敵ですよ。",
+            "timestamp": datetime.now(JST) - timedelta(hours=3, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "真栄田岬、恩納村、水納島...全部行ってみたいですね！沖縄に何日くらい滞在するのがベストでしょうか？",
+            "timestamp": datetime.now(JST) - timedelta(hours=3, minutes=20),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "本島だけなら最低3日、離島も回るなら5日以上はほしいですね。移動に時間がかかることも考慮した方がいいです。",
+            "timestamp": datetime.now(JST) - timedelta(hours=3, minutes=10),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "沖縄は早朝の海も美しいので、朝活もおすすめ。日の出とともに海に出ると、また違った景色が見られますよ。",
+            "timestamp": datetime.now(JST) - timedelta(hours=3),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "シュノーケリングやダイビング以外なら、グラスボートもおすすめです。濡れずに海の中を観察できるので、海が苦手な人も楽しめます。",
+            "timestamp": datetime.now(JST) - timedelta(hours=2, minutes=50),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "沖縄の海は紫外線が強いので、日焼け止めは必須です。できれば環境に優しい日焼け止めを使いましょう。サンゴに悪影響を与えないためです。",
+            "timestamp": datetime.now(JST) - timedelta(hours=2, minutes=40),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "ダイビングの後は沖縄の海鮮料理もおすすめ！特に地元の居酒屋で食べる海ぶどうや島豆腐、ソーキそばは絶品です。",
+            "timestamp": datetime.now(JST) - timedelta(hours=2, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "みなさん本当にありがとうございます！これだけ情報があると沖縄が楽しみになってきました。まずは5日間の予定で計画を立ててみます。環境に優しい日焼け止めも準備します！",
+            "timestamp": datetime.now(JST) - timedelta(hours=2, minutes=20),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["rakuda@example.com"],
+            "content": "沖縄の天気は変わりやすいので、余裕を持ったスケジュールがおすすめです。マリンアクティビティは晴れの日に集中させると良いですよ。",
+            "timestamp": datetime.now(JST) - timedelta(hours=2, minutes=10),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "thread_id": thread_ids[2],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "なるほど！天気予報もこまめにチェックします。本当にありがとうございました！",
+            "timestamp": datetime.now(JST) - timedelta(hours=2),
             "message_type": "text"
         }
     ]
@@ -933,12 +1327,199 @@ with app.app_context():
     
     # イベントメッセージを作成
     event_messages = [
+        # いちご狩りツアーのメッセージ
         {
             "id": str(uuid.uuid4()),
             "event_id": event_ids[0],
             "sender_user_id": user_ids["test@example.com"],
             "content": "いちご狩りの集合場所は東京駅南口です。10時に集合しましょう！",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=12),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[0],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "了解しました！楽しみにしています。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=11, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[0],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "少し遅れるかもしれません。10時15分頃には到着できると思います。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=11),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[0],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "大丈夫です！少し待ちますので、気をつけてお越しください。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=10, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[0],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "何か持っていくものはありますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=10, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[0],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "特に必要なものはありませんが、エプロンがあると便利かもしれません。いちごの汁で服が汚れる可能性があります。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=10),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[0],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "いちご狩りの後、どこかでランチをする予定はありますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=9),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[0],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "良いご提案ですね！いちご狩り農園の近くにおいしいイタリアンレストランがあります。皆さんご希望であれば予約しておきますが、いかがでしょうか？",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=8, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[0],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "イタリアン良いですね！ぜひお願いします。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=8, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[0],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "私も賛成です！",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=8, minutes=15),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[0],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "では、13時にレストラン「ラ・フレーザ」で予約を入れておきます。いちご狩りの後に向かいましょう！",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=8),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[0],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "素敵ですね！楽しみにしています。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=7, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[0],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "天気予報では明日は晴れだそうです。絶好のいちご狩り日和になりそうですね！",
+            "timestamp": datetime.now(JST) - timedelta(hours=18),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[0],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "それは良かったです！では、明日の10時に東京駅南口でお会いしましょう。皆さん、お気をつけてお越しください。",
             "timestamp": datetime.now(JST) - timedelta(hours=12),
+            "message_type": "text"
+        },
+        
+        # 東京スカイツリー観光のメッセージ
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[1],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "東京スカイツリー観光のグループへようこそ！集合は明後日、スカイツリー1階エントランス前で11時です。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=15),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[1],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "ありがとうございます！観光後に何か予定はありますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=14, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[1],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "展望台見学の後、近くの浅草で食事と観光をする予定です。もし他に希望があれば教えてください！",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=14),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[1],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "浅草の観光はどのくらいの時間を予定していますか？夕方には別の予定があるため、早めに切り上げる必要があります。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=13),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[1],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "浅草での観光は15時頃までを予定しています。途中で抜けていただいても問題ありません。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=12, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[1],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "浅草寺にお参りしたいです！ぜひ立ち寄りましょう。",
+            "timestamp": datetime.now(JST) - timedelta(days=2, hours=16),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[1],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "もちろん！浅草寺とその周辺も観光する予定です。雷門から仲見世通りを通って浅草寺まで行き、その後、周辺のお店も見て回る予定です。",
+            "timestamp": datetime.now(JST) - timedelta(days=2, hours=15, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[1],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "スカイツリーのチケットは事前に購入しておいた方が良いでしょうか？",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=13),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[1],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "すでに団体予約をしているので大丈夫です！11時15分の入場予約を取っています。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=12, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[1],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "明日の天気は快晴の予報です！スカイツリーからの眺めが楽しみです。",
+            "timestamp": datetime.now(JST) - timedelta(hours=14),
             "message_type": "text"
         },
         {
@@ -948,65 +1529,1437 @@ with app.app_context():
             "content": "たこ焼きパーティーは大阪駅前のたこ焼き屋「たこ金」で行います。",
             "timestamp": datetime.now(JST) - timedelta(hours=6),
             "message_type": "text"
+        },
+        
+        # 京都紅葉撮影会のメッセージ
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[2],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "京都紅葉撮影会にご参加いただきありがとうございます。集合場所は京都駅中央口、集合時間は10月15日の朝8時です。",
+            "timestamp": datetime.now(JST) - timedelta(days=10, hours=15),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[2],
+            "sender_user_id": user_ids["rakuda@example.com"],
+            "content": "参加します！京都の紅葉は初めてなので楽しみです。",
+            "timestamp": datetime.now(JST) - timedelta(days=10, hours=14),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[2],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "カメラの機種は何を持っていけばいいですか？スマホでも大丈夫ですか？",
+            "timestamp": datetime.now(JST) - timedelta(days=9, hours=20),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[2],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "スマホでも問題ありませんよ！一眼レフをお持ちの方は、広角レンズと望遠レンズがあると便利です。三脚もあれば持参をおすすめします。",
+            "timestamp": datetime.now(JST) - timedelta(days=9, hours=19),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[2],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "撮影スポットは東福寺、永観堂、嵐山の3カ所を予定しています。バスで移動しますので、交通系ICカードをお持ちください。",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=10),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[2],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "ランチはどうしますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=9),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[2],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "嵐山で湯豆腐のお店を予約しています。昼食代は各自ご負担でお願いします。",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=8, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[2],
+            "sender_user_id": user_ids["rakuda@example.com"],
+            "content": "あの、当日は雨の予報が出ているようですが、決行しますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=2, hours=18),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[2],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "小雨決行の予定です。ただし、警報が出るほどの悪天候の場合は中止にします。前日の夜に最終判断をお知らせします。",
+            "timestamp": datetime.now(JST) - timedelta(days=2, hours=17, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[2],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "天気予報が好転しました！明日は晴れる見込みです。予定通り、京都駅中央口に8時集合で行いましょう。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=20),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[2],
+            "sender_user_id": user_ids["rakuda@example.com"],
+            "content": "良かったです！楽しみにしています。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=19, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[2],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "明日は天気も良さそうで撮影日和になりそうですね！準備万端で臨みます。",
+            "timestamp": datetime.now(JST) - timedelta(hours=15),
+            "message_type": "text"
+        },
+        
+        # 乗馬体験ツアーのメッセージ
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[6],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "乗馬体験ツアーへの参加ありがとうございます。北海道の大自然の中で馬との触れ合いを楽しみましょう！",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=9),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[6],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "集合場所は帯広駅北口、時間は9月10日の午前9時です。牧場まではバスで30分ほどかかります。",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=8, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[6],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "服装ですが、長ズボンと運動靴を必ず着用してください。手袋があれば便利です。ヘルメットは牧場で貸し出します。",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=14),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[6],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "初心者の方でも安心してご参加いただけます。牧場スタッフが丁寧に指導しますので、ご安心ください。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=19),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[6],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "乗馬後は牧場でバーベキューランチをご用意しています。食事代は参加費に含まれています。",
+            "timestamp": datetime.now(JST) - timedelta(days=2, hours=11),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[6],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "明日の天気は晴れの予報です！気温は最高で22度、最低で12度の予報が出ていますので、羽織るものをお持ちください。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=17),
+            "message_type": "text"
+        },
+        
+        # 早朝サンライズヨガのメッセージ
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[9],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "早朝サンライズヨガへようこそ！明日の朝5時30分、代々木公園の中央広場に集合です。",
+            "timestamp": datetime.now(JST) - timedelta(days=2, hours=13),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[9],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "ヨガマットをお持ちの方はご持参ください。お持ちでない方には貸出用をご用意します。",
+            "timestamp": datetime.now(JST) - timedelta(days=2, hours=12, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[9],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "動きやすい服装でお越しください。朝は少し肌寒いかもしれないので、重ね着できるようにしておくと良いでしょう。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=18),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[9],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "ヨガの後は、近くのオーガニックカフェで朝食会を予定しています。参加は任意です。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=17, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[9],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "明日の朝は快晴の予報です。美しい朝日を見ながらのヨガが楽しめそうです！",
+            "timestamp": datetime.now(JST) - timedelta(hours=15),
+            "message_type": "text"
+        },
+
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[7],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "山岳トレッキングツアーにご参加いただきありがとうございます！北海道・大雪山国立公園での素晴らしい景色を一緒に楽しみましょう。",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=9),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[7],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "集合場所は旭川駅北口、集合時間は8月15日の朝7時です。そこからバスで1時間ほど移動します。",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=8, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[7],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "トレッキング初挑戦ですが、難易度はどのくらいですか？",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=8),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[7],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "今回は初心者向けコースを選んでいますので安心してください。急な上り坂はほとんどなく、ゆったりと景色を楽しみながら歩けるコースです。",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=7, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[7],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "持っていくべき装備を教えてください！",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=7),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[7],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "必須アイテム：トレッキングシューズ（または履き慣れた運動靴）、リュックサック、水筒（1L以上）、雨具、防寒着、帽子、サングラス、タオル、持病のある方は常備薬。",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=6, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[7],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "あると便利なもの：トレッキングポール、カメラ、双眼鏡、虫除けスプレー、日焼け止め、簡単な救急セット。",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=6, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[7],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "ランチはどうなりますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=16),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[7],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "山小屋でのランチを予約してあります。北海道産の食材を使った特製弁当です。飲み物も用意していますが、水筒は必ずお持ちください。",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=15, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[7],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "野生動物に出会う可能性はありますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=19),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[7],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "エゾリスやキタキツネなど小動物を見かけることがあります。ヒグマも生息していますが、メインコースでは遭遇する確率は低いです。万が一に備えて、ガイドが熊鈴とスプレーを持っています。",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=18, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[7],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "明日の天気予報は晴れ時々曇りです。最高気温22℃、最低気温14℃の予報が出ています。山の天気は変わりやすいので、防寒具と雨具は必ずお持ちください。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=18),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[7],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "明日が楽しみです！7時に旭川駅に集合ですね。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=17, minutes=30),
+            "message_type": "text"
+        },
+        
+        # クリスマスマーケット訪問のメッセージ
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[8],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "クリスマスマーケット訪問ツアーへようこそ！札幌のミュンヘン・クリスマス市を訪れる素敵な時間を一緒に過ごしましょう！",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=15),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[8],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "集合は12月15日18時、札幌駅北口のイルミネーションツリー前です。",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=14, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[8],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "楽しみにしています！クリスマスマーケットでは何が買えますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=14),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[8],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "ドイツ雑貨やクリスマスオーナメント、ホットワイン、ソーセージなど本格的なドイツのクリスマスマーケットの雰囲気が楽しめます！",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=13, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[8],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "ホットワインが飲みたいです！寒さ対策はどうすればいいですか？",
+            "timestamp": datetime.now(JST) - timedelta(days=4, hours=19),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[8],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "北海道の12月は非常に寒いです。厚手のダウンジャケット、マフラー、手袋、耳あて、厚手の靴下と防寒ブーツを必ず着用してください。カイロも便利ですよ。",
+            "timestamp": datetime.now(JST) - timedelta(days=4, hours=18, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[8],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "何時頃まで滞在する予定ですか？",
+            "timestamp": datetime.now(JST) - timedelta(days=4, hours=18),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[8],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "マーケットでは約2時間の滞在を予定しています。その後、希望者は近くのレストランでドイツ料理のディナーも予約してあります。",
+            "timestamp": datetime.now(JST) - timedelta(days=4, hours=17, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[8],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "ディナーにも参加したいです！何時頃終わる予定ですか？",
+            "timestamp": datetime.now(JST) - timedelta(days=4, hours=17, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[8],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "ディナーは20時半から22時頃までを予定しています。最終的には22時半頃に解散になると思います。",
+            "timestamp": datetime.now(JST) - timedelta(days=4, hours=17),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[8],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "クリスマスマーケットではどんなパフォーマンスがありますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=2, hours=13),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[8],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "19時からはクリスマスキャロルの合唱、20時からはサンタクロースによるパレードがあります！特に子供たちに人気のイベントです。",
+            "timestamp": datetime.now(JST) - timedelta(days=2, hours=12, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[8],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "明日はいよいよクリスマスマーケット訪問です！天気予報では小雪が舞う予報ですが、本場ドイツのような雰囲気が楽しめそうです。18時に札幌駅北口でお待ちしています！",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=15),
+            "message_type": "text"
+        },
+        
+        # 岩場でのんびりピクニックのメッセージ
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[10],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "岩場でのんびりピクニックへようこそ！沖縄の美しい岩場で、ゆったりとした時間を過ごしましょう。",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=10),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[10],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "集合場所は那覇市の「美ら海バス停」、9月20日朝10時です。そこから専用車で30分ほど移動します。",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=9, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[10],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "楽しみにしています！持っていくべきものはありますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=9, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[10],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "水着、タオル、日焼け止め、帽子、サングラス、着替えをお持ちください。ランチとドリンクは私が用意します。",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=9),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[10],
+            "sender_user_id": user_ids["rakuda@example.com"],
+            "content": "泳ぐことはできますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=4, hours=15),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[10],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "岩場の下には小さなプライベートビーチがあり、そこで泳げます。波も穏やかで透明度抜群の海です！",
+            "timestamp": datetime.now(JST) - timedelta(days=4, hours=14, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[10],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "ランチはどんなメニューですか？アレルギーがあるので確認したいです。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=18),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[10],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "沖縄風おにぎり、フルーツ、ケーキを予定しています。アレルギーについて詳しく教えていただければ対応します。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=17, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[10],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "ナッツアレルギーがあります。ケーキにナッツが入っていなければ大丈夫です。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=17),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[10],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "了解しました！ナッツは使わないようにします。他にアレルギーがある方はいますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=16, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[10],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "明日の天気予報は晴れです！絶好のピクニック日和になりそうです。熱中症に気をつけて、水分をたくさん持ってきてくださいね。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=16),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[10],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "楽しみです！明日10時に美ら海バス停で会いましょう！",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=15, minutes=30),
+            "message_type": "text"
+        },
+        
+        # 種集めウォーキングのメッセージ
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[11],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "種集めウォーキングへようこそ！様々な植物の種を集めながら自然を楽しむイベントです。",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=14),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[11],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "集合は井の頭公園の西口、10月10日朝9時です。",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=13, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[11],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "楽しみにしています！どんな種類の種を集める予定ですか？",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=13),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[11],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "主に松ぼっくり、どんぐり、イチョウの実、モミジの種などの木の実や、タンポポやオナモミなどの野草の種を集める予定です。",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=12, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[11],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "持っていくべきものはありますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=19),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[11],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "小さな袋やポケットのあるエプロン、軍手、ピンセット（あれば）、帽子、水筒をお持ちください。カメラもあるといいですよ！",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=18, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[11],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "集めた種は持ち帰れますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=14),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[11],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "はい、持ち帰れます！ご家庭で植えたり、クラフト材料にしたりできます。ワークショップの後半では、集めた種でミニリースを作る予定です。",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=13, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[11],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "歩く距離はどれくらいですか？",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=11),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[11],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "約3kmのコースです。ゆっくり歩いて種を見つけながら、約2時間かけて回ります。アップダウンは少ないので、どなたでも参加しやすいコースです。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=10, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[11],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "ランチは各自ご持参いただくか、公園内のカフェをご利用ください。13時頃に一度集まって、午後はクラフトタイムにします。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=10, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[11],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "明日の天気予報は晴れです！秋晴れの下、素敵な種集めができそうです。9時に井の頭公園西口でお待ちしています！",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=17),
+            "message_type": "text"
+        },
+        
+        # 砂漠ツアーガイドのメッセージ
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[12],
+            "sender_user_id": user_ids["rakuda@example.com"],
+            "content": "砂漠ツアーガイドへようこそ！沖縄の美しい砂浜を砂漠に見立てた特別なツアーです。",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=13),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[12],
+            "sender_user_id": user_ids["rakuda@example.com"],
+            "content": "集合場所は那覇空港1階到着ロビー、11月15日14時です。そこからバスで約1時間、与那覇前浜ビーチに向かいます。",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=12, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[12],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "楽しみにしています！ラクダに実際に乗れるのですか？",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=12, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[12],
+            "sender_user_id": user_ids["rakuda@example.com"],
+            "content": "はい！特別にアラビアから輸入したラクダが2頭います。交代で乗っていただけます。砂浜を約15分間、本格的な砂漠気分を味わえますよ。",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=12),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[12],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "持っていくべきものを教えてください！",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=18),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[12],
+            "sender_user_id": user_ids["rakuda@example.com"],
+            "content": "日焼け止め、サングラス、帽子、タオル、着替え（砂で汚れる可能性あり）、水筒をお持ちください。アラビアンな雰囲気の服装だと写真映えしますよ！",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=17, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[12],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "ラクダ以外にどんなアクティビティがありますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=17),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[12],
+            "sender_user_id": user_ids["rakuda@example.com"],
+            "content": "砂漠のオアシス風のテントでのアラビアンティータイム、砂絵作り体験、アラビア料理の試食会、そして日没時には砂丘でのミニコンサートを予定しています！",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=16, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[12],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "何時頃終了する予定ですか？",
+            "timestamp": datetime.now(JST) - timedelta(days=4, hours=11),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[12],
+            "sender_user_id": user_ids["rakuda@example.com"],
+            "content": "日没後の19時頃を予定しています。那覇市内まで送迎バスがありますので、ご安心ください。",
+            "timestamp": datetime.now(JST) - timedelta(days=4, hours=10, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[12],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "子供連れでも参加できますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=14),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[12],
+            "sender_user_id": user_ids["rakuda@example.com"],
+            "content": "小学生以上のお子様であれば問題ありません。保護者同伴でお願いします。お子様用の砂遊びセットも用意しています。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=13, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[12],
+            "sender_user_id": user_ids["rakuda@example.com"],
+            "content": "明日の天気予報は晴れ。絶好の砂漠ツアー日和になりそうです！14時に那覇空港でお待ちしています。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=15),
+            "message_type": "text"
+        },
+        
+        # 編み物ワークショップのメッセージ
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[13],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "編み物ワークショップへようこそ！温かな毛糸で冬の小物を作りましょう。",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=15),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[13],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "開催場所は札幌市中央区のカフェ「ウールタイム」、日程は12月5日13時からです。",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=14, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[13],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "楽しみにしています！初心者でも参加できますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=14, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[13],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "もちろん！今回は初心者向けのワークショップです。かぎ針編みの基本から丁寧にお教えします。",
+            "timestamp": datetime.now(JST) - timedelta(days=7, hours=14),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[13],
+            "sender_user_id": user_ids["okojo@example.com"],
+            "content": "何を作る予定ですか？",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=19),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[13],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "温かなマフラーか帽子を作ります。初心者の方はマフラー、少し経験のある方は帽子にチャレンジしていただけます。色は数種類からお選びいただけます。",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=18, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[13],
+            "sender_user_id": user_ids["uma@example.com"],
+            "content": "持っていくものはありますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=18),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[13],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "特に必要ありません。編み針、毛糸、編み図はすべてこちらで用意します。メガネをお使いの方はお持ちください。また、爪が長いと編みにくい場合があるので、短めにしておくと良いでしょう。",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=17, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[13],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "ワークショップの所要時間はどれくらいですか？",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=14),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[13],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "約3時間を予定しています。途中、温かいドリンクとお菓子でティータイムも楽しみましょう。マフラーは当日完成しますが、帽子は仕上げを家でしていただく場合もあります。",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=13, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[13],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "毛糸の素材はどんなものですか？アレルギーがあるので気になります。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=16),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[13],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "基本的にメリノウールとアクリルの混紡糸を使用する予定ですが、ウールアレルギーの方には100%アクリル毛糸もご用意しています。ご安心ください。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=15, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[13],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "明日はいよいよワークショップです！外は雪の予報ですが、暖かいカフェで楽しく編み物しましょう。13時に「ウールタイム」でお待ちしています。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=16),
+            "message_type": "text"
+        },
+        
+        # 鎌倉散策ツアーのメッセージ
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[3],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "鎌倉散策ツアーにご参加いただきありがとうございます。JR鎌倉駅の東口に9時集合です。",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=10),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[3],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "楽しみにしています！カメラは持っていった方が良いですか？",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=9, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[3],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "ぜひ持ってきてください！鶴岡八幡宮や長谷寺など、写真映えするスポットをたくさん巡る予定です。",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=9),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[3],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "参加します！鎌倉は初めてなので楽しみです。",
+            "timestamp": datetime.now(JST) - timedelta(days=4, hours=19),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[3],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "ランチは鎌倉名物「しらす丼」を食べに行く予定です。美味しいお店を予約しておきます。",
+            "timestamp": datetime.now(JST) - timedelta(days=4, hours=18, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[3],
+            "sender_user_id": user_ids["hamster@example.com"],
+            "content": "しらす丼は初めて食べます！楽しみです。",
+            "timestamp": datetime.now(JST) - timedelta(days=4, hours=18),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[3],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "歩きやすい靴でお越しください。鎌倉は坂や階段が多いです。また、水分補給用の飲み物も忘れずに！",
+            "timestamp": datetime.now(JST) - timedelta(days=2, hours=10),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[3],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "鎌倉駅周辺で何かおすすめのお土産はありますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=2, hours=9, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[3],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "鳩サブレーが定番ですね。小町通りには他にも和菓子やおせんべいなど様々なお店があるので、ツアーの最後に立ち寄る予定です。",
+            "timestamp": datetime.now(JST) - timedelta(days=2, hours=9),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[3],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "明日の天気は晴れの予報です。日差しが強いので、帽子や日焼け止めをお持ちいただくと良いでしょう。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=20),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[3],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "了解しました！準備万端で明日お会いしましょう。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=19),
+            "message_type": "text"
+        },
+        
+        # 大阪たこ焼きパーティーのメッセージ
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[4],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "大阪たこ焼きパーティーへようこそ！JR大阪駅中央改札口に13時集合です。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=16),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[4],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "たこ焼き大好きです！参加します！",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=15, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[4],
+            "sender_user_id": user_ids["hyrax@example.com"],
+            "content": "大阪は初めてなので楽しみです。たこ焼き以外に何かおすすめの食べ物はありますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=15),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[4],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "お好み焼きや串カツも大阪の名物です！時間があれば道頓堀まで足を延ばして食べ歩きもしましょう。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=14, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[4],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "たこ焼きは自分たちで焼くのですか？それとも食べに行くだけですか？",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=14),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[4],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "まず有名店「たこ金」でプロの技を見学して食べた後、貸切のたこ焼き教室で自分たちでも焼いてみます！",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=13, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[4],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "たこ焼き作り初挑戦です！うまく焼けるか心配ですが、楽しみです。",
+            "timestamp": datetime.now(JST) - timedelta(days=2, hours=9),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[4],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "心配いりません！インストラクターが丁寧に教えてくれますよ。ちなみに、服が汚れる可能性があるので、カジュアルな服装でお越しください。",
+            "timestamp": datetime.now(JST) - timedelta(days=2, hours=8, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[4],
+            "sender_user_id": user_ids["tonakai@example.com"],
+            "content": "持ち物は何かありますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=18),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[4],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "特に必要なものはありません。エプロンは教室で貸してもらえます。たくさん食べる元気だけお持ちください！",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=17, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[4],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "皆さん、明日が近づいてきました！13時に大阪駅中央改札口でお待ちしています。遅れる場合はご連絡ください。",
+            "timestamp": datetime.now(JST) - timedelta(hours=16),
+            "message_type": "text"
+        },
+        
+        # 寿司作り体験教室のメッセージ
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[5],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "寿司作り体験教室にご参加いただきありがとうございます！東京・築地近くの料理教室で行います。集合は10時です。",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=14),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[5],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "寿司作りは初めてですが、挑戦してみたいと思います！楽しみにしています。",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=13, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[5],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "どんな寿司を作る予定ですか？",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=13),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[5],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "基本的な握り寿司（マグロ、サーモン、エビなど）と巻き寿司（かっぱ巻き、カリフォルニアロール）を作る予定です。",
+            "timestamp": datetime.now(JST) - timedelta(days=6, hours=12, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[5],
+            "sender_user_id": user_ids["sheep@example.com"],
+            "content": "楽しみです！特別な持ち物はありますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=19),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[5],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "エプロンをお持ちください。また、作った寿司は持ち帰れるので、保冷バッグがあると便利です（なくても教室で紙袋はもらえます）。",
+            "timestamp": datetime.now(JST) - timedelta(days=5, hours=18, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[5],
+            "sender_user_id": user_ids["test@example.com"],
+            "content": "魚をさばくところからやりますか？",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=10),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[5],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "今回は初心者向けなので、すでに切り身になった状態からスタートします。ただ、寿司職人さんによる魚のさばき方のデモンストレーションは見学できますよ！",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=9, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[5],
+            "sender_user_id": user_ids["tanaka@example.com"],
+            "content": "体験の時間はどれくらいですか？",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=9, minutes=30),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[5],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "約2時間の予定です。10時から12時頃までで、その後希望者は近くの築地場外市場でランチも楽しめます。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=9),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[5],
+            "sender_user_id": user_ids["niwatori@example.com"],
+            "content": "ランチも参加します！築地で美味しいお寿司を食べるチャンスですね。",
+            "timestamp": datetime.now(JST) - timedelta(days=3, hours=8, minutes=45),
+            "message_type": "text"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "event_id": event_ids[5],
+            "sender_user_id": user_ids["yamada@example.com"],
+            "content": "皆さん、明日が楽しみですね！最寄り駅は都営地下鉄「築地駅」です。A3出口から徒歩3分の「築地料理教室」に10時集合でお願いします。",
+            "timestamp": datetime.now(JST) - timedelta(days=1, hours=16),
+            "message_type": "text"
+        }
+    ]
+    direct_messages_data=[
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["yamada@example.com"],
+            "receiver_id": user_ids["test@example.com"],
+            "content": "こんにちは！元気ですよ。今週末に大阪に行く予定です。",
+            "sent_at": datetime.now(JST) - timedelta(days=3, hours=4),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(days=3, hours=3)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["test@example.com"],
+            "receiver_id": user_ids["yamada@example.com"],
+            "content": "大阪いいですね！どこか行くところは決まっていますか？",
+            "sent_at": datetime.now(JST) - timedelta(days=3, hours=3),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(days=3, hours=2)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["yamada@example.com"],
+            "receiver_id": user_ids["test@example.com"],
+            "content": "大阪城と道頓堀に行く予定です。他にもおすすめがあれば教えてください！",
+            "sent_at": datetime.now(JST) - timedelta(days=3, hours=2),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(days=3, hours=1)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["test@example.com"],
+            "receiver_id": user_ids["yamada@example.com"],
+            "content": "通天閣もおすすめですよ！夜景が綺麗です。",
+            "sent_at": datetime.now(JST) - timedelta(days=3, hours=1),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(days=3)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["yamada@example.com"],
+            "receiver_id": user_ids["test@example.com"],
+            "content": "それはいいですね！ぜひ行ってみます。ありがとう！",
+            "sent_at": datetime.now(JST) - timedelta(days=3),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(days=2, hours=23)
+        },
+        
+        # uma@example.comとokojo@example.comのDM（動物ユーザー同士）
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["uma@example.com"],
+            "receiver_id": user_ids["okojo@example.com"],
+            "content": "オコジョさん、北海道の山岳地帯はどうですか？",
+            "sent_at": datetime.now(JST) - timedelta(days=1, hours=10),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(days=1, hours=9)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["okojo@example.com"],
+            "receiver_id": user_ids["uma@example.com"],
+            "content": "とても素晴らしいですよ！特に大雪山は絶景です。",
+            "sent_at": datetime.now(JST) - timedelta(days=1, hours=9),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(days=1, hours=8)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["uma@example.com"],
+            "receiver_id": user_ids["okojo@example.com"],
+            "content": "今度一緒に山登りツアーを企画しませんか？",
+            "sent_at": datetime.now(JST) - timedelta(days=1, hours=8),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(days=1, hours=7)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["okojo@example.com"],
+            "receiver_id": user_ids["uma@example.com"],
+            "content": "それは素晴らしいアイデアです！私がガイドしますよ。",
+            "sent_at": datetime.now(JST) - timedelta(days=1, hours=7),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(days=1, hours=6)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["uma@example.com"],
+            "receiver_id": user_ids["okojo@example.com"],
+            "content": "ありがとう！来月の第一週はどうでしょうか？",
+            "sent_at": datetime.now(JST) - timedelta(days=1, hours=6),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(days=1, hours=5)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["okojo@example.com"],
+            "receiver_id": user_ids["uma@example.com"],
+            "content": "その時期は雪が少なくて最適です！では計画を立てましょう。",
+            "sent_at": datetime.now(JST) - timedelta(days=1, hours=5),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(days=1, hours=4)
+        },
+        
+        # tonakai@example.comとniwatori@example.comのDM（動物ユーザー同士）
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["tonakai@example.com"],
+            "receiver_id": user_ids["niwatori@example.com"],
+            "content": "鶏さん、朝早く起きるコツはありますか？",
+            "sent_at": datetime.now(JST) - timedelta(hours=36),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=35)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["niwatori@example.com"],
+            "receiver_id": user_ids["tonakai@example.com"],
+            "content": "朝日と一緒に起きるのが自然なリズムですよ！早寝も大事です。",
+            "sent_at": datetime.now(JST) - timedelta(hours=35),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=34)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["tonakai@example.com"],
+            "receiver_id": user_ids["niwatori@example.com"],
+            "content": "なるほど！クリスマスシーズンが近づいていて忙しくなりそうなので、効率的に過ごしたいんです。",
+            "sent_at": datetime.now(JST) - timedelta(hours=34),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=33)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["niwatori@example.com"],
+            "receiver_id": user_ids["tonakai@example.com"],
+            "content": "朝ヨガも効果的ですよ！早朝サンライズヨガツアーに参加しませんか？",
+            "sent_at": datetime.now(JST) - timedelta(hours=33),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=32)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["tonakai@example.com"],
+            "receiver_id": user_ids["niwatori@example.com"],
+            "content": "それはいいですね！参加したいです。詳細を教えてください。",
+            "sent_at": datetime.now(JST) - timedelta(hours=32),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=31)
+        },
+        
+        # hyrax@example.comとhamster@example.comのDM（動物ユーザー同士）
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["hyrax@example.com"],
+            "receiver_id": user_ids["hamster@example.com"],
+            "content": "ハムスターさん、明日の沖縄の天気を知っていますか？",
+            "sent_at": datetime.now(JST) - timedelta(hours=28),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=27)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["hamster@example.com"],
+            "receiver_id": user_ids["hyrax@example.com"],
+            "content": "天気予報を見たら、晴れの予定ですよ！岩場でのピクニックにぴったりです。",
+            "sent_at": datetime.now(JST) - timedelta(hours=27),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=26)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["hyrax@example.com"],
+            "receiver_id": user_ids["hamster@example.com"],
+            "content": "それは良かった！ピクニックに必要な種や木の実を集めてきてもらえますか？",
+            "sent_at": datetime.now(JST) - timedelta(hours=26),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=25)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["hamster@example.com"],
+            "receiver_id": user_ids["hyrax@example.com"],
+            "content": "了解です！最高の種コレクションを持っていきますね。何か他に必要なものはありますか？",
+            "sent_at": datetime.now(JST) - timedelta(hours=25),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=24)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["hyrax@example.com"],
+            "receiver_id": user_ids["hamster@example.com"],
+            "content": "日よけの大きな葉っぱがあると助かります。あとは私が岩場を確保しておきます！",
+            "sent_at": datetime.now(JST) - timedelta(hours=24),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=23)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["hamster@example.com"],
+            "receiver_id": user_ids["hyrax@example.com"],
+            "content": "了解です！明日が楽しみですね！",
+            "sent_at": datetime.now(JST) - timedelta(hours=23),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=22)
+        },
+        
+        # rakuda@example.comとsheep@example.comのDM（動物ユーザー同士）
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["rakuda@example.com"],
+            "receiver_id": user_ids["sheep@example.com"],
+            "content": "羊さん、砂漠で使える編み物はありますか？",
+            "sent_at": datetime.now(JST) - timedelta(hours=20),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=19)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["sheep@example.com"],
+            "receiver_id": user_ids["rakuda@example.com"],
+            "content": "砂漠用の日よけ帽子を編むことができますよ！通気性が良くて日差しをカットできます。",
+            "sent_at": datetime.now(JST) - timedelta(hours=19),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=18)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["rakuda@example.com"],
+            "receiver_id": user_ids["sheep@example.com"],
+            "content": "それはいいですね！砂漠ツアーのお客さんに提供したいと思っています。",
+            "sent_at": datetime.now(JST) - timedelta(hours=18),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=17)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["sheep@example.com"],
+            "receiver_id": user_ids["rakuda@example.com"],
+            "content": "喜んで作りますよ！何個必要ですか？",
+            "sent_at": datetime.now(JST) - timedelta(hours=17),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=16)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["rakuda@example.com"],
+            "receiver_id": user_ids["sheep@example.com"],
+            "content": "ツアー客は10人なので、10個お願いできますか？",
+            "sent_at": datetime.now(JST) - timedelta(hours=16),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=15)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["sheep@example.com"],
+            "receiver_id": user_ids["rakuda@example.com"],
+            "content": "了解しました！来週のワークショップで作成しますね。完成したらご連絡します。",
+            "sent_at": datetime.now(JST) - timedelta(hours=15),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=14)
+        },
+        
+        # test@example.comとuma@example.com（未読メッセージ）
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["test@example.com"],
+            "receiver_id": user_ids["uma@example.com"],
+            "content": "馬さん、乗馬体験ツアーについて質問があります。",
+            "sent_at": datetime.now(JST) - timedelta(hours=5),
+            "is_read": False,
+            "read_at": None
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["test@example.com"],
+            "receiver_id": user_ids["uma@example.com"],
+            "content": "初心者でも参加できますか？馬に乗った経験がないのですが大丈夫ですか？",
+            "sent_at": datetime.now(JST) - timedelta(hours=4),
+            "is_read": False,
+            "read_at": None
+        },
+        
+        # tanaka@example.comとokojo@example.com（未読メッセージ）
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["tanaka@example.com"],
+            "receiver_id": user_ids["okojo@example.com"],
+            "content": "山岳トレッキングの写真を撮りたいのですが、おすすめのスポットはありますか？",
+            "sent_at": datetime.now(JST) - timedelta(hours=3),
+            "is_read": False,
+            "read_at": None
+        },
+        
+        # yamada@example.comとniwatori@example.com（未読メッセージ）
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["yamada@example.com"],
+            "receiver_id": user_ids["niwatori@example.com"],
+            "content": "早朝サンライズヨガはどこで開催されますか？参加したいです。",
+            "sent_at": datetime.now(JST) - timedelta(hours=2),
+            "is_read": False,
+            "read_at": None
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["yamada@example.com"],
+            "receiver_id": user_ids["niwatori@example.com"],
+            "content": "また、持っていくものはありますか？",
+            "sent_at": datetime.now(JST) - timedelta(hours=1),
+            "is_read": False,
+            "read_at": None
+        },
+        # test@example.comとtanaka@example.comのDM
+        
+        {
+            "id": str(uuid.uuid4()),
+            "sender_id": user_ids["test@example.com"],
+            "receiver_id": user_ids["tanaka@example.com"],
+            "content": "田中さん、こんにちは！明日の京都紅葉撮影会について質問があります。",
+            "sent_at": datetime.now(JST) - timedelta(hours=48),
+            "is_read": True,
+            "read_at": datetime.now(JST) - timedelta(hours=47)
         }
     ]
     
-    for message_data in event_messages:
-        event_message = EventMessage(
+    direct_messages_data = direct_messages_data  # 前のブロックで定義されたデータを使用
+    
+    for message_data in direct_messages_data:
+        direct_message = DirectMessage(
             id=message_data["id"],
-            event_id=message_data["event_id"],
-            sender_user_id=message_data["sender_user_id"],
+            sender_id=message_data["sender_id"],
+            receiver_id=message_data["receiver_id"],
             content=message_data["content"],
-            timestamp=message_data["timestamp"],
-            message_type=message_data["message_type"]
+            sent_at=message_data["sent_at"],
+            is_read=message_data["is_read"],
+            read_at=message_data["read_at"],
+            message_type="text"
         )
-        db.session.add(event_message)
+        db.session.add(direct_message)
     
     db.session.commit()
-    print("✅ イベントメッセージを追加しました")
-    
-    # フレンド関係（フォロー/フォロワー）を作成
-    # 一部のユーザー間でフォロー関係を設定
-    friend_relationships = [
-        # test@example.comユーザーの関係
-        {"user_id": user_ids["test@example.com"], "friend_id": user_ids["tanaka@example.com"], "status": "accepted"},
-        {"user_id": user_ids["test@example.com"], "friend_id": user_ids["yamada@example.com"], "status": "accepted"},
-        {"user_id": user_ids["test@example.com"], "friend_id": user_ids["uma@example.com"], "status": "pending"},
-        
-        # tanaka@example.comユーザーの関係
-        {"user_id": user_ids["tanaka@example.com"], "friend_id": user_ids["test@example.com"], "status": "accepted"},
-        {"user_id": user_ids["tanaka@example.com"], "friend_id": user_ids["okojo@example.com"], "status": "accepted"},
-        {"user_id": user_ids["tanaka@example.com"], "friend_id": user_ids["tonakai@example.com"], "status": "accepted"},
-        
-        # yamada@example.comユーザーの関係
-        {"user_id": user_ids["yamada@example.com"], "friend_id": user_ids["test@example.com"], "status": "accepted"},
-        {"user_id": user_ids["yamada@example.com"], "friend_id": user_ids["tanaka@example.com"], "status": "pending"},
-        {"user_id": user_ids["yamada@example.com"], "friend_id": user_ids["niwatori@example.com"], "status": "accepted"},
-        
-        # 動物ユーザー同士の関係
-        {"user_id": user_ids["uma@example.com"], "friend_id": user_ids["okojo@example.com"], "status": "accepted"},
-        {"user_id": user_ids["okojo@example.com"], "friend_id": user_ids["uma@example.com"], "status": "accepted"},
-        {"user_id": user_ids["tonakai@example.com"], "friend_id": user_ids["niwatori@example.com"], "status": "accepted"},
-        {"user_id": user_ids["niwatori@example.com"], "friend_id": user_ids["tonakai@example.com"], "status": "accepted"},
-        {"user_id": user_ids["hyrax@example.com"], "friend_id": user_ids["hamster@example.com"], "status": "accepted"},
-        {"user_id": user_ids["hamster@example.com"], "friend_id": user_ids["hyrax@example.com"], "status": "accepted"},
-        {"user_id": user_ids["rakuda@example.com"], "friend_id": user_ids["sheep@example.com"], "status": "accepted"},
-        {"user_id": user_ids["sheep@example.com"], "friend_id": user_ids["rakuda@example.com"], "status": "accepted"}
-    ]
-    
-    for relationship in friend_relationships:
-        friend_rel = FriendRelationship(
-            id=str(uuid.uuid4()),
-            user_id=relationship["user_id"],
-            friend_id=relationship["friend_id"],
-            status=relationship["status"],
-            created_at=datetime.now(JST),
-            updated_at=datetime.now(JST)
-        )
-        db.session.add(friend_rel)
-    
-    db.session.commit()
-    print("✅ ユーザーのフォロー関係を追加しました")
+    print("✅ ダイレクトメッセージを追加しました")
     
     print("\n✨ シードデータの投入が完了しました！")
     print("\n🔹 ログイン可能なユーザー:")

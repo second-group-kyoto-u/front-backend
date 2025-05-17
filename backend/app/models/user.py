@@ -19,6 +19,10 @@ class User(db.Model):
     is_certificated = db.Column(db.Boolean, default=False)
     password_hash = db.Column(db.String(256), nullable=False)
     
+    # 追加するカラム
+    gender = db.Column(db.String(20))  # 性別
+    living_place = db.Column(db.String(100))  # 居住地
+    
     # 認証関連の新しいフィールド
     email_verified = db.Column(db.Boolean, default=False)
     email_verified_at = db.Column(db.DateTime)
@@ -96,6 +100,8 @@ class User(db.Model):
             'user_name': self.user_name,
             'user_image_url': self.user_image_url,
             'profile_message': self.profile_message,
+            'gender': self.gender,
+            'living_place': self.living_place,
             'is_certificated': self.is_certificated,
             'email_verified': self.email_verified,
             'email_address': self.email_address,
