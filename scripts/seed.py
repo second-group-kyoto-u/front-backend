@@ -742,7 +742,7 @@ with app.app_context():
         member = UserMemberGroup(
             user_id=user_ids[email], 
             event_id=event_ids[0],
-            joined_at=datetime.now(JST) - timedelta(days=1, hours=i)
+            joined_at=datetime.now(JST) - timedelta(days=1, hours=14 + i)  # 最初のメッセージより前（days=1, hours=12）
         )
         db.session.add(member)
         
@@ -753,7 +753,7 @@ with app.app_context():
             event_id=event_ids[0],
             sender_user_id=None,  # システムメッセージ
             content=f"{user_name}さんがイベントに参加しました",
-            timestamp=datetime.now(JST) - timedelta(days=1, hours=i),
+            timestamp=datetime.now(JST) - timedelta(days=1, hours=14 + i),  # 最初のメッセージより前
             message_type='system'
         )
         db.session.add(system_message)
@@ -764,7 +764,7 @@ with app.app_context():
         member = UserMemberGroup(
             user_id=user_ids[email], 
             event_id=event_ids[1],
-            joined_at=datetime.now(JST) - timedelta(hours=i+2)
+            joined_at=datetime.now(JST) - timedelta(days=3, hours=16 + i)  # 最初のメッセージより前（days=3, hours=15）
         )
         db.session.add(member)
         
@@ -775,7 +775,7 @@ with app.app_context():
             event_id=event_ids[1],
             sender_user_id=None,  # システムメッセージ
             content=f"{user_name}さんがイベントに参加しました",
-            timestamp=datetime.now(JST) - timedelta(hours=i+2),
+            timestamp=datetime.now(JST) - timedelta(days=3, hours=16 + i),  # 最初のメッセージより前
             message_type='system'
         )
         db.session.add(system_message)
@@ -786,7 +786,7 @@ with app.app_context():
         member = UserMemberGroup(
             user_id=user_ids[email], 
             event_id=event_ids[2],
-            joined_at=datetime.now(JST) - timedelta(hours=i+1)
+            joined_at=datetime.now(JST) - timedelta(days=10, hours=16 + i)  # 紅葉撮影会のメッセージは10日前から始まる
         )
         db.session.add(member)
         
@@ -797,7 +797,211 @@ with app.app_context():
             event_id=event_ids[2],
             sender_user_id=None,  # システムメッセージ
             content=f"{user_name}さんがイベントに参加しました",
-            timestamp=datetime.now(JST) - timedelta(hours=i+1),
+            timestamp=datetime.now(JST) - timedelta(days=10, hours=16 + i),  # メッセージより前（days=10, hours=15）
+            message_type='system'
+        )
+        db.session.add(system_message)
+    
+    # イベント4（鎌倉散策ツアー）に参加メンバーを追加
+    event4_members = ["test@example.com", "yamada@example.com", "hamster@example.com"]
+    for i, email in enumerate(event4_members):
+        member = UserMemberGroup(
+            user_id=user_ids[email], 
+            event_id=event_ids[3],
+            joined_at=datetime.now(JST) - timedelta(days=6, hours=i)  # 鎌倉散策のメッセージは5日前から
+        )
+        db.session.add(member)
+        
+        # システムメッセージを追加
+        user_name = next((u["name"] for u in users if u["email"] == email), "ユーザー")
+        system_message = EventMessage(
+            id=str(uuid.uuid4()),
+            event_id=event_ids[3],
+            sender_user_id=None,  # システムメッセージ
+            content=f"{user_name}さんがイベントに参加しました",
+            timestamp=datetime.now(JST) - timedelta(days=6, hours=i),  # メッセージより前
+            message_type='system'
+        )
+        db.session.add(system_message)
+    
+    # イベント5（大阪たこ焼きパーティー）に参加メンバーを追加
+    event5_members = ["test@example.com", "tonakai@example.com", "hyrax@example.com", "niwatori@example.com"]
+    for i, email in enumerate(event5_members):
+        member = UserMemberGroup(
+            user_id=user_ids[email], 
+            event_id=event_ids[4],
+            joined_at=datetime.now(JST) - timedelta(days=4, hours=i)  # たこ焼きパーティーのメッセージは3日前から
+        )
+        db.session.add(member)
+        
+        # システムメッセージを追加
+        user_name = next((u["name"] for u in users if u["email"] == email), "ユーザー")
+        system_message = EventMessage(
+            id=str(uuid.uuid4()),
+            event_id=event_ids[4],
+            sender_user_id=None,  # システムメッセージ
+            content=f"{user_name}さんがイベントに参加しました",
+            timestamp=datetime.now(JST) - timedelta(days=4, hours=i),  # メッセージより前
+            message_type='system'
+        )
+        db.session.add(system_message)
+    
+    # イベント6（寿司作り体験教室）に参加メンバーを追加
+    event6_members = ["tanaka@example.com", "niwatori@example.com", "sheep@example.com", "test@example.com"]
+    for i, email in enumerate(event6_members):
+        member = UserMemberGroup(
+            user_id=user_ids[email], 
+            event_id=event_ids[5],
+            joined_at=datetime.now(JST) - timedelta(days=7, hours=i)  # 寿司作り体験のメッセージは6日前から
+        )
+        db.session.add(member)
+        
+        # システムメッセージを追加
+        user_name = next((u["name"] for u in users if u["email"] == email), "ユーザー")
+        system_message = EventMessage(
+            id=str(uuid.uuid4()),
+            event_id=event_ids[5],
+            sender_user_id=None,  # システムメッセージ
+            content=f"{user_name}さんがイベントに参加しました",
+            timestamp=datetime.now(JST) - timedelta(days=7, hours=i),  # メッセージより前
+            message_type='system'
+        )
+        db.session.add(system_message)
+    
+    # イベント7（乗馬体験ツアー）に参加メンバーを追加
+    # 主催者の馬太郎はすでに追加済み
+    
+    # イベント8（山岳トレッキング）に参加メンバーを追加
+    event8_members = ["uma@example.com", "sheep@example.com", "tonakai@example.com"]
+    for i, email in enumerate(event8_members):
+        member = UserMemberGroup(
+            user_id=user_ids[email], 
+            event_id=event_ids[7],
+            joined_at=datetime.now(JST) - timedelta(days=8, hours=i)  # 山岳トレッキングのメッセージは7日前から
+        )
+        db.session.add(member)
+        
+        # システムメッセージを追加
+        user_name = next((u["name"] for u in users if u["email"] == email), "ユーザー")
+        system_message = EventMessage(
+            id=str(uuid.uuid4()),
+            event_id=event_ids[7],
+            sender_user_id=None,  # システムメッセージ
+            content=f"{user_name}さんがイベントに参加しました",
+            timestamp=datetime.now(JST) - timedelta(days=8, hours=i),  # メッセージより前
+            message_type='system'
+        )
+        db.session.add(system_message)
+    
+    # イベント9（クリスマスマーケット訪問）に参加メンバーを追加
+    event9_members = ["sheep@example.com", "okojo@example.com", "uma@example.com", "hamster@example.com"]
+    for i, email in enumerate(event9_members):
+        member = UserMemberGroup(
+            user_id=user_ids[email], 
+            event_id=event_ids[8],
+            joined_at=datetime.now(JST) - timedelta(days=6, hours=i)  # クリスマスマーケットのメッセージは5日前から
+        )
+        db.session.add(member)
+        
+        # システムメッセージを追加
+        user_name = next((u["name"] for u in users if u["email"] == email), "ユーザー")
+        system_message = EventMessage(
+            id=str(uuid.uuid4()),
+            event_id=event_ids[8],
+            sender_user_id=None,  # システムメッセージ
+            content=f"{user_name}さんがイベントに参加しました",
+            timestamp=datetime.now(JST) - timedelta(days=6, hours=i),  # メッセージより前
+            message_type='system'
+        )
+        db.session.add(system_message)
+    
+    # イベント10（早朝サンライズヨガ）に参加メンバーを追加
+    # 主催者の鶏次郎はすでに追加済み
+    
+    # イベント11（岩場でのんびりピクニック）に参加メンバーを追加
+    event11_members = ["hamster@example.com", "rakuda@example.com", "tonakai@example.com"]
+    for i, email in enumerate(event11_members):
+        member = UserMemberGroup(
+            user_id=user_ids[email], 
+            event_id=event_ids[10],
+            joined_at=datetime.now(JST) - timedelta(days=6, hours=i)  # 岩場でのんびりピクニックのメッセージは5日前から
+        )
+        db.session.add(member)
+        
+        # システムメッセージを追加
+        user_name = next((u["name"] for u in users if u["email"] == email), "ユーザー")
+        system_message = EventMessage(
+            id=str(uuid.uuid4()),
+            event_id=event_ids[10],
+            sender_user_id=None,  # システムメッセージ
+            content=f"{user_name}さんがイベントに参加しました",
+            timestamp=datetime.now(JST) - timedelta(days=6, hours=i),  # メッセージより前
+            message_type='system'
+        )
+        db.session.add(system_message)
+    
+    # イベント12（種集めウォーキング）に参加メンバーを追加
+    event12_members = ["niwatori@example.com", "tonakai@example.com", "hyrax@example.com"]
+    for i, email in enumerate(event12_members):
+        member = UserMemberGroup(
+            user_id=user_ids[email], 
+            event_id=event_ids[11],
+            joined_at=datetime.now(JST) - timedelta(days=8, hours=i)  # 種集めウォーキングのメッセージは7日前から
+        )
+        db.session.add(member)
+        
+        # システムメッセージを追加
+        user_name = next((u["name"] for u in users if u["email"] == email), "ユーザー")
+        system_message = EventMessage(
+            id=str(uuid.uuid4()),
+            event_id=event_ids[11],
+            sender_user_id=None,  # システムメッセージ
+            content=f"{user_name}さんがイベントに参加しました",
+            timestamp=datetime.now(JST) - timedelta(days=8, hours=i),  # メッセージより前
+            message_type='system'
+        )
+        db.session.add(system_message)
+    
+    # イベント13（砂漠ツアーガイド）に参加メンバーを追加
+    event13_members = ["hyrax@example.com", "sheep@example.com", "hamster@example.com", "uma@example.com", "tonakai@example.com"]
+    for i, email in enumerate(event13_members):
+        member = UserMemberGroup(
+            user_id=user_ids[email], 
+            event_id=event_ids[12],
+            joined_at=datetime.now(JST) - timedelta(days=7, hours=i)  # 砂漠ツアーガイドのメッセージは6日前から
+        )
+        db.session.add(member)
+        
+        # システムメッセージを追加
+        user_name = next((u["name"] for u in users if u["email"] == email), "ユーザー")
+        system_message = EventMessage(
+            id=str(uuid.uuid4()),
+            event_id=event_ids[12],
+            sender_user_id=None,  # システムメッセージ
+            content=f"{user_name}さんがイベントに参加しました",
+            timestamp=datetime.now(JST) - timedelta(days=7, hours=i),  # メッセージより前
+            message_type='system'
+        )
+        db.session.add(system_message)
+    
+    # イベント14（編み物ワークショップ）に参加メンバーを追加
+    event14_members = ["tonakai@example.com", "okojo@example.com", "uma@example.com"]
+    for i, email in enumerate(event14_members):
+        member = UserMemberGroup(
+            user_id=user_ids[email], 
+            event_id=event_ids[13],
+            joined_at=datetime.now(JST) - timedelta(days=8, hours=i)  # 編み物ワークショップのメッセージは7日前から
+        )
+        db.session.add(member)
+        
+        # システムメッセージを追加
+        user_name = next((u["name"] for u in users if u["email"] == email), "ユーザー")
+        system_message = EventMessage(
+            id=str(uuid.uuid4()),
+            event_id=event_ids[13],
+            sender_user_id=None,  # システムメッセージ
+            content=f"{user_name}さんがイベントに参加しました",
+            timestamp=datetime.now(JST) - timedelta(days=8, hours=i),  # メッセージより前
             message_type='system'
         )
         db.session.add(system_message)
@@ -805,12 +1009,34 @@ with app.app_context():
     # イベントの参加者数を更新
     for i, event_id in enumerate(event_ids):
         event = Event.query.get(event_id)
-        if i == 0:  # 最初のイベント
+        if i == 0:  # いちご狩りツアー
             event.current_persons = 1 + len(event1_members)
-        elif i == 1:  # 2番目のイベント
+        elif i == 1:  # 東京スカイツリー観光
             event.current_persons = 1 + len(event2_members)
-        elif i == 2:  # 3番目のイベント
+        elif i == 2:  # 京都紅葉撮影会
             event.current_persons = 1 + len(event3_members)
+        elif i == 3:  # 鎌倉散策ツアー
+            event.current_persons = 1 + len(event4_members)
+        elif i == 4:  # 大阪たこ焼きパーティー
+            event.current_persons = 1 + len(event5_members)
+        elif i == 5:  # 寿司作り体験教室
+            event.current_persons = 1 + len(event6_members)
+        elif i == 6:  # 乗馬体験ツアー
+            event.current_persons = 1  # 主催者のみ
+        elif i == 7:  # 山岳トレッキング
+            event.current_persons = 1 + len(event8_members)
+        elif i == 8:  # クリスマスマーケット訪問
+            event.current_persons = 1 + len(event9_members)
+        elif i == 9:  # 早朝サンライズヨガ
+            event.current_persons = 1  # 主催者のみ
+        elif i == 10:  # 岩場でのんびりピクニック
+            event.current_persons = 1 + len(event11_members)
+        elif i == 11:  # 種集めウォーキング
+            event.current_persons = 1 + len(event12_members)
+        elif i == 12:  # 砂漠ツアーガイド
+            event.current_persons = 1 + len(event13_members)
+        elif i == 13:  # 編み物ワークショップ
+            event.current_persons = 1 + len(event14_members)
     
     db.session.commit()
     print("✅ イベント参加メンバーを追加しました")
@@ -2618,6 +2844,9 @@ with app.app_context():
             "message_type": "text"
         }
     ]
+
+
+    ########
     direct_messages_data=[
         {
             "id": str(uuid.uuid4()),
@@ -2943,8 +3172,6 @@ with app.app_context():
         }
     ]
     
-    direct_messages_data = direct_messages_data  # 前のブロックで定義されたデータを使用
-    
     for message_data in direct_messages_data:
         direct_message = DirectMessage(
             id=message_data["id"],
@@ -2960,6 +3187,21 @@ with app.app_context():
     
     db.session.commit()
     print("✅ ダイレクトメッセージを追加しました")
+    
+    # イベントメッセージをデータベースに追加
+    for message_data in event_messages:
+        event_message = EventMessage(
+            id=message_data["id"],
+            event_id=message_data["event_id"],
+            sender_user_id=message_data["sender_user_id"],
+            content=message_data["content"],
+            timestamp=message_data["timestamp"],
+            message_type=message_data["message_type"]
+        )
+        db.session.add(event_message)
+    
+    db.session.commit()
+    print("✅ イベントメッセージを追加しました")
     
     print("\n✨ シードデータの投入が完了しました！")
     print("\n🔹 ログイン可能なユーザー:")
