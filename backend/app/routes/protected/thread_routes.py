@@ -14,10 +14,12 @@ thread_bp = Blueprint("thread", __name__)
 
 @thread_bp.route("/threads", methods=["GET"])
 def get_threads():
-    # 認証チェックなし
-    # user, error_response, error_code = get_authenticated_user()
-    # if error_response:
-    #     return jsonify(error_response), error_code
+    # ユーザー認証（トークンがあれば使用、なければNoneで続行）
+    user = None
+    try:
+        user, _, _ = get_authenticated_user()
+    except Exception:
+        user = None
 
     page = request.args.get('page', default=1, type=int)
     per_page = request.args.get('per_page', default=10, type=int)
@@ -46,10 +48,7 @@ def get_threads():
 
     result = []
     for thread in threads:
-        thread_dict = thread.to_dict(current_user_id=None)
-
-        # ログインしてないのでいいね状態（is_hearted）は Falseにしておく
-        thread_dict['is_hearted'] = False
+        thread_dict = thread.to_dict(current_user_id=user.id if user else None)
         result.append(thread_dict)
 
     return jsonify({"threads": result, "total": total})
