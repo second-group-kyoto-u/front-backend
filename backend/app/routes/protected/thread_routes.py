@@ -46,7 +46,8 @@ def get_threads():
 
     result = []
     for thread in threads:
-        thread_dict = thread.to_dict()
+        thread_dict = thread.to_dict(current_user_id=None)
+
         # ログインしてないのでいいね状態（is_hearted）は Falseにしておく
         thread_dict['is_hearted'] = False
         result.append(thread_dict)
@@ -79,7 +80,7 @@ def get_thread(thread_id):
     messages_data = [message.to_dict() for message in messages]
     
     # スレッドデータを取得
-    thread_data = thread.to_dict()
+    thread_data = thread.to_dict(current_user_id=user.id if user else None)
     
     # タグを取得
     thread_tags = ThreadTagAssociation.query.filter_by(
@@ -308,7 +309,7 @@ def heart_thread(thread_id):
     
     return jsonify({
         "message": "スレッドにいいねしました",
-        "thread": thread.to_dict()
+        "thread": thread.to_dict(current_user_id=user.id if user else None)
     })
 
 @thread_bp.route("/<thread_id>/unheart", methods=["POST"])
@@ -338,5 +339,5 @@ def unheart_thread(thread_id):
     
     return jsonify({
         "message": "いいねを取り消しました",
-        "thread": thread.to_dict()
+        "thread": thread.to_dict(current_user_id=user.id if user else None)
     }) 

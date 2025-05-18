@@ -20,6 +20,7 @@ class Thread(db.Model):
     area = db.relationship('AreaList', backref='threads')
     messages = db.relationship('ThreadMessage', backref='thread', lazy=True)
     tags = db.relationship('ThreadTagAssociation', backref='thread', lazy=True)
+    hearted_by = db.relationship('UserHeartThread', back_populates='thread', lazy=True)
     
     @property
     def author(self):
@@ -27,7 +28,7 @@ class Thread(db.Model):
         from app.models.user import User
         return User.query.get(self.author_id)
     
-    def to_dict(self):
+    def to_dict(self, current_user_id=None):
         """辞書形式でデータを返す（APIレスポンス用）"""
         from app.models.event import TagMaster
         
@@ -50,6 +51,9 @@ class Thread(db.Model):
             if image:
                 image_url = image.image_url
                 
+        is_hearted = any(heart.user_id == current_user_id for heart in self.hearted_by) if current_user_id else False
+
+
         return {
             'id': self.id,
             'title': self.title,
@@ -68,7 +72,7 @@ class Thread(db.Model):
             'hearts_count': len(self.hearted_by) if hasattr(self, 'hearted_by') else 0,
             'messages_count': len(self.messages) if hasattr(self, 'messages') else 0,
             'tags': tags,
-            'is_hearted': False
+            'is_hearted': is_hearted
         }
 
 
@@ -119,3 +123,6 @@ class UserHeartThread(db.Model):
     
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), primary_key=True)
     thread_id = db.Column(db.String(36), db.ForeignKey('thread.id'), primary_key=True)
+
+    user = db.relationship('User', back_populates='hearted_threads')
+    thread = db.relationship('Thread', back_populates='hearted_by')
