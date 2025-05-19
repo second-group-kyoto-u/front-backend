@@ -11,6 +11,8 @@ from flask import g
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import traceback
 import os
+import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
 
 # 日本時間タイムゾーン
 JST = timezone(timedelta(hours=9))
@@ -326,14 +328,6 @@ def start_event(event_id):
     # 作成者のみ開始可能
     if event.author_user_id != user.id:
         return jsonify({"error": "イベントを開始する権限がありません"}), 403
-    
-    # 既に開始されているか確認
-    if event.status == 'started':
-        return jsonify({"error": "イベントは既に開始されています"}), 400
-    
-    # 終了済みか確認
-    if event.status == 'ended':
-        return jsonify({"error": "終了したイベントは再開できません"}), 400
     
     # 位置情報（オプション）
     location_data = request.get_json()
@@ -667,72 +661,171 @@ def get_joined_events():
 
     return jsonify({"events": event_data})
 
-@event_bp.route('/<event_id>/bot/trivia', methods=['POST'])
-def event_bot_trivia(event_id):
+@event_bp.route('/<event_id>/weather-info', methods=['POST'])
+def get_event_weather_info_route(event_id):
     """
-    イベントに関連する豆知識やトリビアを生成する
+    イベントに関する天気情報とアドバイスを取得するエンドポイント
     """
-    from app.utils.openai_utils import generate_event_trivia, generate_conversation_starter
-    from app.utils.event import get_event_by_id
+    from app.utils.event import event_weather_info_api
     
-    data = request.json
-    
-    # 豆知識の種類（デフォルトはtrivia）
-    trivia_type = data.get('type', 'trivia')
-    
-    # 位置情報の取得
-    location_data = data.get('location')
+    return event_weather_info_api(event_id)
 
-    # イベント情報を取得
-    event = get_event_by_id(event_id)
-    if not event:
-        return jsonify({'error': 'イベントが見つかりません'}), 404
+@event_bp.route('/<event_id>/advisor-response', methods=['POST'])
+def get_advisor_response(event_id):
+    """
+    アドバイザー（ボット）の応答を生成するエンドポイント
     
-    # 豆知識の内容を生成
-    if trivia_type == 'conversation':
-        content_prefix = "💬 会話のきっかけ: "
-        generated_content = generate_conversation_starter(event.title, location_data)
-    else:
-        # 位置情報があれば場所名を取得
-        location_name = ""
-        if location_data and 'latitude' in location_data and 'longitude' in location_data:
+    ユーザーのメッセージに対して、以下のプロセスで応答を生成します：
+    1. メッセージ内容を分析し、天気情報や位置情報が必要かどうか判断
+    2. 必要な情報を取得（天気API、位置情報API）
+    3. 会話履歴とともに統合して応答を生成
+    """
+    from app.utils.openai_utils import analyze_message_needs, generate_advisor_response, get_place_info_for_prompt
+    from app.utils.event import get_event_by_id, get_event_weather_info
+
+    # ユーザー認証
+    user, error_response, error_code = get_authenticated_user()
+    if error_response:
+        return jsonify(error_response), error_code
+    
+    try:
+        # リクエストデータの取得
+        data = request.json
+        if not data:
+            return jsonify({"error": "リクエストデータがありません"}), 400
+        
+        # パラメータの取得と検証
+        message = data.get('message')
+        if not message:
+            return jsonify({"error": "メッセージが必要です"}), 400
+        
+        # キャラクター情報
+        character_id = data.get('character_id', 'default')
+        
+        # 位置情報（オプション）
+        location_data = data.get('location')
+        
+        # イベント情報の取得
+        event = get_event_by_id(event_id)
+        if not event:
+            return jsonify({"error": "イベントが見つかりません"}), 404
+
+        # ★★★ ユーザーのメッセージをまず保存する ★★★
+        user_message = EventMessage(
+            id=str(uuid.uuid4()),
+            event_id=event_id,
+            sender_user_id=user.id,
+            content=message,
+            message_type='text',
+            timestamp=datetime.now(JST)
+        )
+        db.session.add(user_message)
+        db.session.commit()
+
+        # 過去の会話履歴取得（最新5件に制限）
+        chat_history = []
+        try:
+            messages = EventMessage.query.filter_by(event_id=event_id).order_by(EventMessage.timestamp.desc()).limit(5).all()
+            chat_history = [
+                {
+                    "content": msg.content,
+                    "is_bot": msg.message_type.startswith('bot_') or msg.message_type == 'bot',  # bot_で始まるメッセージタイプとbotをbotとして扱う
+                    "timestamp": msg.timestamp.isoformat() if msg.timestamp else None
+                }
+                for msg in messages
+            ]
+            chat_history.reverse()  # 古い順に並べ替え
+        except Exception as e:
+            current_app.logger.error(f"会話履歴取得エラー: {str(e)}")
+            # 履歴取得に失敗しても処理は続行
+        
+        # メッセージを分析して必要な情報を判断
+        try:
+            # アプリケーションコンテキストを確保して分析を実行
+            analysis = analyze_message_needs(message, event.title)
+        except Exception as e:
+            current_app.logger.error(f"メッセージ分析エラー: {str(e)}")
+            analysis = {
+                "needs_weather": False,
+                "needs_location": False
+            }
+        
+        current_app.logger.info(f"メッセージ分析結果: {analysis}")
+        
+        # 追加情報の初期化
+        additional_info = {}
+        
+        # 天気情報が必要な場合は取得
+        if analysis.get('needs_weather', False):
+            current_app.logger.info("天気情報を取得します")
             try:
-                from app.utils.openai_utils import get_location_info
-                location_info = get_location_info(location_data['latitude'], location_data['longitude'])
-                if location_info and 'address' in location_info:
-                    address = location_info['address']
-                    location_name = address.get('city', '') or address.get('town', '') or address.get('suburb', '')
+                weather_info = get_event_weather_info(event_id, location_data)
+                additional_info['weather_info'] = weather_info.get('weather_info')
             except Exception as e:
-                current_app.logger.error(f"位置情報の取得エラー: {str(e)}")
+                current_app.logger.error(f"天気情報取得エラー: {str(e)}")
         
-        # 位置情報があれば場所名を含める
-        if location_name:
-            content_prefix = f"📍 {location_name}の豆知識: "
-        else:
-            content_prefix = f"📍 {event.title}の豆知識: "
+        # 位置情報が必要な場合は取得
+        if analysis.get('needs_location', False) and location_data and 'latitude' in location_data and 'longitude' in location_data:
+            current_app.logger.info("位置情報と周辺施設情報を取得します")
+            try:
+                place_info = get_place_info_for_prompt(
+                    location_data["latitude"],
+                    location_data["longitude"]
+                )
+                additional_info['location_info'] = place_info
+            except Exception as e:
+                current_app.logger.error(f"位置情報取得エラー: {str(e)}")
         
-        generated_content = generate_event_trivia(event.title, location_data)
-
-    # メッセージを作成
-    message_content = content_prefix + generated_content
-    
-    # データベースにメッセージを保存
-    new_message = EventMessage(
-        id=str(uuid.uuid4()),
-        event_id=event_id,
-        content=message_content,
-        message_type='bot',
-        timestamp=datetime.now(JST)
-    )
-    
-    db.session.add(new_message)
-    db.session.commit()
-    
-    # メッセージをJSONで返す
-    return jsonify({
-        'bot_message': new_message.to_dict(),
-        'message': 'ボットメッセージを送信しました'
-    }), 201
+        # アドバイザーの応答を生成
+        try:
+            # アプリケーションコンテキストを確保して応答を生成
+            advisor_response = generate_advisor_response(
+                message=message,
+                event_title=event.title,
+                character_id=character_id,
+                chat_history=chat_history,
+                additional_info=additional_info
+            )
+        except Exception as e:
+            current_app.logger.error(f"アドバイザー応答生成エラー: {str(e)}")
+            # キャラクターごとのエラー応答
+            error_responses = {
+                "nyanta": "ごめんニャ、ちょっと考えるのに時間がかかってるニャ。もう少し待ってほしいニャ。",
+                "hitsuji": "申し訳ありません～。少し考えるのに時間がかかっているようです～。もう一度お願いできますか～？",
+                "koko": "ごめんね！ちょっと今考え中で時間がかかってるみたい！もう一度聞いてくれる？",
+                "fukurou": "申し訳ございません。只今処理に時間を要しております。少々お待ちいただくか、再度ご質問いただけますと幸いです。",
+                "toraberu": "おっと！ちょっと今考えるのに時間かかってるみたいだぜ！もう一度聞いてくれるかな？"
+            }
+            advisor_response = error_responses.get(
+                character_id,
+                "申し訳ありません、応答の生成中にエラーが発生しました。もう一度お試しください。"
+            )
+        
+        # アドバイザーの応答をメッセージとして保存
+        bot_message = EventMessage(
+            id=str(uuid.uuid4()),
+            event_id=event_id,
+            content=advisor_response,
+            message_type=f'bot_{character_id}',  # キャラクターごとに異なるメッセージタイプを設定
+            timestamp=datetime.now(JST),
+            metadata={"character_id": character_id}
+        )
+        
+        db.session.add(bot_message)
+        db.session.commit()
+        
+        # レスポンスを返す
+        return jsonify({
+            'response': advisor_response,
+            'message': 'アドバイザー応答を生成しました',
+            'message_id': bot_message.id,
+            'analysis': analysis
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"アドバイザー応答生成エラー: {str(e)}")
+        current_app.logger.error(traceback.format_exc())
+        return jsonify({"error": f"アドバイザー応答の生成に失敗しました: {str(e)}"}), 500
 
 # CORSヘッダー付きのレスポンスを作成するヘルパー関数
 def create_cors_response(data, status_code=200):
@@ -749,12 +842,3 @@ def create_cors_response(data, status_code=200):
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
     return response
-
-@event_bp.route('/<event_id>/weather-info', methods=['POST'])
-def get_event_weather_info_route(event_id):
-    """
-    イベントに関する天気情報とアドバイスを取得するエンドポイント
-    """
-    from app.utils.event import event_weather_info_api
-    
-    return event_weather_info_api(event_id)

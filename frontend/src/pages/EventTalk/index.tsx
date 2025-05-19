@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { sendEventMessage, getEvent, startEvent, endEvent, generateBotTrivia, getCharacter, getEventWeatherInfo } from '@/api/event'
+import { sendEventMessage, getEvent, startEvent, endEvent, getCharacter, getEventWeatherInfo, getAdvisorResponse, getCharacters } from '@/api/event'
 import { uploadImage } from '@/api/upload'
 import { useAuth } from '@/hooks/useAuth'
 import type { EventType } from '@/api/event'
@@ -54,6 +54,15 @@ function EventTalkPage() {
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null)
   const [characterData, setCharacterData] = useState<any>(null)
   const [showCharacterModal, setShowCharacterModal] = useState(false)
+  const [isAdviserMode, setIsAdviserMode] = useState(false)
+  const [characterList, setCharacterList] = useState<{id: string, name: string}[]>([
+    {id: 'nyanta', name: 'ニャンタ'},
+    {id: 'hitsuji', name: 'ヒツジ'},
+    {id: 'koko', name: 'ココ'},
+    {id: 'fukurou', name: 'フクロウ'},
+    {id: 'toraberu', name: 'トラベル'}
+  ]);
+  const [showMenu, setShowMenu] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -140,7 +149,7 @@ function EventTalkPage() {
         // サーバーにメッセージを送信
         await sendEventMessage(eventId, { 
           content: defaultMessage, 
-          message_type: 'bot',
+          message_type: `bot_${characterId}`,
           metadata: { character_id: characterId }  // キャラクターIDをメタデータとして送信
         });
         
@@ -157,12 +166,12 @@ function EventTalkPage() {
           id: `default-greeting-${Date.now()}`,
           event_id: eventId,
           content: defaultMessage,
-          message_type: 'bot',
+          message_type: `bot_${characterId}`,
           timestamp: new Date().toISOString(),
-          sender_user_id: 'bot',
+          sender_user_id: undefined,
           sender: null,
           image_url: null,
-          metadata: {},
+          metadata: { character_id: characterId },
           read_count: 0
         };
         
@@ -271,8 +280,8 @@ function EventTalkPage() {
           try {
             await sendEventMessage(eventId, { 
               content: weatherMessage, 
-              message_type: 'bot',
-              metadata: { character_id: characterId }  // キャラクターIDをメタデータとして送信
+              message_type: `bot_${characterId}`,  // 「bot_キャラクターID」の形式に変更
+              metadata: { character_id: characterId }
             });
             
             // メッセージの再読み込み
@@ -285,12 +294,12 @@ function EventTalkPage() {
               id: `weather-info-${Date.now()}`,
               event_id: eventId,
               content: weatherMessage,
-              message_type: 'bot',
+              message_type: `bot_${characterId}`,  // 「bot_キャラクターID」の形式に変更
               timestamp: new Date().toISOString(),
-              sender_user_id: 'bot',
+              sender_user_id: undefined,
               sender: null,
               image_url: null,
-              metadata: {},
+              metadata: { character_id: characterId },
               read_count: 0
             };
             
@@ -327,8 +336,8 @@ function EventTalkPage() {
         try {
           await sendEventMessage(eventId, { 
             content: weatherMessage, 
-            message_type: 'bot',
-            metadata: { character_id: characterId }  // キャラクターIDをメタデータとして送信
+            message_type: `bot_${characterId}`,  // 「bot_キャラクターID」の形式に変更
+            metadata: { character_id: characterId }
           });
           
           // メッセージの再読み込み
@@ -341,12 +350,12 @@ function EventTalkPage() {
             id: `weather-fallback-${Date.now()}`,
             event_id: eventId,
             content: weatherMessage,
-            message_type: 'bot',
+            message_type: `bot_${characterId}`,  // 「bot_キャラクターID」の形式に変更
             timestamp: new Date().toISOString(),
-            sender_user_id: 'bot',
+            sender_user_id: undefined,
             sender: null,
             image_url: null,
-            metadata: {},
+            metadata: { character_id: characterId },
             read_count: 0
           };
           
@@ -438,6 +447,7 @@ function EventTalkPage() {
     }
   }
 
+  // handleSubmitメソッドを修正して、エンターキー固有のロジックを追加
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!eventId || !token) {
@@ -475,11 +485,31 @@ function EventTalkPage() {
         setSelectedFile(null)
         setSelectedFilePreview(null)
       } else if (newMessage.trim()) {
-        // テキスト送信
-        await sendEventMessage(eventId, { 
-          content: newMessage.trim(), 
-          message_type: 'text' 
-        })
+        if (isAdviserMode) {
+          // アドバイザーモードの場合は、新しいAPIを呼び出す
+          // 位置情報を取得
+          let locationData: { latitude: number; longitude: number; } | undefined = undefined;
+          if (userLocation) {
+            locationData = {
+              latitude: userLocation.latitude,
+              longitude: userLocation.longitude
+            };
+          }
+          
+          // アドバイザー応答を取得
+          await getAdvisorResponse(eventId, {
+            message: newMessage.trim(),
+            character_id: selectedCharacter || undefined,
+            location: locationData
+          });
+          
+        } else {
+          // 通常のテキスト送信
+          await sendEventMessage(eventId, { 
+            content: newMessage.trim(), 
+            message_type: 'text'
+          });
+        }
       }
       setNewMessage('')
       await fetchMessages()
@@ -490,6 +520,15 @@ function EventTalkPage() {
     } finally {
       setSending(false)
       setUploadProgress(0)
+    }
+  }
+
+  // 別のハンドラを追加してEnterキーを処理
+  const handleTextareaKeyDown = (e: { key: string; shiftKey: boolean; preventDefault?: () => void }) => {
+    if (e && e.key === 'Enter' && !e.shiftKey && e.preventDefault) {
+      e.preventDefault();
+      const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+      handleSubmit(fakeEvent);
     }
   }
 
@@ -606,80 +645,6 @@ function EventTalkPage() {
     getUserLocation()
   }, [])
   
-  // 豆知識生成ハンドラー
-  const handleGenerateTrivia = async (type: 'trivia' | 'conversation' = 'trivia') => {
-    if (!eventId || !token) {
-      setError('ログインが必要です')
-      return
-    }
-    
-    // キャラクターの選択状態を確認
-    if (!selectedCharacter) {
-      setError('キャラクターが選択されていません。再選択してください。')
-      setShowCharacterModal(true)
-      return
-    }
-
-    try {
-      setIsSendingTrivia(true)
-      setError('')
-      
-      // 常にAPIを呼び出す（デフォルトコンテンツを使わない）
-      // 位置情報を取得するPromiseを作成
-      const getLocationPromise = new Promise<{latitude: number, longitude: number} | null>((resolve) => {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const location = {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude
-              }
-              setUserLocation(location) // 状態も更新
-              resolve(location)
-            },
-            (error) => {
-              console.error('位置情報の取得に失敗しました:', error)
-              // エラーの場合はnullを返すが、エラーメッセージは表示しない（豆知識生成は続行）
-              resolve(null)
-            },
-            { timeout: 5000, maximumAge: 60000 } // 5秒のタイムアウト、1分以内のキャッシュは許可
-          )
-        } else {
-          resolve(null)
-        }
-      })
-      
-      // 位置情報を取得してから豆知識を生成
-      const location = await getLocationPromise
-      
-      // リクエストデータの作成
-      const requestData: {
-        type: 'trivia' | 'conversation';
-        location?: { latitude: number; longitude: number };
-        character?: string;
-      } = { type }
-      
-      // 位置情報があれば追加
-      if (location) {
-        requestData.location = location
-      }
-      
-      // キャラクター情報を追加
-      if (selectedCharacter) {
-        requestData.character = selectedCharacter
-      }
-      
-      await generateBotTrivia(eventId, requestData)
-      await fetchMessages()
-    } catch (err: any) {
-      console.error('豆知識生成エラー:', err)
-      const errorMessage = err.response?.data?.message || err.message || '豆知識の生成に失敗しました'
-      setError(errorMessage)
-    } finally {
-      setIsSendingTrivia(false)
-    }
-  }
-
   // アバター画像のURLを処理する関数
   const processAvatarUrl = (url: string | undefined): string => {
     if (!url) return '';
@@ -705,6 +670,74 @@ function EventTalkPage() {
     return processedUrl;
   };
 
+  // キャラクターリストを取得
+  const fetchCharacterList = async () => {
+    try {
+      const response = await getCharacters();
+      if (response && response.characters && Array.isArray(response.characters)) {
+        setCharacterList(response.characters);
+      }
+    } catch (error) {
+      console.error('キャラクターリスト取得エラー:', error);
+      // エラー時はデフォルトリストを使用
+    }
+  };
+  
+  // useEffect内にキャラクターリスト取得を追加
+  useEffect(() => {
+    fetchCharacterList();
+  }, []);
+
+  // メニューを表示・非表示するトグル関数
+  const toggleMenu = () => {
+    setShowMenu(!showMenu);
+  };
+
+  // キャラクター変更関数を修正
+  const changeCharacter = () => {
+    // CharacterSelectモーダルを表示
+    setShowCharacterModal(true);
+    // メニューを閉じる
+    setShowMenu(false);
+  };
+
+  // メッセージタイプからキャラクターIDを抽出する関数を追加
+  const getCharacterIdFromMessageType = (messageType: string): string | null => {
+    if (messageType && messageType.startsWith('bot_')) {
+      return messageType.substring(4); // 'bot_' の後の部分を取得
+    }
+    return null;
+  };
+
+  // メッセージタイプがbotかどうかを判定する関数を修正
+  const isBotMessage = (messageType: string | undefined): boolean => {
+    if (!messageType) return false;
+    return messageType === 'bot' || messageType.startsWith('bot_');
+  };
+
+  // 画面タップでメニューを閉じるために、コンポーネント全体にイベントリスナーを追加
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const menu = document.querySelector(`.${styles.menuDropdown}`);
+      const menuButton = document.querySelector(`.${styles.menuButton}`);
+      
+      if (
+        showMenu && 
+        menu && 
+        menuButton && 
+        !menu.contains(event.target as Node) && 
+        !menuButton.contains(event.target as Node)
+      ) {
+        setShowMenu(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu, styles.menuDropdown, styles.menuButton]);
+
   if (loading && !messages.length) {
     return (
       <div className={styles.loadingSpinner}>
@@ -724,7 +757,7 @@ function EventTalkPage() {
           ←
         </button>
         <h1 className={styles.title}>{eventData?.title || 'トークルーム'}</h1>
-        <button className={styles.menuButton} aria-label="メニュー">⋮</button>
+        <button className={styles.menuButton} aria-label="メニュー" onClick={toggleMenu}>⋮</button>
       </div>
 
       {/* イベント開始/終了ボタン（イベント作成者のみ表示） */}
@@ -754,28 +787,6 @@ function EventTalkPage() {
         </div>
       )}
 
-      {/* ボットの豆知識ボタン */}
-      {eventData && eventData.status === 'started' && (
-        <div className={styles.botControls}>
-          <button 
-            className={`${styles.botControlButton} ${styles.triviaButton}`}
-            onClick={() => handleGenerateTrivia('trivia')} 
-            disabled={isSendingTrivia}
-          >
-            <span className={styles.botButtonIcon}>📝</span>
-            ボットの豆知識
-          </button>
-          <button 
-            className={`${styles.botControlButton} ${styles.conversationButton}`}
-            onClick={() => handleGenerateTrivia('conversation')} 
-            disabled={isSendingTrivia}
-          >
-            <span className={styles.botButtonIcon}>🤔</span>
-            会話のきっかけ
-          </button>
-        </div>
-      )}
-
       <div className={styles.messageList}>
         {error && <div className={styles.errorMessage}>{error}</div>}
         
@@ -793,26 +804,39 @@ function EventTalkPage() {
                 {msg.content}
               </div>
             );
-          } else if (msg.message_type === 'bot') {
+          } else if (isBotMessage(msg.message_type)) {
             // botメッセージ
-            // キャラクターデータから名前を取得
-            const botName = characterData ? `adviser ${characterData.name}` : 'bot';
+            // メッセージタイプまたはメタデータからキャラクターIDを取得
+            const msgCharacterId = getCharacterIdFromMessageType(msg.message_type || '') || 
+                                  (msg.metadata && msg.metadata.character_id) || 
+                                  selectedCharacter || 
+                                  'default';
+            
+            // キャラクター名の取得
+            const characterName = characterList.find(c => c.id === msgCharacterId)?.name || msgCharacterId;
+            const botName = `adviser ${characterName}`;
+            
+            // キャラクターのアバター画像URL
+            const avatarUrl = 
+              (characterData && characterData.avatar_url && msgCharacterId === selectedCharacter) ? 
+              characterData.avatar_url : 
+              null;
             
             return (
-              <div key={msg.id} className={styles.botMessage}>
+              <div key={msg.id} className={`${styles.botMessage} ${styles[`bot_${msgCharacterId}`] || ''}`}>
                 <div className={styles.botMessageContainer}>
                   <div className={styles.botAvatar}>
-                    {characterData && characterData.avatar_url ? (
+                    {avatarUrl ? (
                       <img 
-                        src={processAvatarUrl(characterData.avatar_url)} 
-                        alt={characterData.name} 
+                        src={processAvatarUrl(avatarUrl)} 
+                        alt={characterName} 
                         className={styles.botAvatarImage}
                         onError={(e: any) => {
-                          console.error('ボットアバター画像の読み込みエラー:', characterData.avatar_url);
+                          console.error('ボットアバター画像の読み込みエラー:', avatarUrl);
                           const target = e.currentTarget as HTMLImageElement;
                           target.style.display = 'none';
                           if (target.parentElement) {
-                            target.parentElement.textContent = selectedCharacter ? selectedCharacter.charAt(0).toUpperCase() : 'B';
+                            target.parentElement.textContent = msgCharacterId.charAt(0).toUpperCase();
                             target.parentElement.style.display = 'flex';
                             target.parentElement.style.justifyContent = 'center';
                             target.parentElement.style.alignItems = 'center';
@@ -822,7 +846,7 @@ function EventTalkPage() {
                       />
                     ) : (
                       <div className={styles.avatarPlaceholder}>
-                        {selectedCharacter ? selectedCharacter.charAt(0).toUpperCase() : 'B'}
+                        {msgCharacterId.charAt(0).toUpperCase()}
                       </div>
                     )}
                   </div>
@@ -941,13 +965,22 @@ function EventTalkPage() {
           placeholder="メッセージを入力"
           className={styles.messageInput}
           disabled={!!selectedFile || sending}
-          onKeyDown={(e: { key: string; shiftKey: boolean; preventDefault: () => void }) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault()
-              handleSubmit({} as React.FormEvent)
-            }
-          }}
+          onKeyDown={handleTextareaKeyDown}
         />
+        <div className={styles.adviserContainer}>
+          <div className={styles.adviserCheckboxContainer}>
+            <input
+              type="checkbox"
+              id="adviserCheckbox"
+              className={styles.adviserCheckbox}
+              checked={isAdviserMode}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIsAdviserMode(e.target.checked)}
+            />
+            <label htmlFor="adviserCheckbox" className={styles.adviserCheckboxLabel}>
+              アドバイザーと会話
+            </label>
+          </div>
+        </div>
         <button 
           type="submit" 
           className={styles.sendButton}
@@ -969,11 +1002,35 @@ function EventTalkPage() {
                 console.log('キャラクター選択完了（モーダル）:', selectedChar);
                 
                 if (selectedChar) {
+                  const oldCharacter = selectedCharacter;
                   setSelectedCharacter(selectedChar);
                   fetchCharacterData(selectedChar);
                   
                   // モーダルをまず閉じる（UIをブロックしない）
                   setShowCharacterModal(false);
+                  
+                  // キャラクターが変更された場合、システムメッセージを表示
+                  if (oldCharacter && oldCharacter !== selectedChar) {
+                    // 変更前後のキャラクター名を取得
+                    const oldCharName = characterList.find(c => c.id === oldCharacter)?.name || oldCharacter;
+                    const newCharName = characterList.find(c => c.id === selectedChar)?.name || selectedChar;
+                    
+                    // 切り替えメッセージを表示
+                    const switchMessage: ExtendedEventMessageType = {
+                      id: `switch-message-${Date.now()}`,
+                      event_id: eventId || '',
+                      content: `アドバイザーを「${oldCharName}」から「${newCharName}」に変更しました`,
+                      message_type: 'system',
+                      timestamp: new Date().toISOString(),
+                      sender_user_id: undefined,
+                      sender: null,
+                      image_url: null,
+                      metadata: {},
+                      read_count: 0
+                    };
+                    
+                    setMessages(prevMessages => [...prevMessages, switchMessage]);
+                  }
                   
                   // この時点で確実に挨拶を表示（条件なし）
                   console.log('強制的に挨拶を表示します');
@@ -1003,6 +1060,15 @@ function EventTalkPage() {
               }} 
               isModal={true} 
             />
+          </div>
+        </div>
+      )}
+
+      {/* メニュードロップダウン */}
+      {showMenu && (
+        <div className={styles.menuDropdown}>
+          <div className={styles.menuItem} onClick={changeCharacter}>
+            キャラクターを変更
           </div>
         </div>
       )}

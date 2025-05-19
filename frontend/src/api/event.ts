@@ -44,7 +44,7 @@ export interface EventMessageType {
   content: string;
   timestamp: string | null;
   image_url: string | null;
-  message_type: 'text' | 'image' | 'system' | 'bot';
+  message_type: 'text' | 'image' | 'system' | 'bot' | 'bot_nyanta' | 'bot_hitsuji' | 'bot_koko' | 'bot_fukurou' | 'bot_toraberu' | string;
   metadata: any;
   read_count: number;
 }
@@ -148,7 +148,7 @@ export const endEvent = async (eventId: string) => {
 export const sendEventMessage = async (eventId: string, data: {
   content?: string;
   image_id?: string;
-  message_type: 'text' | 'image' | 'location' | 'system' | 'bot';
+  message_type: 'text' | 'image' | 'location' | 'system' | 'bot' | 'bot_nyanta' | 'bot_hitsuji' | 'bot_koko' | 'bot_fukurou' | 'bot_toraberu' | string;
   metadata?: any;
 }) => {
   try {
@@ -244,17 +244,17 @@ export const getJoinedEvents = async () => {
   }
 };
 
-// botの豆知識生成API
-export const generateBotTrivia = async (eventId: string, data?: {
-  topic?: string;
-  type?: 'trivia' | 'conversation';
+// アドバイザー応答生成API
+export const getAdvisorResponse = async (eventId: string, data: {
+  message: string;
+  character_id?: string;
   location?: {
     latitude: number;
     longitude: number;
   };
 }) => {
   try {
-    const response = await axios.post(`event/${eventId}/bot/trivia`, data || {}, {
+    const response = await axios.post(`event/${eventId}/advisor-response`, data, {
       headers: getAuthHeader()
     });
     return response.data;
