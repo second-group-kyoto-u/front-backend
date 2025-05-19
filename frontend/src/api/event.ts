@@ -261,4 +261,54 @@ export const generateBotTrivia = async (eventId: string, data?: {
   } catch (error) {
     throw error;
   }
+};
+
+// キャラクターリスト取得
+export const getCharacters = async () => {
+  try {
+    console.log('キャラクターリスト取得API呼び出し');
+    const response = await axios.get('character/characters', {
+      headers: getAuthHeader()
+    });
+    console.log('キャラクターリスト取得API レスポンス:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('キャラクターリスト取得API エラー:', error);
+    throw error;
+  }
+};
+
+// キャラクター詳細情報取得
+export const getCharacter = async (characterId: string) => {
+  try {
+    console.log(`キャラクター詳細取得API呼び出し: ${characterId}`);
+    const response = await axios.get(`character/characters/${characterId}`, {
+      headers: getAuthHeader()
+    });
+    console.log('キャラクター詳細取得API レスポンス:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('キャラクター詳細取得API エラー:', error);
+    throw error;
+  }
+};
+
+// イベントの天気情報とアドバイスを取得
+export const getEventWeatherInfo = async (eventId: string, data?: {
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
+}) => {
+  try {
+    console.log(`イベント天気情報取得API呼び出し: ${eventId}`);
+    const response = await axios.post(`event/${eventId}/weather-info`, data || {}, {
+      headers: getAuthHeader()
+    });
+    console.log('イベント天気情報取得API レスポンス:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('イベント天気情報取得API エラー:', error);
+    throw error;
+  }
 }; 

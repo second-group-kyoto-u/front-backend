@@ -415,12 +415,27 @@ def end_event(event_id):
     )
     
     db.session.add(system_message)
+    
+    # Botメッセージの作成（get_event_end_message関数を使用）
+    from app.utils.event import get_event_end_message
+    bot_message_content = get_event_end_message(event_id=event_id)
+    
+    bot_message = EventMessage(
+        id=str(uuid.uuid4()),
+        event_id=event_id,
+        sender_user_id=None,  # Botメッセージ
+        content=bot_message_content,
+        timestamp=datetime.now(JST),
+        message_type='bot'
+    )
+    
+    db.session.add(bot_message)
     db.session.commit()
     
     return jsonify({
         "message": "イベントを終了しました",
         "event": event.to_dict()
-    }) 
+    })
 
 @event_bp.route("/<event_id>/message", methods=["POST"])
 def send_event_message(event_id):
@@ -734,3 +749,12 @@ def create_cors_response(data, status_code=200):
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
     return response
+
+@event_bp.route('/<event_id>/weather-info', methods=['POST'])
+def get_event_weather_info_route(event_id):
+    """
+    イベントに関する天気情報とアドバイスを取得するエンドポイント
+    """
+    from app.utils.event import event_weather_info_api
+    
+    return event_weather_info_api(event_id)

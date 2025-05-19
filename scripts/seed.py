@@ -16,6 +16,7 @@ from app.models.area import AreaList
 from app.models.file import ImageList
 from app.models.thread import Thread, ThreadMessage, UserHeartThread
 from app.models.message import EventMessage, FriendRelationship, DirectMessage
+from app.models.character import Character
 import boto3
 from werkzeug.utils import secure_filename
 from botocore.exceptions import ClientError
@@ -27,6 +28,7 @@ MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadmin")
 MINIO_BUCKET = os.getenv("MINIO_BUCKET", "user-profile-images")
 EVENT_BUCKET = "event-images"
 THREAD_BUCKET = "thread-images"
+CHARACTER_BUCKET = "character-images"  # キャラクター画像用バケット
 TEST_IMAGE_PATH = os.path.join(os.path.dirname(__file__), "users", "test.png")
 
 s3 = boto3.client(
@@ -39,7 +41,7 @@ s3 = boto3.client(
 
 def create_buckets():
     """必要なバケットを作成"""
-    for bucket in [MINIO_BUCKET, EVENT_BUCKET, THREAD_BUCKET]:
+    for bucket in [MINIO_BUCKET, EVENT_BUCKET, THREAD_BUCKET, CHARACTER_BUCKET]:  # キャラクターバケット追加
         try:
             s3.head_bucket(Bucket=bucket)
             print(f"📦 バケット '{bucket}' は既に存在します")
@@ -2931,6 +2933,90 @@ with app.app_context():
     
     db.session.commit()
     print("✅ イベントメッセージを追加しました")
+    
+    # キャラクターデータを作成
+    characters = [
+        {
+            "id": "hitsuji",
+            "name": "ひつじのひつじ",
+            "description": "おっとりした羊のキャラクター",
+            "personality": "おっとりしていて優しい聞き役タイプ。相手の話をじっくり受け止めてくれる。",
+            "speech_pattern": "「うんうん、わかるよ〜」「それって、すごく大事な気持ちだと思うなぁ」",
+            "interests": "悩み相談、思い出話、じんわりくる話",
+            "traits": "話すのが苦手な人も安心して心を開ける存在。静かな夜や移動中に活躍。",
+            "favorite_trip": "のんびり自然に癒されるリトリート旅",
+            "image_file": "執事のひつじ.png"
+        },
+        {
+            "id": "toraberu",
+            "name": "トラベル",
+            "description": "冒険好きなトラのキャラクター",
+            "personality": "エネルギッシュで冒険好き。アイデアマンで、次の行き先を提案するのが得意。",
+            "speech_pattern": "「行ってみようぜ！絶対楽しいって！」「オレが前行ったとこ、めちゃよかったぞ！」",
+            "interests": "おすすめスポット、旅の計画、アクティビティ提案",
+            "traits": "とにかく場を引っ張ってくれるリーダータイプ。予定が空いたときやプランに悩んだときに最適。",
+            "favorite_trip": "アクティブ系冒険旅（登山、キャンプ、秘境系）",
+            "image_file": "トラベル.png"
+        },
+        {
+            "id": "nyanta",
+            "name": "ニャンタ",
+            "description": "ミステリアスな猫のキャラクター",
+            "personality": "ちょっとミステリアスでマイペース。でもときどき核心を突いた言葉をくれる。",
+            "speech_pattern": "「ふふっ、君って面白いね」「それって、実は大事なことなんじゃない？」",
+            "interests": "深掘り系トーク、哲学、恋愛観、占い",
+            "traits": "少し落ち着いた夜や静かなカフェでの会話にぴったり。大人っぽい雰囲気。",
+            "favorite_trip": "ひとり旅、街歩き、アンティークショップ巡り",
+            "image_file": "ニャン太.png"
+        },
+        {
+            "id": "fukurou",
+            "name": "フクロウくん",
+            "description": "知識豊かなフクロウのキャラクター",
+            "personality": "知識豊富で頼れる存在。優しく導いてくれる先生みたいな一面も。",
+            "speech_pattern": "「うむ、それには理由があるんじゃよ」「知っているかな？昔こんな話があってね」",
+            "interests": "豆知識、歴史、雑学、文化解説",
+            "traits": "移動中や待ち時間に役立つ'ためになる話'の達人。クイズ形式も得意。",
+            "favorite_trip": "歴史散策、世界遺産巡り、博物館・美術館系",
+            "image_file": "フクロウくん.png"
+        },
+        {
+            "id": "koko",
+            "name": "ココ",
+            "description": "社交的なラッコのキャラクター",
+            "personality": "おしゃべりで社交的、みんなのムードメーカー。ちょっと子どもっぽいけど和ませ上手。",
+            "speech_pattern": "「ねぇねぇ、それ聞いたことある〜！」「あっ、それ面白そうだね！もっと話して〜！」",
+            "interests": "ゲーム、恋バナ、ちょっとした心理テストや性格診断",
+            "traits": "すぐに距離を縮めてくれるタイプで、初対面の人が多い旅先で特に活躍。笑いを生む話題が得意。",
+            "favorite_trip": "にぎやかで人とつながる旅（ゲストハウス、シェア旅、テーマパーク）",
+            "image_file": "ココ.png"
+        }
+    ]
+
+    # キャラクター画像をアップロード
+    for character_data in characters:
+        # 画像ファイルのパスを作成
+        image_path = os.path.join(os.path.dirname(__file__), "characters", character_data["image_file"])
+        # 画像をアップロード
+        character_data["avatar_url"] = upload_image(CHARACTER_BUCKET, image_path, character_data["image_file"])
+        
+    # キャラクターをデータベースに追加
+    for character_data in characters:
+        character = Character(
+            id=character_data["id"],
+            name=character_data["name"],
+            description=character_data["description"],
+            personality=character_data["personality"],
+            speech_pattern=character_data["speech_pattern"],
+            interests=character_data["interests"],
+            traits=character_data["traits"],
+            favorite_trip=character_data["favorite_trip"],
+            avatar_url=character_data["avatar_url"]  # avatar_urlを設定
+        )
+        db.session.add(character)
+
+    db.session.commit()
+    print("✅ キャラクター情報を追加しました")
     
     print("\n✨ シードデータの投入が完了しました！")
     print("\n🔹 ログイン可能なユーザー:")

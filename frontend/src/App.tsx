@@ -122,6 +122,14 @@ function App(): JSX.Element {
           }
         />
 
+        {/* イベントキャラクター選択 - EventTalkで実装しているのでリダイレクト */}
+        <Route
+          path="/event/:eventId/character-select"
+          element={
+            <Navigate to="../talk" replace />
+          }
+        />
+
         {/* イベントトーク */}
         <Route
           path="/event/:eventId/talk"
