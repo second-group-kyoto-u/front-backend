@@ -222,7 +222,7 @@ function EventDetailPage() {
       // 詳細情報を更新
       await fetchEventDetail()
       
-      // トークルームに遷移
+      // 直接トークルームに遷移
       navigate(`/event/${eventId}/talk`)
     } catch (err: any) {
       console.error('イベント参加エラー:', err)
@@ -241,6 +241,7 @@ function EventDetailPage() {
   }
 
   const goToTalkRoom = () => {
+    // 直接トークルームに遷移
     navigate(`/event/${eventId}/talk`)
   }
 
