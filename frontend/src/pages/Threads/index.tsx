@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
-import { getThreads, Thread } from '@/api/thread'
+import { getThreads, heartThread, unheartThread, Thread } from '@/api/thread'
 import { useLocation } from 'react-router-dom' // 🎯 location 経由で state を受け取る
 import styles from './Threads.module.css'
 
@@ -56,14 +56,44 @@ function ThreadsPage() {
     isAuthenticated ? navigate('/threads/create') : navigate('/login')
   }
 
-  const handleLike = (e: React.MouseEvent, threadId: string) => {
+  const handleLike = async (e: React.MouseEvent, threadId: string) => {
     e.stopPropagation()
-    setThreads((prev) =>
-      prev.map((t) =>
-        t.id === threadId ? { ...t, hearts_count: t.hearts_count + 1 } : t
+
+    if (!isAuthenticated) {
+      alert('いいねするためにはログインが必要です')
+      return
+    }
+
+    // 現在のスレッドを取得
+    const thread = threads.find((t) => t.id === threadId)
+    if (!thread) return
+
+    try {
+      if (thread.is_hearted) {
+        await unheartThread(threadId)
+      } else {
+        await heartThread(threadId)
+      }
+
+      // API成功後に状態更新（ここでUIを反映）
+      setThreads((prev) =>
+        prev.map((t) =>
+          t.id === threadId
+            ? {
+                ...t,
+                is_hearted: !t.is_hearted,
+                hearts_count: t.hearts_count + (t.is_hearted ? -1 : 1),
+              }
+            : t
+        )
       )
-    )
+    } catch (error) {
+      console.error('いいね操作失敗', error)
+      alert("いいね操作に失敗しました")
+    }
   }
+
+
 
   const handleReply = (e: React.MouseEvent, threadId: string) => {
     e.stopPropagation()

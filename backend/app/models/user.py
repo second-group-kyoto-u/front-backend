@@ -46,8 +46,7 @@ class User(db.Model):
                                     backref=db.backref('hearted_by', lazy=True))
     
     # いいねしたスレッド関連
-    hearted_threads = db.relationship('Thread', secondary='user_heart_thread',
-                                      backref=db.backref('hearted_by', lazy=True))
+    hearted_threads = db.relationship('UserHeartThread', back_populates='user', lazy=True)
     
     # 送信したイベントメッセージ
     event_messages = db.relationship('EventMessage', backref='sender', lazy=True, 

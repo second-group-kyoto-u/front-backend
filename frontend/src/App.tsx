@@ -13,6 +13,7 @@ import EventDetailPage from './pages/EventDetail'
 import EventTalkPage from './pages/EventTalk'
 import RegisterPage from './pages/Register'
 import TalkListPage from './pages/TalkList'
+import DirectMessagePage from './pages/DirectMesage'
 import './App.css'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AuthRoute } from './components/AuthRoute'
@@ -149,6 +150,17 @@ function App(): JSX.Element {
             </Layout>
           }
         />
+
+        {/* DM */}
+        <Route 
+          path="/friend/:userId/dm"
+          element={
+            <Layout>
+              <DirectMessagePage />
+            </Layout>
+          }
+        />
+
 
 
         {/* ユーザープロフィール */}
