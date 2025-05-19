@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 from app.routes.protected.routes import get_authenticated_user
 from app.models.user import User
 from app.models.message import FriendRelationship, DirectMessage
@@ -235,8 +235,18 @@ def reject_friend_request(request_id):
     })
 
 # ダイレクトメッセージの取得
-@friend_bp.route("/direct-messages/<friend_id>", methods=["GET"])
+@friend_bp.route("/direct-messages/<friend_id>", methods=["GET", "OPTIONS"])
 def get_direct_messages(friend_id):
+    if request.method == "OPTIONS":
+        # プリフライトリクエストに対しては何もしないで 200 を返す
+        response = make_response('', 200)
+        response.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin', '*')
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+
+
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
     if error_response:
@@ -283,8 +293,18 @@ def get_direct_messages(friend_id):
     return jsonify({"messages": result, "total": len(result)})
 
 # ダイレクトメッセージの送信
-@friend_bp.route("/direct-message", methods=["POST"])
+@friend_bp.route("/direct-message", methods=["POST", "OPTIONS"])
 def send_direct_message():
+    if request.method == "OPTIONS":
+        # プリフライトリクエストに対しては何もしないで 200 を返す
+        response = make_response('', 200)
+        response.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin', '*')
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+
+
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
     if error_response:
@@ -343,3 +363,34 @@ def send_direct_message():
         "message": "メッセージを送信しました",
         "direct_message": message.to_dict()
     })
+
+# 最新DMを1件ずつ取得する
+@friend_bp.route("/dm-overview", methods=["GET"])
+def get_dm_overview():
+    user, error_response, error_code = get_authenticated_user()
+    if error_response:
+        return jsonify(error_response), error_code
+
+    # 自分が関与するDMを新しい順に取得
+    all_messages = DirectMessage.query.filter(
+        (DirectMessage.sender_id == user.id) | (DirectMessage.receiver_id == user.id)
+    ).order_by(DirectMessage.sent_at.desc()).all()
+
+    seen_partners = set()
+    overview = []
+
+    for msg in all_messages:
+        # 相手のID・ユーザー情報を取得
+        partner = msg.receiver if msg.sender_id == user.id else msg.sender
+        if partner.id in seen_partners:
+            continue
+
+        seen_partners.add(partner.id)
+        overview.append({
+            "partner_id": partner.id,
+            "partner": partner.to_dict(),  # 名前や画像も含まれる
+            "latest_message": msg.to_dict()
+        })
+
+    return jsonify({"overview": overview})
+

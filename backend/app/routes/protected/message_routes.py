@@ -134,3 +134,4 @@ def send_event_message(event_id):
         "message": "メッセージを送信しました",
         "event_message": message.to_dict()
     }) 
+
