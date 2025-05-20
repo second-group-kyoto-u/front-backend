@@ -7,6 +7,7 @@ import styles from './CreateThread.module.css'
 function CreateThreadPage() {
   const [tag, setTag] = useState('')
   const [followersOnly, setFollowersOnly] = useState(false)
+  const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [error, setError] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -24,13 +25,11 @@ function CreateThreadPage() {
 
     try {
       const newThread = await createThread({
-        tag,
-        content,
-        visibility: {
-          age: 'all',
-          gender: 'all',
-          followersOnly,
-        },
+        title,
+        message: content,
+        image_id: null,
+        area_id: null,
+        tags: tag ? [tag] : []
       }, token!)
 
       navigate('/threads', { state: { newThread } })
@@ -102,6 +101,16 @@ function CreateThreadPage() {
               />
               フォロワーのみ
             </label>
+          </div>
+
+          <div className={styles.formGroup}>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="タイトル（例: 楽しかった旅行の話）"
+              required
+            />
           </div>
 
           <div className={styles.formGroup}>
