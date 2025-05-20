@@ -252,7 +252,8 @@ def get_direct_messages(friend_id):
     if error_response:
         return jsonify(error_response), error_code
     
-    # フレンド関係の確認
+    # フレンド関係の確認は行わない
+    """
     is_friend = FriendRelationship.query.filter(
         ((FriendRelationship.user_id == user.id) & (FriendRelationship.friend_id == friend_id)) |
         ((FriendRelationship.user_id == friend_id) & (FriendRelationship.friend_id == user.id)),
@@ -261,7 +262,7 @@ def get_direct_messages(friend_id):
     
     if not is_friend:
         return jsonify({"error": "フレンドのメッセージのみ閲覧できます"}), 403
-    
+    """
     # クエリパラメータ
     limit = request.args.get('limit', default=50, type=int)
     offset = request.args.get('offset', default=0, type=int)
@@ -333,15 +334,17 @@ def send_direct_message():
     if not receiver:
         return jsonify({"error": "指定されたユーザーが見つかりません"}), 404
     
-    # フレンド関係の確認
+    # フレンド関係の確認は行わない
+    """
     is_friend = FriendRelationship.query.filter(
-        ((FriendRelationship.user_id == user.id) & (FriendRelationship.friend_id == receiver_id)) |
-        ((FriendRelationship.user_id == receiver_id) & (FriendRelationship.friend_id == user.id)),
+        ((FriendRelationship.user_id == user.id) & (FriendRelationship.friend_id == friend_id)) |
+        ((FriendRelationship.user_id == friend_id) & (FriendRelationship.friend_id == user.id)),
         FriendRelationship.status == 'accepted'
     ).first()
     
     if not is_friend:
-        return jsonify({"error": "フレンドにのみメッセージを送信できます"}), 403
+        return jsonify({"error": "フレンドのメッセージのみ閲覧できます"}), 403
+    """
     
     # メッセージの作成
     message = DirectMessage(
