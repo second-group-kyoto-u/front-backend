@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getJoinedEvents } from '@/api/event'
 import { getDirectMessageOverview } from '@/api/friend'
+import './TalkListPage.css'
 
 interface Event {
   id: string
@@ -84,13 +85,13 @@ const TalkListPage = () => {
       ) : (
         <ul className="space-y-4">
           {dmList.map((dm) => (
-            <li key={dm.partner_id} className="border p-3 rounded cursor-pointer hover:bg-gray-100"
+            <li key={dm.partner_id} className="chat-item"
                 onClick={() => handleDmClick(dm.partner_id)}>
-              <div className="flex items-center space-x-3">
+              <div className="chat-avatar-wrapper">
                 {dm.partner.user_image_url ? (
-                  <img src={dm.partner.user_image_url} alt="プロフィール画像" className="w-10 h-10 rounded-full" />
+                  <img src={dm.partner.user_image_url} alt="プロフィール画像" className="chat-avatar" />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-gray-300" />
+                  <div className="chat-avatar" />
                 )}
                 <div>
                   <h2 className="text-lg font-semibold">{dm.partner.user_name}</h2>

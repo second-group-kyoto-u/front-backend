@@ -1,11 +1,11 @@
 from app import create_app
 from app.models import db
-from app.models.user import User
-from app.models.area import AreaList
-from app.models.file import ImageList
-from app.models.thread import Thread, ThreadMessage, ThreadComment, ThreadFavor, UserHeartThread
-from app.models.event import Event, UserMemberGroup, UserHeartEvent, TagMaster, UserTagAssociation, EventTagAssociation, ThreadTagAssociation
-from app.models.message import EventMessage, MessageReadStatus, FriendRelationship, DirectMessage
+# from app.models.user import User
+# from app.models.area import AreaList
+# from app.models.file import ImageList
+# from app.models.thread import Thread, ThreadMessage, ThreadComment, ThreadFavor, UserHeartThread
+# from app.models.event import Event, UserMemberGroup, UserHeartEvent, TagMaster, UserTagAssociation, EventTagAssociation, ThreadTagAssociation
+# from app.models.message import EventMessage, MessageReadStatus, FriendRelationship, DirectMessage
 
 app = create_app()
 with app.app_context():
