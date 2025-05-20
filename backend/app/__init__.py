@@ -28,9 +28,33 @@ def create_app():
         resources={r"/*": {"origins": allowed_origins}},  # 環境変数で指定されたオリジンを許可
         supports_credentials=True,  # Cookieの送受信を許可
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=["Content-Type", "Authorization", "X-Requested-With"])
+        allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Access-Control-Allow-Origin"],
+        expose_headers=["Content-Type", "Authorization"],
+        max_age=3600)  # プリフライトリクエストのキャッシュ時間を1時間に設定
     
     app.logger.info(f"CORS設定: 許可オリジン = {allowed_origins}")
+
+    # プリフライトリクエスト用のグローバルルートを追加
+    @app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
+    @app.route('/<path:path>', methods=['OPTIONS'])
+    def handle_options(path):
+        # リクエスト元のオリジンを取得
+        origin = request.headers.get('Origin', allowed_origins[0] if allowed_origins else 'http://localhost:3000')
+        
+        # すべてのOPTIONSリクエストに対してCORSヘッダーを含むレスポンスを返す
+        response = app.response_class(
+            response='',
+            status=200
+        )
+        
+        # CORSヘッダーを追加
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
+        response.headers['Access-Control-Max-Age'] = '3600'
+        
+        return response
 
     # エラーハンドラーを追加して、500エラー時にもCORSヘッダーを設定
     @app.errorhandler(500)
@@ -102,6 +126,9 @@ def create_app():
 
     from app.routes.area_routes import area_bp
     app.register_blueprint(area_bp, url_prefix="/api/area")
+    
+    from app.routes.character_routes import character_bp
+    app.register_blueprint(character_bp, url_prefix="/api/character")
 
 
     # modelsに定義されたモデルクラスと見て、対応するテーブルをデータベースに作成し、appではモデルクラスを介してデータベーステーブルと対話する。

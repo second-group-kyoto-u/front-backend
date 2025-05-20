@@ -27,14 +27,18 @@ except Exception as e:
 def log_info(message):
     """ログ情報を出力する"""
     print(f"[INFO] {message}")
-    if hasattr(current_app, 'logger'):
+    if hasattr(current_app, 'logger') and current_app._get_current_object():
         current_app.logger.info(message)
+    else:
+        print(f"[INFO] current_app not available: {message}")
 
 def log_error(message):
     """エラーログを出力する"""
     print(f"[ERROR] {message}")
-    if hasattr(current_app, 'logger'):
+    if hasattr(current_app, 'logger') and current_app._get_current_object():
         current_app.logger.error(message)
+    else:
+        print(f"[ERROR] current_app not available: {message}")
 
 def get_nearby_places(lat, lng, radius=500, type=None):
     """
@@ -433,3 +437,213 @@ def generate_conversation_starter(event_topic: str, location_info=None) -> str:
         log_error(error_msg)
         print("=" * 50)
         return "みなさん、このイベントに参加した理由を教えていただけますか？" 
+
+def analyze_message_needs(message: str, event_title: str) -> dict:
+    """
+    ユーザーメッセージを分析し、天気情報や位置情報が必要かどうかを判断する
+    
+    Args:
+        message: ユーザーメッセージ
+        event_title: イベントのタイトル
+    
+    Returns:
+        dict: 必要な情報の種類を示す辞書
+    """
+    try:
+        # アプリケーションコンテキストを確認
+        app_ctx = None
+        if not hasattr(current_app, 'logger') or current_app._get_current_object() is None:
+            from flask import Flask
+            from app import create_app
+            app = create_app()
+            app_ctx = app.app_context()
+            app_ctx.push()
+            print("アプリケーションコンテキストを作成しました")
+        
+        log_info(f"メッセージ分析開始: '{message[:30]}...'")
+        
+        system_prompt = """
+        あなたはユーザーの質問を分析し、必要な情報タイプを判断するAIです。
+        ユーザーのメッセージを分析して、回答に必要な情報の種類を判断してください。
+        返答は以下のJSON形式で返してください:
+        {
+            "needs_weather": true/false,  // 天気情報が必要かどうか
+            "needs_location": true/false  // 周辺地域の情報が必要かどうか
+        }
+        """
+        
+        user_prompt = f"""
+        イベント名: {event_title}
+        ユーザーメッセージ: {message}
+        
+        このメッセージに適切に回答するために必要な情報を分析してください。
+        """
+        
+        log_info(f"OpenAI API呼び出し（分析用）")
+        
+        # OpenAI APIを呼び出し
+        response = client.chat.completions.create(
+            model="gpt-4.1-mini",  # 4.1系を維持
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.1,  # 低い温度で一貫した分析結果を得る
+            max_tokens=60,    # 必要な情報のみになったのでさらに減らす（100→60）
+            response_format={"type": "json_object"}  # JSON形式の返答を強制
+        )
+        
+        result_text = response.choices[0].message.content.strip()
+        log_info(f"分析結果: {result_text}")
+        
+        result = json.loads(result_text)
+        
+        # 作成したコンテキストがあれば破棄
+        if app_ctx:
+            app_ctx.pop()
+            
+        return result
+    
+    except Exception as e:
+        error_msg = f"メッセージ分析エラー: {str(e)}"
+        log_error(error_msg)
+        # エラー時はデフォルト値を返す
+        return {
+            "needs_weather": False,
+            "needs_location": False
+        }
+
+def generate_advisor_response(message: str, event_title: str, character_id: str, chat_history: list, additional_info: dict = None) -> str:
+    """
+    ユーザーメッセージに対するアドバイザーの応答を生成する
+    
+    Args:
+        message: ユーザーメッセージ
+        event_title: イベントのタイトル
+        character_id: キャラクターID
+        chat_history: 会話履歴のリスト
+        additional_info: 追加情報（天気情報や位置情報など）
+    
+    Returns:
+        str: 生成された応答
+    """
+    try:
+        # アプリケーションコンテキストを確認
+        app_ctx = None
+        if not hasattr(current_app, 'logger') or current_app._get_current_object() is None:
+            from flask import Flask
+            from app import create_app
+            app = create_app()
+            app_ctx = app.app_context()
+            app_ctx.push()
+            print("アプリケーションコンテキストを作成しました")
+        
+        log_info(f"アドバイザー応答生成開始: メッセージ='{message[:30]}...', キャラクター={character_id}")
+        
+        # キャラクターの話し方設定
+        character_prompts = {
+            "nyanta": "あなたは「ニャンタ」という猫型のキャラクターです。少しツンデレな性格で、語尾に「ニャ」や「ニャン」をつけることがあります。敬語はあまり使わず、砕けた話し方をします。",
+            "hitsuji": "あなたは「ヒツジ」という羊型のキャラクターです。おっとりとした優しい性格で、丁寧な言葉遣いをします。語尾に「～」を付けることがあります。",
+            "koko": "あなたは「ココ」というキャラクターです。明るく元気で、テンションが高い話し方をします。励ましや前向きな言葉をよく使います。「～だよ！」「～しよう！」など元気な表現を多用します。",
+            "fukurou": "あなたは「フクロウ」というキャラクターです。知的で落ち着いた性格で、教養があり丁寧な言葉遣いをします。専門的な知識を持ち、論理的に説明するのが得意です。",
+            "toraberu": "あなたは「トラベル」というキャラクターです。冒険好きで活発な性格です。言葉遣いは元気で親しみやすく、「～だぜ！」「～だな！」など男性的な言葉を使います。"
+        }
+        
+        # デフォルトのキャラクター設定
+        character_prompt = character_prompts.get(
+            character_id, 
+            "あなたはイベントの案内役です。親しみやすく丁寧な言葉遣いでユーザーをサポートしてください。"
+        )
+        
+        system_prompt = f"""
+        {character_prompt}
+        
+        あなたはイベント「{event_title}」のアドバイザーです。
+        ユーザーからの質問に、キャラクターの個性を出しながら簡潔に回答してください。
+        以下の会話履歴とユーザーの最新メッセージを踏まえて返答してください。
+        必要に応じて提供された追加情報（天気情報や位置情報など）を活用してください。
+        
+        回答は日本語で、簡潔かつ役立つ情報を提供してください。
+        """
+        
+        # チャット履歴を最新の3件に限定して処理を軽量化
+        if chat_history and len(chat_history) > 3:
+            chat_history = chat_history[-3:]
+            log_info(f"会話履歴を最新の3件に制限しました")
+        
+        # チャット履歴の整形
+        formatted_history = []
+        for msg in chat_history:
+            role = "assistant" if msg.get("is_bot") else "user"
+            formatted_history.append({
+                "role": role,
+                "content": msg.get("content", "")
+            })
+        
+        # 追加情報の簡潔化
+        additional_info_text = ""
+        if additional_info:
+            if additional_info.get("weather_info"):
+                weather = additional_info["weather_info"]
+                additional_info_text += f"\n\n【天気】{weather.get('weather', '不明')}、{weather.get('temp', '不明')}℃"
+            
+            if additional_info.get("location_info") and additional_info["location_info"].get("nearby_places"):
+                places = additional_info["location_info"]["nearby_places"]
+                if places:
+                    additional_info_text += f"\n\n【周辺】{places[0].get('name', '不明')}"
+                    if len(places) > 1:
+                        additional_info_text += f"、{places[1].get('name', '不明')}"
+        
+        # 最終的なユーザープロンプト (簡潔化)
+        user_prompt = f"ユーザー: {message}"
+        if additional_info_text:
+            user_prompt += f"\n{additional_info_text}"
+        
+        log_info(f"OpenAI API呼び出し（応答生成用）: プロンプト長={len(system_prompt)+len(user_prompt)}文字")
+        
+        # 会話履歴と最新メッセージを組み合わせてAPIに送信
+        messages = [{"role": "system", "content": system_prompt}]
+        
+        # 履歴が長すぎる場合は直近の3件に制限
+        if formatted_history:
+            recent_history = formatted_history[-3:] if len(formatted_history) > 3 else formatted_history
+            messages.extend(recent_history)
+        
+        # 最新のユーザーメッセージを追加
+        messages.append({"role": "user", "content": user_prompt})
+        
+        # OpenAI APIを呼び出し
+        response = client.chat.completions.create(
+            model="gpt-4.1-mini",  # 4.1系を維持
+            messages=messages,
+            temperature=0.7,
+            max_tokens=150  # 200から150に減らして高速化
+        )
+        
+        advisor_response = response.choices[0].message.content.strip()
+        log_info(f"アドバイザー応答生成成功: 生成テキスト長={len(advisor_response)}文字")
+        log_info(f"生成された応答: {advisor_response[:100]}...")
+        
+        # 作成したコンテキストがあれば破棄
+        if app_ctx:
+            app_ctx.pop()
+            
+        return advisor_response
+        
+    except Exception as e:
+        error_msg = f"アドバイザー応答生成エラー: {str(e)}"
+        log_error(error_msg)
+        
+        # キャラクターによってデフォルト応答を変える
+        default_responses = {
+            "nyanta": "うーん、ちょっと今考え中だニャ。また後で話しかけてくれるとうれしいニャ。",
+            "hitsuji": "申し訳ありません～。ちょっと今お返事が難しいようです～。少し経ってからまたお話しできれば嬉しいです～。",
+            "koko": "ごめんね！ちょっと今うまく応答できないみたい！また後でお話ししようね！",
+            "fukurou": "大変申し訳ございません。現在一時的に応答システムに問題が生じております。後ほど再度お試しください。",
+            "toraberu": "おっと！ちょっと今通信状態が悪いみたいだぜ！また後で話そうな！"
+        }
+        
+        return default_responses.get(
+            character_id, 
+            "すみません、一時的に応答できません。しばらく経ってからもう一度お試しください。"
+        ) 

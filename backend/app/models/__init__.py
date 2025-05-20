@@ -18,3 +18,4 @@ from app.models.message import (
     EventMessage, MessageReadStatus,
     FriendRelationship, DirectMessage
 )
+from app.models.character import Character

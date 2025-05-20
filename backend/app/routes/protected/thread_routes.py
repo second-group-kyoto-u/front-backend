@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 from app.routes.protected.routes import get_authenticated_user
 from app.models.user import User
 from app.models.thread import Thread, ThreadMessage, UserHeartThread
@@ -114,8 +114,17 @@ def get_thread(thread_id):
         "messages": messages_data
     })
 
-@thread_bp.route("/", methods=["POST"])
+@thread_bp.route("", methods=["POST", "OPTIONS"])
 def create_thread():
+    if request.method == "OPTIONS":
+        # プリフライトリクエストに対しては何もしないで 200 を返す
+        response = make_response('', 200)
+        response.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin', '*')
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+    
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
     if error_response:

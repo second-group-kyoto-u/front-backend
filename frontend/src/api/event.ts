@@ -44,7 +44,7 @@ export interface EventMessageType {
   content: string;
   timestamp: string | null;
   image_url: string | null;
-  message_type: 'text' | 'image' | 'system' | 'bot';
+  message_type: 'text' | 'image' | 'system' | 'bot' | 'bot_nyanta' | 'bot_hitsuji' | 'bot_koko' | 'bot_fukurou' | 'bot_toraberu' | string;
   metadata: any;
   read_count: number;
 }
@@ -148,7 +148,7 @@ export const endEvent = async (eventId: string) => {
 export const sendEventMessage = async (eventId: string, data: {
   content?: string;
   image_id?: string;
-  message_type: 'text' | 'image' | 'location' | 'system' | 'bot';
+  message_type: 'text' | 'image' | 'location' | 'system' | 'bot' | 'bot_nyanta' | 'bot_hitsuji' | 'bot_koko' | 'bot_fukurou' | 'bot_toraberu' | string;
   metadata?: any;
 }) => {
   try {
@@ -244,21 +244,71 @@ export const getJoinedEvents = async () => {
   }
 };
 
-// botの豆知識生成API
-export const generateBotTrivia = async (eventId: string, data?: {
-  topic?: string;
-  type?: 'trivia' | 'conversation';
+// アドバイザー応答生成API
+export const getAdvisorResponse = async (eventId: string, data: {
+  message: string;
+  character_id?: string;
   location?: {
     latitude: number;
     longitude: number;
   };
 }) => {
   try {
-    const response = await axios.post(`event/${eventId}/bot/trivia`, data || {}, {
+    const response = await axios.post(`event/${eventId}/advisor-response`, data, {
       headers: getAuthHeader()
     });
     return response.data;
   } catch (error) {
+    throw error;
+  }
+};
+
+// キャラクターリスト取得
+export const getCharacters = async () => {
+  try {
+    console.log('キャラクターリスト取得API呼び出し');
+    const response = await axios.get('character/characters', {
+      headers: getAuthHeader()
+    });
+    console.log('キャラクターリスト取得API レスポンス:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('キャラクターリスト取得API エラー:', error);
+    throw error;
+  }
+};
+
+// キャラクター詳細情報取得
+export const getCharacter = async (characterId: string) => {
+  try {
+    console.log(`キャラクター詳細取得API呼び出し: ${characterId}`);
+    const response = await axios.get(`character/characters/${characterId}`, {
+      headers: getAuthHeader()
+    });
+    console.log('キャラクター詳細取得API レスポンス:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('キャラクター詳細取得API エラー:', error);
+    throw error;
+  }
+};
+
+// イベントの天気情報とアドバイスを取得
+export const getEventWeatherInfo = async (eventId: string, data?: {
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
+}) => {
+  try {
+    console.log(`イベント天気情報取得API呼び出し: ${eventId}`);
+    const response = await axios.post(`event/${eventId}/weather-info`, data || {}, {
+      headers: getAuthHeader()
+    });
+    console.log('イベント天気情報取得API レスポンス:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('イベント天気情報取得API エラー:', error);
     throw error;
   }
 }; 

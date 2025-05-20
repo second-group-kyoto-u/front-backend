@@ -68,9 +68,9 @@ const TalkListPage = () => {
       {events.length === 0 ? (
         <p>参加中のイベントはありません。</p>
       ) : (
-        <ul className="space-y-4 mb-8">
+        <ul className="chat-list">
           {events.map((event) => (
-            <li key={event.id} className="border p-3 rounded cursor-pointer hover:bg-gray-100"
+            <li key={event.id} className="chat-item"
                 onClick={() => handleEventClick(event.id)}>
               <h2 className="text-lg font-semibold">{event.title}</h2>
               <p className="text-sm text-gray-600">{event.description}</p>
@@ -83,7 +83,7 @@ const TalkListPage = () => {
       {dmList.length === 0 ? (
         <p>ダイレクトメッセージはありません。</p>
       ) : (
-        <ul className="space-y-4">
+        <ul className="chat-list">
           {dmList.map((dm) => (
             <li key={dm.partner_id} className="chat-item"
                 onClick={() => handleDmClick(dm.partner_id)}>
@@ -96,13 +96,13 @@ const TalkListPage = () => {
                 <div>
                   <h2 className="text-lg font-semibold">{dm.partner.user_name}</h2>
                   {dm.latest_message ? (
-                    <p className="text-sm text-gray-600 truncate">
+                    <p className="chat-message">
                       {dm.latest_message.message_type === 'image'
                         ? '画像メッセージ'
                         : dm.latest_message.content}
                     </p>
                   ) : (
-                    <p className="text-sm text-gray-400 italic">まだメッセージはありません</p>
+                    <p className="chat-message empty">まだメッセージはありません</p>
                   )}
                 </div>
               </div>

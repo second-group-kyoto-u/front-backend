@@ -110,7 +110,7 @@ function Mypage() {
             <div className={styles.userInfo}>
               <p><strong>年齢:</strong> {userData.age}歳</p>
               <p><strong>居住地:</strong> {userData.location}</p>
-              <p><strong>性別:</strong> {userData.gender}</p>
+              <p><strong>性別:</strong> {userData.gender === 'male' ? '男' : userData.gender === 'female' ? '女' : '未設定'}</p>
             </div>
 
             <div className={styles.tagsSection}>

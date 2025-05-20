@@ -39,11 +39,27 @@ export default function Layout({ children }: Props) {
       </div>
 
       <div className={styles.fixedNav}>
-        <Link to="/events" className={`${styles.navItem} ${isPathMatch('/events') ? styles.active : ''}`}>👥<div>イベント</div></Link>
-        <Link to="/threads" className={`${styles.navItem} ${isPathMatch('/threads') ? styles.active : ''}`}>📝<div>スレッド</div></Link>
-        <Link to="/talk" className={styles.navItem}>💬<div>トーク</div></Link>
-        <Link to="/mypage" className={`${styles.navItem} ${isPathMatch('/mypage') ? styles.active : ''}`}>👤<div>マイページ</div></Link>
+        <Link to="/events" className={`${styles.navItem} ${isPathMatch('/events') ? styles.active : ''}`}>
+          <span className="material-icons">groups</span>
+          <div>イベント</div>
+        </Link>
+
+        <Link to="/threads" className={`${styles.navItem} ${isPathMatch('/threads') ? styles.active : ''}`}>
+          <span className="material-icons">text_snippet</span>
+          <div>スレッド</div>
+        </Link>
+
+        <Link to="/talk" className={styles.navItem}>
+          <span className="material-icons">chat_bubble</span>
+          <div>トーク</div>
+        </Link>
+
+        <Link to="/mypage" className={`${styles.navItem} ${isPathMatch('/mypage') ? styles.active : ''}`}>
+          <span className="material-icons">account_circle</span>
+          <div>マイページ</div>
+        </Link>
       </div>
+
     </div>
   )
 }
