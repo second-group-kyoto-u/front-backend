@@ -56,15 +56,24 @@ def mypage():
     # ユーザーが参加しているイベント数を取得
     joined_events_count = UserMemberGroup.query.filter_by(user_id=user.id).count()
     
+    # 年齢の計算
+    def calculate_age(birthdate):
+        if not birthdate:
+            return None
+        today = datetime.now(timezone.utc).date()
+        return today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+
+
     # ユーザーデータをJSON形式で返す
     user_data = {
         "id": user.id,
         "user_name": user.user_name,
         "profile_message": user.profile_message or "",
         "profile_image_url": user.user_image_url or "",
-        "age": 999,
-        "location":"sample area",
-        "gender":"sample gender",
+        "age": calculate_age(user.birthdate),
+        "location": user.living_place or "",
+        "gender": user.gender or "",
+        "is_certificated": user.is_certificated if hasattr(user, "is_certificated") else False
     }
 
     # イベントデータをJSON形式で返す
