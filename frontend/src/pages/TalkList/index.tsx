@@ -43,6 +43,8 @@ const TalkListPage = () => {
         setEvents(eventRes.events)
         setDmList(dmRes)
       } catch (err: any) {
+        // It's good practice to log the actual error for debugging.
+        console.error('Failed to fetch data:', err)
         setError('データの取得に失敗しました')
       } finally {
         setLoading(false)
@@ -52,10 +54,12 @@ const TalkListPage = () => {
   }, [])
 
   const handleEventClick = (eventId: string) => {
+    // Template literals for string interpolation are preferred for readability.
     navigate(`/event/${eventId}/talk`)
   }
 
   const handleDmClick = (userId: string) => {
+    // Template literals for string interpolation are preferred for readability.
     navigate(`/friend/${userId}/dm`)
   }
 
@@ -70,8 +74,11 @@ const TalkListPage = () => {
       ) : (
         <ul className="chat-list">
           {events.map((event) => (
-            <li key={event.id} className="chat-item"
-                onClick={() => handleEventClick(event.id)}>
+            <li
+              key={event.id}
+              className="chat-item"
+              onClick={() => handleEventClick(event.id)}
+            >
               <h2 className="text-lg font-semibold">{event.title}</h2>
               <p className="text-sm text-gray-600">{event.description}</p>
             </li>
@@ -79,21 +86,26 @@ const TalkListPage = () => {
         </ul>
       )}
 
-      <h1 className="text-2xl font-bold mb-4">ダイレクトメッセージ</h1>
+      <h1 className="text-2xl font-bold mb-4 mt-8">ダイレクトメッセージ</h1> {/* Added margin-top for spacing */}
       {dmList.length === 0 ? (
         <p>ダイレクトメッセージはありません。</p>
       ) : (
         <ul className="chat-list">
           {dmList.map((dm) => (
-            <li key={dm.partner_id} className="chat-item"
-                onClick={() => handleDmClick(dm.partner_id)}>
-              <div className="chat-avatar-wrapper">
+            <li
+              key={dm.partner_id}
+              className="chat-item"
+              onClick={() => handleDmClick(dm.partner_id)}
+            >
+              {/* Changed class name for clarity and consistency */}
+              <div className="chat-item-content">
                 {dm.partner.user_image_url ? (
-                  <img src={dm.partner.user_image_url} alt="プロフィール画像" className="chat-avatar" />
+                  <img src={dm.partner.user_image_url} alt={`${dm.partner.user_name}のプロフィール画像`} className="chat-avatar" />
                 ) : (
-                  <div className="chat-avatar" />
+                  // Added a more descriptive alt text for accessibility
+                  <div className="chat-avatar-placeholder" /> // Renamed for clarity
                 )}
-                <div>
+                <div className="chat-content"> {/* Added a wrapper for text content */}
                   <h2 className="text-lg font-semibold">{dm.partner.user_name}</h2>
                   {dm.latest_message ? (
                     <p className="chat-message">
@@ -108,7 +120,6 @@ const TalkListPage = () => {
               </div>
             </li>
           ))}
-
         </ul>
       )}
     </div>
