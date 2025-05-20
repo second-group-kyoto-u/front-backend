@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getJoinedEvents } from '@/api/event'
 import { getDirectMessageOverview } from '@/api/friend'
-import './TalkListPage.css'
+import './talklist.module.css'
 
 interface Event {
   id: string
