@@ -1,0 +1,59 @@
+/* TalkListPage.css */
+
+/* 共通設定 */
+.chat-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .chat-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background-color: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .chat-item:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .chat-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 9999px;
+    object-fit: cover;
+    background-color: #ddd;
+    flex-shrink: 0;
+    margin-right: 12px;
+  }
+  
+  .chat-content {
+    flex: 1;
+    overflow: hidden;
+  }
+  
+  .chat-name {
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 2px;
+  }
+  
+  .chat-message {
+    font-size: 14px;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .chat-message.empty {
+    color: #aaa;
+    font-style: italic;
+  }
+  

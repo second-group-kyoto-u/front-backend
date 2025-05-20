@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getJoinedEvents } from '@/api/event'
 import { getDirectMessageOverview } from '@/api/friend'
+import './TalkListPage.css'
 
 interface Event {
   id: string
@@ -67,9 +68,9 @@ const TalkListPage = () => {
       {events.length === 0 ? (
         <p>参加中のイベントはありません。</p>
       ) : (
-        <ul className="space-y-4 mb-8">
+        <ul className="chat-list">
           {events.map((event) => (
-            <li key={event.id} className="border p-3 rounded cursor-pointer hover:bg-gray-100"
+            <li key={event.id} className="chat-item"
                 onClick={() => handleEventClick(event.id)}>
               <h2 className="text-lg font-semibold">{event.title}</h2>
               <p className="text-sm text-gray-600">{event.description}</p>
@@ -82,26 +83,26 @@ const TalkListPage = () => {
       {dmList.length === 0 ? (
         <p>ダイレクトメッセージはありません。</p>
       ) : (
-        <ul className="space-y-4">
+        <ul className="chat-list">
           {dmList.map((dm) => (
-            <li key={dm.partner_id} className="border p-3 rounded cursor-pointer hover:bg-gray-100"
+            <li key={dm.partner_id} className="chat-item"
                 onClick={() => handleDmClick(dm.partner_id)}>
-              <div className="flex items-center space-x-3">
+              <div className="chat-avatar-wrapper">
                 {dm.partner.user_image_url ? (
-                  <img src={dm.partner.user_image_url} alt="プロフィール画像" className="w-10 h-10 rounded-full" />
+                  <img src={dm.partner.user_image_url} alt="プロフィール画像" className="chat-avatar" />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-gray-300" />
+                  <div className="chat-avatar" />
                 )}
                 <div>
                   <h2 className="text-lg font-semibold">{dm.partner.user_name}</h2>
                   {dm.latest_message ? (
-                    <p className="text-sm text-gray-600 truncate">
+                    <p className="chat-message">
                       {dm.latest_message.message_type === 'image'
                         ? '画像メッセージ'
                         : dm.latest_message.content}
                     </p>
                   ) : (
-                    <p className="text-sm text-gray-400 italic">まだメッセージはありません</p>
+                    <p className="chat-message empty">まだメッセージはありません</p>
                   )}
                 </div>
               </div>
