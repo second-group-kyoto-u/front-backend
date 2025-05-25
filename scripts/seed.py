@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import text
 import json
+import random
 
 JST = timezone(timedelta(hours=9))
 
@@ -3017,6 +3018,112 @@ with app.app_context():
 
     db.session.commit()
     print("✅ キャラクター情報を追加しました")
+    
+    # ユーザーとタグの関連付けを作成
+    user_tag_associations = [
+        # テストユーザー（アウトドア、自然好き）
+        {"user_email": "test@example.com", "tag_name": "自然"},
+        {"user_email": "test@example.com", "tag_name": "アウトドア"},
+        {"user_email": "test@example.com", "tag_name": "家族"},
+        
+        # 田中太郎（写真撮影、文化好き）
+        {"user_email": "tanaka@example.com", "tag_name": "文化"},
+        {"user_email": "tanaka@example.com", "tag_name": "歴史"},
+        {"user_email": "tanaka@example.com", "tag_name": "自然"},
+        
+        # 山田花子（グルメ、ショッピング好き）
+        {"user_email": "yamada@example.com", "tag_name": "グルメ"},
+        {"user_email": "yamada@example.com", "tag_name": "ショッピング"},
+        {"user_email": "yamada@example.com", "tag_name": "家族"},
+        
+        # 馬太郎（アウトドア、自然、スポーツ好き）
+        {"user_email": "uma@example.com", "tag_name": "アウトドア"},
+        {"user_email": "uma@example.com", "tag_name": "自然"},
+        {"user_email": "uma@example.com", "tag_name": "スポーツ"},
+        
+        # オコジョ健太（アウトドア、アクティビティ好き）
+        {"user_email": "okojo@example.com", "tag_name": "アウトドア"},
+        {"user_email": "okojo@example.com", "tag_name": "アクティビティ"},
+        {"user_email": "okojo@example.com", "tag_name": "自然"},
+        
+        # トナカイ花子（自然、温泉好き）
+        {"user_email": "tonakai@example.com", "tag_name": "自然"},
+        {"user_email": "tonakai@example.com", "tag_name": "温泉"},
+        {"user_email": "tonakai@example.com", "tag_name": "家族"},
+        
+        # 鶏次郎（スポーツ、アクティビティ好き）
+        {"user_email": "niwatori@example.com", "tag_name": "スポーツ"},
+        {"user_email": "niwatori@example.com", "tag_name": "アクティビティ"},
+        {"user_email": "niwatori@example.com", "tag_name": "家族"},
+        
+        # ハイラックス夏子（自然、温泉好き）
+        {"user_email": "hyrax@example.com", "tag_name": "自然"},
+        {"user_email": "hyrax@example.com", "tag_name": "温泉"},
+        {"user_email": "hyrax@example.com", "tag_name": "アウトドア"},
+        
+        # ハムスター翔（ショッピング、グルメ好き）
+        {"user_email": "hamster@example.com", "tag_name": "ショッピング"},
+        {"user_email": "hamster@example.com", "tag_name": "グルメ"},
+        {"user_email": "hamster@example.com", "tag_name": "文化"},
+        
+        # ラクダ正太（アウトドア、アクティビティ好き）
+        {"user_email": "rakuda@example.com", "tag_name": "アウトドア"},
+        {"user_email": "rakuda@example.com", "tag_name": "アクティビティ"},
+        {"user_email": "rakuda@example.com", "tag_name": "自然"},
+        
+        # 黒羊めぐみ（文化、ショッピング、家族好き）
+        {"user_email": "sheep@example.com", "tag_name": "文化"},
+        {"user_email": "sheep@example.com", "tag_name": "ショッピング"},
+        {"user_email": "sheep@example.com", "tag_name": "家族"}
+    ]
+    
+    for association_data in user_tag_associations:
+        user_tag_association = UserTagAssociation(
+            id=str(uuid.uuid4()),
+            tag_id=tag_ids[association_data["tag_name"]],
+            user_id=user_ids[association_data["user_email"]],
+            created_at=datetime.now(JST)
+        )
+        db.session.add(user_tag_association)
+    
+    db.session.commit()
+    print("✅ ユーザータグ関連付けを追加しました")
+    
+    # フレンド関係（友達リクエスト）を作成
+    friend_relationships = [
+        # 承認済みのフレンド関係
+        {"requester": "test@example.com", "receiver": "tanaka@example.com", "status": "accepted"},
+        {"requester": "test@example.com", "receiver": "yamada@example.com", "status": "accepted"},
+        {"requester": "tanaka@example.com", "receiver": "yamada@example.com", "status": "accepted"},
+        {"requester": "uma@example.com", "receiver": "okojo@example.com", "status": "accepted"},
+        {"requester": "uma@example.com", "receiver": "tonakai@example.com", "status": "accepted"},
+        {"requester": "niwatori@example.com", "receiver": "hyrax@example.com", "status": "accepted"},
+        {"requester": "hamster@example.com", "receiver": "rakuda@example.com", "status": "accepted"},
+        {"requester": "sheep@example.com", "receiver": "test@example.com", "status": "accepted"},
+        {"requester": "yamada@example.com", "receiver": "uma@example.com", "status": "accepted"},
+        {"requester": "tanaka@example.com", "receiver": "okojo@example.com", "status": "accepted"},
+        
+        # 保留中のフレンドリクエスト
+        {"requester": "hyrax@example.com", "receiver": "test@example.com", "status": "pending"},
+        {"requester": "rakuda@example.com", "receiver": "tanaka@example.com", "status": "pending"},
+        {"requester": "tonakai@example.com", "receiver": "yamada@example.com", "status": "pending"},
+        {"requester": "sheep@example.com", "receiver": "niwatori@example.com", "status": "pending"},
+        {"requester": "hamster@example.com", "receiver": "uma@example.com", "status": "pending"}
+    ]
+    
+    for friend_data in friend_relationships:
+        friendship = FriendRelationship(
+            id=str(uuid.uuid4()),
+            user_id=user_ids[friend_data["requester"]],
+            friend_id=user_ids[friend_data["receiver"]],
+            status=friend_data["status"],
+            created_at=datetime.now(JST) - timedelta(days=random.randint(1, 30)),
+            updated_at=datetime.now(JST) - timedelta(days=random.randint(0, 10)) if friend_data["status"] == "accepted" else datetime.now(JST) - timedelta(days=random.randint(1, 30))
+        )
+        db.session.add(friendship)
+    
+    db.session.commit()
+    print("✅ フレンド関係を追加しました")
     
     print("\n✨ シードデータの投入が完了しました！")
     print("\n🔹 ログイン可能なユーザー:")
