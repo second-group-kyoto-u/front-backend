@@ -65,7 +65,7 @@ function CreateThreadPage() {
         <div className={styles.headerRow}>
           <button
             className={styles.backButton}
-            onClick={() => navigate('/threads')}
+            onClick={() => navigate(-1 as any)}
           >
             ←
           </button>

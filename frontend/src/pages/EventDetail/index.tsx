@@ -237,7 +237,7 @@ function EventDetailPage() {
   }
 
   const handleBack = () => {
-    navigate('/events')
+    navigate(-1 as any)
   }
 
   const goToTalkRoom = () => {
