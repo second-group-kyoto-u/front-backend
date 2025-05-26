@@ -10,10 +10,9 @@ interface UserData {
   user_name: string;
   profile_message: string;
   profile_image_url: string;
-  age: number;
-  location: string;
+  birthdate: string;
+  living_place: string;
   gender: string;
-  is_certificated: boolean;
 }
 
 interface EventData {
@@ -29,6 +28,28 @@ interface MypageResponse {
   created_events: EventData[];
   message: string;
 }
+
+const calculateAge = (birthdateStr: string): number | string => {
+  if (!birthdateStr) return '不明';
+
+  const birthDate = new Date(birthdateStr); // RFC1123, ISO 対応
+  if (isNaN(birthDate.getTime())) {
+    console.error('Invalid Date:', birthdateStr);
+    return '不明';
+  }
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  const dayDiff = today.getDate() - birthDate.getDate();
+
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+    age--;
+  }
+
+  return age;
+};
+
 
 function Mypage() {
   const { token, logout } = useAuth()
@@ -108,8 +129,8 @@ function Mypage() {
             </div>
 
             <div className={styles.userInfo}>
-              <p><strong>年齢:</strong> {userData.age}歳</p>
-              <p><strong>居住地:</strong> {userData.location}</p>
+              <p><strong>年齢:</strong> {calculateAge(userData.birthdate)}歳</p>
+              <p><strong>居住地:</strong> {userData.living_place}</p>
               <p><strong>性別:</strong> {userData.gender === 'male' ? '男' : userData.gender === 'female' ? '女' : '未設定'}</p>
             </div>
 

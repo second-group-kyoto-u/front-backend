@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchProtected } from '@/api/auth/protected'
+import { fetchProtected, updateProfile } from '@/api/auth/protected'
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import styles from './EditMypage.module.css'
@@ -9,8 +9,8 @@ interface UserData {
   user_name: string;
   profile_message: string;
   profile_image_url: string;
-  age: number;
-  location: string;
+  birthdate: string;
+  living_place: string;
   gender: string;
 }
 
@@ -18,6 +18,16 @@ interface MypageResponse {
   user: UserData;
   message: string;
 }
+
+interface UpdateUserData {
+  user_name: string;
+  profile_message: string;
+  birthdate: string;
+  living_place: string;
+  gender: string;
+}
+
+
 
 function EditMypage() {
   const { token, logout } = useAuth()
@@ -36,7 +46,6 @@ function EditMypage() {
       .then((res) => {
         // 🔵 【注意】現在のfetchProtected()の戻り値型(ProtectedResponse)は、
         // 期待するデータ型(MypageResponse)と一致していません。
-        // （特にuserオブジェクトにage, location, genderが不足しています）
         // 仮対応として型アサーション(as MypageResponse)を使用していますが、
         // 将来的にはバックエンドのレスポンス仕様を確認・統一する必要があります。
         const data = res as MypageResponse
@@ -57,15 +66,29 @@ function EditMypage() {
     setUserData({ ...userData, [name]: value })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (userData) {
-      console.log('送信するデータ:', userData)
-      // ここで updateProfile(userData) を呼び出す
-      alert('プロフィールを更新しました！（仮）')
-      navigate('/mypage')
+      const updateData: UpdateUserData = {
+        user_name: userData.user_name,
+        profile_message: userData.profile_message,
+        birthdate: new Date(userData.birthdate).toISOString().slice(0, 10),
+        living_place: userData.living_place,
+        gender: userData.gender,
+      }
+      try {
+        await updateProfile(updateData)
+        alert('プロフィールを更新しました！')
+        navigate('/mypage')
+      } catch (err) {
+        console.error('プロフィール更新エラー:', err)
+        alert('更新に失敗しました。もう一度お試しください。')
+      }
+    } else {
+      alert('すべての項目を入力してください。')
     }
   }
+
 
   const handleLogout = () => {
     logout()
@@ -110,11 +133,15 @@ function EditMypage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label>年齢</label>
+              <label>誕生日</label>
               <input
-                type="number"
-                name="age"
-                value={userData.age}
+                type="date"
+                name="birthdate"
+                value={
+                  userData.birthdate
+                    ? new Date(userData.birthdate).toISOString().slice(0, 10)
+                    : ''
+                }
                 onChange={handleChange}
               />
             </div>
@@ -123,8 +150,8 @@ function EditMypage() {
               <label>居住地</label>
               <input
                 type="text"
-                name="location"
-                value={userData.location}
+                name="living_place"
+                value={userData.living_place}
                 onChange={handleChange}
               />
             </div>
@@ -137,9 +164,9 @@ function EditMypage() {
                 onChange={handleChange}
               >
                 <option value="">選択してください</option>
-                <option value="男性">男性</option>
-                <option value="女性">女性</option>
-                <option value="その他">その他</option>
+                <option value="male">男性</option>
+                <option value="female">女性</option>
+                <option value="other">その他</option>
               </select>
             </div>
 
