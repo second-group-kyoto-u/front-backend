@@ -35,6 +35,9 @@ function ThreadsPage() {
     setLoading(true)
     try {
       const data = await getThreads({ page, per_page: perPage })
+
+      console.log('取得的 threads 資料:', data.threads)
+      
       setThreads(data.threads)
       setTotal(data.total)
     } catch (err: any) {
@@ -151,6 +154,14 @@ function ThreadsPage() {
                 </div>
 
                 <div className={styles.threadContent}>{thread.title}</div>
+                
+                {thread.tags && thread.tags.length > 0 && (
+                  <div className={styles.threadTags}>
+                    {thread.tags.map(tag => (
+                      <span key={tag.id} className={styles.tag}>#{tag.name}</span>
+                    ))}
+                  </div>
+                )}
 
                 <div className={styles.threadActions}>
                   <button
