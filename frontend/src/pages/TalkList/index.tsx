@@ -87,6 +87,13 @@ const TalkListPage = () => {
       )}
 
       <h1 className="text-2xl font-bold mb-4 mt-8">ダイレクトメッセージ</h1> {/* Added margin-top for spacing */}
+        <button
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mb-4"
+          onClick={() => navigate('/friend/create-DMpage')}
+        >
+          新しいDMを開始
+        </button>
+
       {dmList.length === 0 ? (
         <p>ダイレクトメッセージはありません。</p>
       ) : (

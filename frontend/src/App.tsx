@@ -18,6 +18,7 @@ import './App.css'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AuthRoute } from './components/AuthRoute'
 import Layout from './components/Layout/Layout.tsx' // 固定メニューを全ページに共通化するためのレイアウト
+import CreateNewDMPage from './pages/CreateNewDM/index.tsx'
 
 // ルーティングのデバッグ用コンポーネント
 const RouteLogger = () => {
@@ -157,6 +158,16 @@ function App(): JSX.Element {
           element={
             <Layout>
               <DirectMessagePage />
+            </Layout>
+          }
+        />
+
+        {/* 新規DMの作成 */}
+        <Route 
+          path="/friend/create-DMpage"
+          element={
+            <Layout>
+              <CreateNewDMPage />
             </Layout>
           }
         />

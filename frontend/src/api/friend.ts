@@ -45,6 +45,7 @@ export const getDirectMessageOverview = async (): Promise<DmOverviewItem[]> => {
   }
 };
 
+// 過去のダイレクトメッセージを取得
 export const getDirectMessages = async (friendId: string, limit = 50, offset = 0) => {
   const res = await axios.get(`/friend/direct-messages/${friendId}`, {
     params: { limit, offset },
@@ -53,7 +54,7 @@ export const getDirectMessages = async (friendId: string, limit = 50, offset = 0
   return res.data;
 };
 
-
+// ダイレクトメッセージを送信
 export const sendDirectMessage = async (receiverId: string, data: { content: string, message_type?: string }) => {
   await axios.post(`/friend/direct-message`, {
     receiver_id: receiverId,
@@ -63,6 +64,13 @@ export const sendDirectMessage = async (receiverId: string, data: { content: str
   });
 };
 
+// 
+export const getFriends = async () => {
+  const res = await axios.get('/friend/friends', {
+    headers: getAuthHeader()
+  });
+  return res.data;
+};
 
 
 
