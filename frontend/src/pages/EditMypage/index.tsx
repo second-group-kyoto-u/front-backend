@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchProtected, updateProfile } from '@/api/auth/protected'
+import { getTags, Tag } from '@/api/tag'
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import styles from './EditMypage.module.css'
@@ -25,6 +26,7 @@ interface UpdateUserData {
   birthdate: string;
   living_place: string;
   gender: string;
+  favorite_tags: string[];
 }
 
 
@@ -33,6 +35,7 @@ function EditMypage() {
   const { token, logout } = useAuth()
   const [userData, setUserData] = useState<UserData | null>(null)
   const [message, setMessage] = useState('')
+  const [allTags, setAllTags] = useState<Tag[]>([]) // 全タグ一覧
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -57,14 +60,31 @@ function EditMypage() {
         logout()
         navigate('/login')
       })
+
+    getTags()
+      .then(setAllTags)
+      .catch((err) => {
+      console.error("❌ タグ取得エラー:", err)
+    })
   }, [token])
   
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     if (!userData) return
-    const { name, value } = e.target
-    setUserData({ ...userData, [name]: value })
+    const { name, value, multiple, options } = e.target
+
+    if (multiple) {
+      const selectedValues = Array.from(options)
+        .filter(option => option.selected)
+        .map(option => option.value)
+      setUserData({ ...userData, [name]: selectedValues })
+    } else {
+      setUserData({ ...userData, [name]: value })
+    }
   }
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,6 +95,7 @@ function EditMypage() {
         birthdate: new Date(userData.birthdate).toISOString().slice(0, 10),
         living_place: userData.living_place,
         gender: userData.gender,
+        favorite_tags: userData.favorite_tags
       }
       try {
         await updateProfile(updateData)
@@ -172,13 +193,21 @@ function EditMypage() {
 
             <div className={styles.formGroup}>
               <label>旅のキーワード</label>
-              <input
-                type="text"
-                name="tag"
-                value={userData.tag}
+              <select
+                name="favorite_tags"
+                multiple
+                value={userData.favorite_tags}
                 onChange={handleChange}
-              />
+                className={styles.multiSelect}
+              >
+                {allTags.map(tag => (
+                  <option key={tag.id} value={tag.tag_name}>
+                    {tag.tag_name}
+                  </option>
+                ))}
+              </select>
             </div>
+
 
             <button type="submit" className={styles.submitButton}>
               プロフィールを更新
