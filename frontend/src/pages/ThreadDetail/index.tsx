@@ -152,6 +152,15 @@ function ThreadDetailPage() {
           <div className={styles.threadTime}>{new Date(threadData.thread.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
         </div>
         <div className={styles.threadContent}>{threadData.thread.title}</div>
+        
+        {threadData.thread.tags && threadData.thread.tags.length > 0 && (
+          <div className={styles.threadTags}>
+            {threadData.thread.tags.map(tag => (
+              <span key={tag.id} className={styles.tag}>#{tag.name}</span>
+            ))}
+          </div>
+        )}
+
         <div className={styles.threadActions}>
           <button className={styles.actionButton} onClick={handleHeart}>❤️ {threadData.thread.hearts_count}</button>
           <button className={styles.actionButton} onClick={() => inputRef.current?.focus()}>💬 {threadData.thread.messages_count}</button>
