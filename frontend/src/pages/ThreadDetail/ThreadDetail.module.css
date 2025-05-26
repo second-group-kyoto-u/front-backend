@@ -91,6 +91,22 @@
   text-align: left;
 }
 
+.threadTags {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  background-color: #f3f4f6;
+  color: #5c4033;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
 .threadActions {
   display: flex;
   gap: 16px;

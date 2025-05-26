@@ -6,15 +6,16 @@ import {
   unheartThread,
   ThreadDetailResponse
 } from '@/api/thread'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { uploadImage } from '@/api/upload'
 import styles from './ThreadDetail.module.css'
 
 function ThreadDetailPage() {
   const { threadId } = useParams<{ threadId?: string }>()
-  const { token } = useAuth()
+  const location = useLocation()
   const navigate = useNavigate()
+  const { token } = useAuth()
   const [threadData, setThreadData] = useState<ThreadDetailResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -136,7 +137,7 @@ function ThreadDetailPage() {
 
   return (
     <div ref={containerRef} className={styles.threadContainer} onClick={handleClickOutside}>
-      <button onClick={() => navigate('/threads')} className={styles.backButton}>←</button>
+      <button onClick={() => navigate(-1)} className={styles.backButton}>←</button>
 
       <div className={styles.threadItem} onClick={handleClickItem}>
         <div className={styles.threadAuthor}>
@@ -152,6 +153,22 @@ function ThreadDetailPage() {
           <div className={styles.threadTime}>{new Date(threadData.thread.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
         </div>
         <div className={styles.threadContent}>{threadData.thread.title}</div>
+
+        {threadData.thread.tags && threadData.thread.tags.length > 0 && (
+          <div className={styles.threadTags}>
+            {threadData.thread.tags.map(tag => (
+              <Link
+                key={tag.id}
+                to={`/threads?tag=${tag.id}`}
+                onClick={(e) => e.stopPropagation()}
+                className={styles.tag}
+              >
+                {tag.name}
+              </Link>
+            ))}
+          </div>
+        )}
+
         <div className={styles.threadActions}>
           <button className={styles.actionButton} onClick={handleHeart}>❤️ {threadData.thread.hearts_count}</button>
           <button className={styles.actionButton} onClick={() => inputRef.current?.focus()}>💬 {threadData.thread.messages_count}</button>

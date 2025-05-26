@@ -170,6 +170,16 @@ function EditMypage() {
               </select>
             </div>
 
+            <div className={styles.formGroup}>
+              <label>旅のキーワード</label>
+              <input
+                type="text"
+                name="tag"
+                value={userData.tag}
+                onChange={handleChange}
+              />
+            </div>
+
             <button type="submit" className={styles.submitButton}>
               プロフィールを更新
             </button>

@@ -4,6 +4,28 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+.backButton {
+  color: #5c4033;
+  background-color: rgba(92, 64, 51, 0.1);
+  border: 2px solid #5c4033;
+  font-size: 20px;
+  border-radius: 9999px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  margin: 16px;
+  z-index: 20;
+  position: sticky;
+  top: 0;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .threadsHeader {
@@ -96,6 +118,22 @@
   margin-top: 6px;
   background-color: transparent;
   text-align: left;
+}
+
+.threadTags {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  background-color: #f3f4f6;
+  color: #5c4033;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
 .threadActions {

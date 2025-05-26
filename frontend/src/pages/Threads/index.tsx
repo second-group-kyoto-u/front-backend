@@ -1,40 +1,43 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { getThreads, heartThread, unheartThread, Thread } from '@/api/thread'
-import { useLocation } from 'react-router-dom' // 🎯 location 経由で state を受け取る
 import styles from './Threads.module.css'
 
 function ThreadsPage() {
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [threads, setThreads] = useState<Thread[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [fadingThreadId, setFadingThreadId] = useState<string | null>(null)
-  const location = useLocation()
-  const newThread = location.state?.newThread // 🎯 新規スレッドが存在するかチェック
-  const [total, setTotal] = useState(0) // しばらく使ってない
-  const [page, setPage] = useState(1)  // しばらく使ってない
+  const newThread = location.state?.newThread
+  const queryParams = new URLSearchParams(location.search)
+  const selectedTag = queryParams.get('tag') || undefined
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
   const perPage = 10
 
   useEffect(() => {
     fetchThreads()
-  }, [page])
+  }, [page, selectedTag]) // ← ここに selectedTag を追加！
 
   useEffect(() => {
-    // 🎯 新しいスレッドがあれば先頭に追加し、state をクリアする
     if (newThread) {
       setThreads(prev => [newThread, ...prev])
-      window.history.replaceState({}, '') // ✅ 再レンダリング時に重複追加されないように
-      console.log(newThread)
+      window.history.replaceState({}, '')
     }
-  }, [newThread])  
+  }, [newThread])
 
   const fetchThreads = async () => {
     setLoading(true)
     try {
-      const data = await getThreads({ page, per_page: perPage })
+      const data = await getThreads({
+        page,
+        per_page: perPage,
+        tags: selectedTag ? [selectedTag] : undefined
+      })
       setThreads(data.threads)
       setTotal(data.total)
     } catch (err: any) {
@@ -49,7 +52,7 @@ function ThreadsPage() {
     setFadingThreadId(threadId)
     setTimeout(() => {
       navigate(`/thread/${threadId}`)
-    }, 400) // アニメーションと一致させる
+    }, 400)
   }
 
   const handleCreateThread = () => {
@@ -58,13 +61,10 @@ function ThreadsPage() {
 
   const handleLike = async (e: React.MouseEvent, threadId: string) => {
     e.stopPropagation()
-
     if (!isAuthenticated) {
       alert('いいねするためにはログインが必要です')
       return
     }
-
-    // 現在のスレッドを取得
     const thread = threads.find((t) => t.id === threadId)
     if (!thread) return
 
@@ -74,8 +74,6 @@ function ThreadsPage() {
       } else {
         await heartThread(threadId)
       }
-
-      // API成功後に状態更新（ここでUIを反映）
       setThreads((prev) =>
         prev.map((t) =>
           t.id === threadId
@@ -93,8 +91,6 @@ function ThreadsPage() {
     }
   }
 
-
-
   const handleReply = (e: React.MouseEvent, threadId: string) => {
     e.stopPropagation()
     handleViewThread(threadId)
@@ -103,7 +99,14 @@ function ThreadsPage() {
   return (
     <div className={styles.threadsContainer}>
       <div className={styles.threadsHeader}>
-        <div className={styles.threadsTitle}>スレッド</div>
+        {selectedTag && (
+          <button onClick={() => navigate(-1)} className={styles.backButton}>←</button>
+        )}
+        <div className={styles.threadsTitle}>
+          {selectedTag
+            ? `「${threads[0]?.tags.find(t => t.id === selectedTag)?.name || 'タグ'}」のスレッド`
+            : 'スレッド'}
+        </div>
       </div>
 
       {loading ? (
@@ -125,7 +128,6 @@ function ThreadsPage() {
                 `}
                 onClick={() => handleViewThread(thread.id)}
               >
-
                 <div className={styles.threadAuthor}>
                   <a
                     href={`/user/${thread.created_by.id}`}
@@ -151,6 +153,21 @@ function ThreadsPage() {
                 </div>
 
                 <div className={styles.threadContent}>{thread.title}</div>
+
+                {thread.tags && thread.tags.length > 0 && (
+                  <div className={styles.threadTags}>
+                    {thread.tags.map(tag => (
+                      <Link
+                        key={tag.id}
+                        to={`/threads?tag=${tag.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className={styles.tag}
+                      >
+                        {tag.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
 
                 <div className={styles.threadActions}>
                   <button
