@@ -29,7 +29,6 @@ interface UpdateUserData {
   living_place: string;
   gender: string;
   favorite_tags: string[];
-  favorite_tags: string[];
 }
 
 
@@ -49,38 +48,37 @@ function EditMypage() {
       return
     }
   
-    fetchProtected()
-      .then((res) => {
-        // 🔵 【注意】現在のfetchProtected()の戻り値型(ProtectedResponse)は、
-        // 期待するデータ型(MypageResponse)と一致していません。
-        // 仮対応として型アサーション(as MypageResponse)を使用していますが、
-        // 将来的にはバックエンドのレスポンス仕様を確認・統一する必要があります。
+    const fetchData = async () => {
+      try {
+        const res = await fetchProtected()
         const data = res as MypageResponse
         setUserData(data.user)
         setMessage(data.message)
-      })
-      .catch((err) => {
-        console.error("❌ 認証エラー:", err)
+  
+        const tags = await getTags()
+        const tagOptions = tags.map(tag => ({
+          value: tag.tag_name,
+          label: tag.tag_name
+        }))
+        setAllTagOptions(tagOptions)
+  
+        // ユーザーのタグと照合して初期選択状態にする
+        if (data.user.favorite_tags) {
+          const initialSelected = data.user.favorite_tags.map(tag => ({
+            value: tag,
+            label: tag
+          }))
+          setSelectedTags(initialSelected)
+        }
+      } catch (err) {
+        console.error("❌ 初期データ取得エラー:", err)
         logout()
         navigate('/login')
-      })
-
-    getTags()
-      .then(setAllTags)
-      .catch((err) => {
-      console.error("❌ タグ取得エラー:", err)
-    })
-  }, [token])
+      }
+    }
   
-  // 🔧 現在は手動で空配列、/tags API 実装後にここで取得するようにする
-  useEffect(() => {
-    // axios.get('/tags')
-    //   .then((res) => {
-    //     const options = res.data.map((tag: string) => ({ value: tag, label: tag }))
-    //     setAllTagOptions(options)
-    //   })
-    //   .catch((err) => console.error('タグ取得失敗:', err))
-  }, [])
+    fetchData()
+  }, [token])  
 
   // 初期化：userData.favorite_tags から selectedTags を作成
   useEffect(() => {
@@ -90,7 +88,6 @@ function EditMypage() {
         label: tag
       }))
       setSelectedTags(initialTags)
-      setAllTagOptions(initialTags)
     }
   }, [userData])
 
@@ -219,7 +216,7 @@ function EditMypage() {
               <label>旅のキーワード</label>
               <CreatableSelect
                 isMulti
-                options={allTagOptions} // 🔧 将来ここに /tags API の値を使う
+                options={allTagOptions}
                 value={selectedTags}
                 onChange={(selected: readonly { value: string; label: string }[] | null) =>
                   setSelectedTags(selected ? [...selected] : [])
