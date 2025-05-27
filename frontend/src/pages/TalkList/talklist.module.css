@@ -1,12 +1,62 @@
+/* Base styles for mobile devices (default) */
 .container {
-  padding: 1rem;
+  padding: 0 0.75rem; /* Slightly reduced padding for smaller screens */
+  padding-bottom: 70px; /* Space for bottom navigation */
+  background-color: #f0f2ff; /* Light grey background for the whole page */
+  min-height: 100vh; /* Ensure it takes full height */
+  box-sizing: border-box; /* Include padding in element's total width and height */
 }
 
-.sectionTitle {
-  font-size: 1.5rem;
+.header {
+  display: flex;
+  justify-content: center; /* Center the title */
+  align-items: center;
+  padding: 1rem 0; /* Adjust padding */
+  position: sticky;
+  top: 0;
+  background-color: #f0f2ff; /* Match container background */
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Subtle shadow for header */
+}
+
+.pageTitle {
+  font-size: 1.125rem; /* Smaller font size for header title on mobile */
   font-weight: bold;
-  margin-top: 2rem;
+  margin: 0;
+  color: #333;
+}
+
+.searchBarContainer {
+  display: flex;
+  align-items: center;
+  background-color: #e0e2e5; /* Lighter background for search bar */
+  border-radius: 20px; /* More rounded corners */
+  padding: 0.5rem 1rem;
   margin-bottom: 1rem;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Inner shadow for search input feel */
+}
+
+.searchIcon {
+  width: 18px; /* Size for search icon */
+  height: 18px;
+  background-color: #999; /* Placeholder color for the search icon */
+  /* mask: url('/path/to/search-icon.svg') no-repeat center / contain; */ /* Replace with actual SVG */
+  /* -webkit-mask: url('/path/to/search-icon.svg') no-repeat center / contain; */
+  margin-right: 0.5rem;
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.95rem; /* Slightly smaller font for input on mobile */
+  color: #333;
+  padding: 0; /* Remove default input padding */
+}
+
+.searchInput::placeholder {
+  color: #999;
 }
 
 .chatList {
@@ -18,85 +68,329 @@
 .chatItem {
   background-color: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  padding: 1rem;
-  margin-bottom: 1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Softer shadow */
+  padding: 0.8rem 1rem; /* Reduced padding */
+  margin-bottom: 0.75rem; /* Consistent margin between items */
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.1s ease-in-out; /* Add transform for subtle click effect */
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* Use gap for spacing between avatar and text */
 }
 
 .chatItem:hover {
   background-color: #f8f8f8;
+  transform: translateY(-1px); /* Slight lift on hover */
+}
+
+.chatItem:active {
+  transform: translateY(0); /* Reset on active/click */
 }
 
 .chatItemContent {
   display: flex;
   align-items: center;
+  flex: 1;
+  gap: 0.75rem; /* Consistent gap */
 }
 
 .chatAvatar {
   width: 48px;
   height: 48px;
-  border-radius: 9999px;
+  border-radius: 50%; /* Perfect circle */
   object-fit: cover;
-  margin-right: 1rem;
+  flex-shrink: 0; /* Prevent shrinking on smaller screens */
 }
 
 .chatAvatarPlaceholder {
   width: 48px;
   height: 48px;
   background-color: #ddd;
-  border-radius: 9999px;
-  margin-right: 1rem;
+  border-radius: 50%; /* Perfect circle */
+  flex-shrink: 0;
 }
 
 .chatText {
   flex: 1;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .chatTitle {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
   margin: 0;
+  color: #333;
+  white-space: nowrap; /* Prevent wrapping for names */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .chatDescription {
-  font-size: 0.875rem;
-  color: #666;
-  margin: 0.25rem 0 0;
+  display: none; /* Hide description for unified chat list */
 }
 
 .chatMessage {
-  font-size: 0.875rem;
+  font-size: 0.85rem; /* Slightly smaller font for message */
   color: #666;
-  margin: 0.25rem 0 0;
+  margin: 0.2rem 0 0; /* Reduced top margin */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.dmButton {
-  background-color: #3b82f6;
-  color: white;
-  font-weight: bold;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  border: none;
-  cursor: pointer;
+.chatMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: 0.5rem;
+  flex-shrink: 0; /* Prevent shrinking */
+  text-align: right;
 }
 
-.dmButton:hover {
-  background-color: #2563eb;
+.timestamp {
+  font-size: 0.75rem;
+  color: #999;
+  margin-bottom: 0.2rem;
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+.unreadCount {
+  background-color: #ef4444; /* Red color */
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  line-height: 1; /* Ensure text is vertically centered */
+  min-width: 20px; /* For double-digit numbers */
+  padding: 2px; /* Small padding for numbers > 9 */
+  box-sizing: border-box;
 }
 
 .message {
   padding: 1rem;
   color: #444;
+  text-align: center;
+  font-size: 0.9rem; /* Slightly smaller */
 }
 
 .error {
   padding: 1rem;
   color: red;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* Bottom Navigation */
+.bottomNav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border-top: 1px solid #eee;
+  padding: 0.5rem 0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+  z-index: 100;
+  height: 60px; /* Fixed height for consistency */
+}
+
+.navItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.65rem; /* Smaller font for nav text */
+  color: #999;
+  cursor: pointer;
+  position: relative;
+  flex: 1;
+  text-align: center; /* Center text */
+  padding: 0.2rem 0; /* Add a bit of padding */
+  user-select: none; /* Prevent text selection on tap */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+}
+
+.navItem.activeNavItem {
+  color: #3b82f6;
+}
+
+.navIcon {
+  width: 26px; /* Slightly larger icons for better tap targets */
+  height: 26px;
+  background-color: #999;
+  margin-bottom: 0.1rem; /* Reduced margin */
+  /* Placeholders for actual SVG masks */
+  /* mask: url('/path/to/icon.svg') no-repeat center / contain; */
+  /* -webkit-mask: url('/path/to/icon.svg') no-repeat center / contain; */
+}
+
+.navItem.activeNavItem .navIcon {
+  background-color: #3b82f6;
+}
+
+.bottomNavUnreadCount {
+  background-color: #ef4444;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 18px; /* Slightly larger badge */
+  height: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: -4px; /* Adjust position */
+  right: calc(50% - 20px); /* Move relative to center of item for placement over icon */
+  transform: translateX(50%); /* Fine-tune horizontal position */
+  border: 1px solid #fff;
+  line-height: 1;
+  box-sizing: border-box;
+  padding: 2px;
+  min-width: 18px;
+}
+
+/* Tablet and Desktop adjustments (e.g., from 768px onwards) */
+@media (min-width: 768px) {
+  .container {
+    max-width: 960px; /* Max width for content on larger screens */
+    margin: 0 auto; /* Center the container */
+    padding: 0 1rem; /* Restore slightly more padding */
+  }
+
+  .header {
+    padding: 1.25rem 0;
+  }
+
+  .pageTitle {
+    font-size: 1.5rem; /* Larger title on desktop */
+  }
+
+  .searchBarContainer {
+    padding: 0.65rem 1.25rem; /* Slightly more padding */
+    margin-bottom: 1.25rem;
+  }
+
+  .searchInput {
+    font-size: 1rem; /* Standard font size */
+  }
+
+  .chatItem {
+    padding: 1rem 1.25rem; /* More generous padding */
+    margin-bottom: 0.85rem;
+  }
+
+  .chatAvatar {
+    width: 56px; /* Larger avatars */
+    height: 56px;
+  }
+
+  .chatAvatarPlaceholder {
+    width: 56px;
+    height: 56px;
+  }
+
+  .chatTitle {
+    font-size: 1.125rem; /* Larger title */
+  }
+
+  .chatMessage {
+    font-size: 0.9rem; /* Slightly larger message font */
+  }
+
+  .timestamp {
+    font-size: 0.8rem;
+  }
+
+  .unreadCount {
+    width: 22px; /* Slightly larger count badge */
+    height: 22px;
+    font-size: 0.75rem;
+  }
+
+  .bottomNav {
+    /* For larger screens, you might want to consider a sidebar navigation
+       or hide the bottom nav if desktop navigation is different.
+       For now, let's keep it responsive but maybe reduce its prominence. */
+    height: 65px;
+    padding: 0.75rem 0;
+  }
+
+  .navItem {
+    font-size: 0.75rem; /* Slightly larger font */
+  }
+
+  .navIcon {
+    width: 28px; /* Slightly larger icons */
+    height: 28px;
+  }
+
+  .bottomNavUnreadCount {
+    width: 20px;
+    height: 20px;
+    font-size: 0.65rem;
+  }
+}
+
+/* Large Desktop adjustments (e.g., from 1024px onwards) */
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1200px; /* Even wider container */
+  }
+
+  .header {
+    padding: 1.5rem 0;
+  }
+
+  .pageTitle {
+    font-size: 1.75rem;
+  }
+
+  .searchBarContainer {
+    padding: 0.75rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .chatItem {
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .chatAvatar,
+  .chatAvatarPlaceholder {
+    width: 64px;
+    height: 64px;
+  }
+
+  .chatTitle {
+    font-size: 1.25rem;
+  }
+
+  .chatMessage {
+    font-size: 0.95rem;
+  }
+
+  .timestamp {
+    font-size: 0.85rem;
+  }
+
+  .unreadCount {
+    width: 24px;
+    height: 24px;
+    font-size: 0.8rem;
+  }
+
+  /* Consider if bottom nav should be hidden or replaced with a sidebar */
+  /* .bottomNav {
+    display: none;
+  } */
 }
