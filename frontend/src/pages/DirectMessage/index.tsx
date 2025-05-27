@@ -4,7 +4,8 @@ import { uploadImage } from '@/api/upload';
 import { useAuth } from '@/hooks/useAuth';
 import { getDirectMessages, sendDirectMessage } from '@/api/friend';
 import { getUserProfile } from '@/api/user';
-import styles from './DirectMessage.module.css'; // または './DirectMessage.module.css' に変更することをお勧めします
+// CSSファイル名がEventTalk.module.cssのままですが、内容に合わせて調整
+import styles from './EventTalk.module.css'; // または './DirectMessage.module.css' に変更することをお勧めします
 
 interface Message {
   id: string;
@@ -293,4 +294,75 @@ const DirectMessagePage = () => {
 
       {/* アップロード進捗表示 */}
       {uploadProgress > 0 && uploadProgress < 100 && (
-        <div className
+        <div className={styles.uploadProgress}>
+          <div
+            className={styles.uploadProgressBar}
+            style={{ width: `${uploadProgress}%` }}
+          ></div>
+          <span className={styles.uploadProgressText}>画像をアップロード中...</span>
+        </div>
+      )}
+
+      {/* 選択ファイルの表示 */}
+      {selectedFile && (
+        <div className={styles.selectedFile}>
+          {selectedFilePreview && (
+            <img src={selectedFilePreview} alt="プレビュー" className={styles.imagePreview} />
+          )}
+          <span className={styles.selectedFileName}>{selectedFile.name}</span>
+          <button
+            onClick={cancelFileSelection}
+            className={styles.cancelFileButton}
+            aria-label="ファイル選択をキャンセル"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className={styles.inputArea}>
+        <button
+          type="button"
+          onClick={handleAttachClick}
+          className={styles.attachButton}
+          aria-label="ファイルを添付"
+          disabled={sending}
+        >
+          📎
+        </button>
+        <input
+          type="file"
+          accept="image/*"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className={styles.fileInput}
+          disabled={sending}
+        />
+        <textarea
+          value={inputMessage} // newMessage から inputMessage に変更
+          onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setInputMessage(e.target.value)}
+          placeholder="メッセージを入力"
+          className={styles.messageInput}
+          disabled={!!selectedFile || sending}
+          onKeyDown={handleTextareaKeyDown}
+        />
+        {/* アドバイザーモードのチェックボックスはDMでは不要なはずなので削除 */}
+        {/* <div className={styles.adviserContainer}>...</div> */}
+        <button
+          type="submit"
+          className={styles.sendButton}
+          disabled={(!inputMessage.trim() && !selectedFile) || sending}
+          aria-label="送信"
+        >
+          {sending ? '...' : '→'}
+        </button>
+      </form>
+
+      {/* キャラクター選択モーダルやメニューはDMでは不要なはずなので削除 */}
+      {/* {showCharacterModal && (...) } */}
+      {/* {showMenu && (...) } */}
+    </div>
+  );
+};
+
+export default DirectMessagePage;
