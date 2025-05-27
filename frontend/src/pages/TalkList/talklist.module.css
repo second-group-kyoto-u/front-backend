@@ -1,73 +1,102 @@
-.chat-list {
+.container {
+  padding: 1rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.chatList {
   list-style: none;
-  margin: 0;
   padding: 0;
-  /* Added some gap between list items */
-  display: grid;
-  gap: 1rem; /* Adjust as needed */
+  margin: 0;
 }
 
-.chat-item {
-  /* Removed display: flex and align-items: center from here, moved to chat-item-content */
-  padding: 12px 16px;
-  border-radius: 12px;
+.chatItem {
   background-color: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  transition: background-color 0.2s ease;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  margin-bottom: 1rem;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
-.chat-item:hover {
-  background-color: #f5f5f5;
+.chatItem:hover {
+  background-color: #f8f8f8;
 }
 
-/* Wrapper for the avatar and content within each chat item */
-.chat-item-content {
+.chatItemContent {
   display: flex;
   align-items: center;
 }
 
-.chat-avatar {
-  width: 40px;
-  height: 40px;
+.chatAvatar {
+  width: 48px;
+  height: 48px;
   border-radius: 9999px;
   object-fit: cover;
-  flex-shrink: 0;
-  margin-right: 12px;
+  margin-right: 1rem;
 }
 
-/* For when there's no image */
-.chat-avatar-placeholder {
-  width: 40px;
-  height: 40px;
+.chatAvatarPlaceholder {
+  width: 48px;
+  height: 48px;
+  background-color: #ddd;
   border-radius: 9999px;
-  background-color: #ddd; /* Default grey background */
-  flex-shrink: 0;
-  margin-right: 12px;
+  margin-right: 1rem;
 }
 
-.chat-content {
+.chatText {
   flex: 1;
   overflow: hidden;
 }
 
-.chat-name {
+.chatTitle {
+  font-size: 1.125rem;
   font-weight: 600;
-  font-size: 16px;
-  color: #333;
-  margin-bottom: 2px;
+  margin: 0;
 }
 
-.chat-message {
-  font-size: 14px;
+.chatDescription {
+  font-size: 0.875rem;
   color: #666;
-  white-space: nowrap;
+  margin: 0.25rem 0 0;
+}
+
+.chatMessage {
+  font-size: 0.875rem;
+  color: #666;
+  margin: 0.25rem 0 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Style for empty message state */
-.chat-message.empty {
-  font-style: italic;
-  color: #999;
+.dmButton {
+  background-color: #3b82f6;
+  color: white;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border: none;
+  cursor: pointer;
+}
+
+.dmButton:hover {
+  background-color: #2563eb;
+}
+
+.message {
+  padding: 1rem;
+  color: #444;
+}
+
+.error {
+  padding: 1rem;
+  color: red;
 }
