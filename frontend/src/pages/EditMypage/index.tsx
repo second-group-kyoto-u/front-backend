@@ -223,6 +223,24 @@ function EditMypage() {
                 }                
                 placeholder="タグを選択または入力してください"
                 className={styles.tagSelect}
+                styles={{
+                  option: (provided) => ({
+                    ...provided,
+                    color: '#5c4033',
+                  }),
+                  multiValueLabel: (provided) => ({
+                    ...provided,
+                    color: '#5c4033',
+                  }),
+                  input: (provided) => ({
+                    ...provided,
+                    color: '#5c4033',
+                  }),
+                  placeholder: (provided) => ({
+                    ...provided,
+                    color: '#5c4033',
+                  }),
+                }}
               />
             </div>
 
