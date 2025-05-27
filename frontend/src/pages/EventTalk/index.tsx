@@ -645,29 +645,21 @@ function EventTalkPage() {
     getUserLocation()
   }, [])
   
-  // アバター画像のURLを処理する関数
-  const processAvatarUrl = (url: string | undefined): string => {
-    if (!url) return '';
+  // 画像URLを処理する関数
+  const processImageUrl = (url: string | null): string => {
+    if (!url) return 'https://via.placeholder.com/50x50?text=User';
     
-    // URL処理をログに出力（デバッグ用）
-    console.log('処理前のURL:', url);
-    
-    // MinIOのURLを修正（必要に応じて）
-    let processedUrl = url;
-    
-    if (url.includes('localhost:9000')) {
-      try {
-        const parsed = new URL(url);
-        processedUrl = `http://${window.location.hostname}:9000${parsed.pathname}`;
-      } catch (error) {
-        console.error('URL解析エラー:', error);
+    // MinIOのURLを修正（内部ネットワークのURLを外部アクセス可能なURLに変換）
+    if (url.includes(':9000/')) {
+      // MinIOのURLの場合、nginxプロキシ経由に変換
+      const urlParts = url.split(':9000/');
+      if (urlParts.length === 2) {
+        const newUrl = `http://${window.location.hostname}/minio/${urlParts[1]}`;
+        return newUrl;
       }
     }
     
-    // コンソールに処理後のURLをログ出力
-    console.log('処理後のURL:', processedUrl);
-    
-    return processedUrl;
+    return url;
   };
 
   // キャラクターリストを取得
@@ -828,7 +820,7 @@ function EventTalkPage() {
                   <div className={styles.botAvatar}>
                     {avatarUrl ? (
                       <img 
-                        src={processAvatarUrl(avatarUrl)} 
+                        src={processImageUrl(avatarUrl)} 
                         alt={characterName} 
                         className={styles.botAvatarImage}
                         onError={(e: any) => {

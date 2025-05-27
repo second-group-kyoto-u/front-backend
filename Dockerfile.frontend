@@ -3,7 +3,8 @@
 # ステージ1: Reactをビルド
 FROM node:18-alpine AS build
 WORKDIR /app
-COPY .env ./
+# .envファイルが存在する場合のみコピー（存在しなくてもエラーにならない）
+COPY .env* ./
 COPY frontend/ ./
 # TypeScriptエラーをスキップしてビルド
 RUN npm install && npm run build

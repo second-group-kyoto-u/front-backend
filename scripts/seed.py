@@ -88,7 +88,11 @@ def upload_image(bucket, path, key):
         with open(path, "rb") as f:
             s3.upload_fileobj(f, bucket, key)
             print(f"🖼️ 画像アップロード成功: {key}")
-        return f"http://localhost:9000/{bucket}/{key}"
+        
+        # 環境変数からパブリックホストを取得
+        public_host = os.getenv('PUBLIC_HOST', 'localhost')
+        # nginxプロキシ経由でアクセス
+        return f"http://{public_host}/minio/{bucket}/{key}"
     except FileNotFoundError:
         print(f"⚠️ {path} が見つかりません。")
         return None

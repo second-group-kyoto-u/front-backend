@@ -21,12 +21,14 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
   const processImageUrl = (url: string | null): string => {
     if (!url) return 'https://via.placeholder.com/400x200?text=No+Image';
     
-    // MinIOのURLを修正
-    if (url.includes('localhost:9000')) {
-      // URLがlocalhostのMinioを指している場合
-      const parsed = new URL(url);
-      const newUrl = `http://${window.location.hostname}:9000${parsed.pathname}`;
-      return newUrl;
+    // MinIOのURLを修正（内部ネットワークのURLを外部アクセス可能なURLに変換）
+    if (url.includes(':9000/')) {
+      // MinIOのURLの場合、nginxプロキシ経由に変換
+      const urlParts = url.split(':9000/');
+      if (urlParts.length === 2) {
+        const newUrl = `http://${window.location.hostname}/minio/${urlParts[1]}`;
+        return newUrl;
+      }
     }
     
     return url;

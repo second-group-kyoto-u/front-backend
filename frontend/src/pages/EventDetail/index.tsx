@@ -254,13 +254,14 @@ function EventDetailPage() {
   const processImageUrl = (url: string | null): string => {
     if (!url) return 'https://via.placeholder.com/400x200?text=No+Image';
     
-    // MinIOのURLを修正
-    if (url.includes('localhost:9000')) {
-      // URLがlocalhostのMinioを指している場合
-      const parsed = new URL(url);
-      const newUrl = `http://${window.location.hostname}:9000${parsed.pathname}`;
-      console.log('修正後の画像URL:', newUrl);
-      return newUrl;
+    // MinIOのURLを修正（内部ネットワークのURLを外部アクセス可能なURLに変換）
+    if (url.includes(':9000/')) {
+      // MinIOのURLの場合、nginxプロキシ経由に変換
+      const urlParts = url.split(':9000/');
+      if (urlParts.length === 2) {
+        const newUrl = `http://${window.location.hostname}/minio/${urlParts[1]}`;
+        return newUrl;
+      }
     }
     
     return url;
@@ -268,32 +269,24 @@ function EventDetailPage() {
 
   // ユーザーアイコンのURLを処理する関数
   const processUserImageUrl = (url: string | null): string => {
-    if (!url) {
-      console.log('ユーザー画像URLがnullまたは空です');
-      return 'https://via.placeholder.com/50?text=User';
-    }
+    if (!url) return 'https://via.placeholder.com/50?text=User';
     
-    console.log('処理前のユーザー画像URL:', url);
-    
-    // URLが無効な値の場合
-    if (url === 'null' || url === 'undefined' || url === '') {
-      return 'https://via.placeholder.com/50?text=User';
-    }
-    
-    // 相対パスの場合はベースURLを追加
+    // 相対パスの場合は絶対パスに変換
     if (url.startsWith('/')) {
       const processedUrl = `${window.location.origin}${url}`;
       console.log('相対パスを絶対パスに変換:', processedUrl);
       return processedUrl;
     }
     
-    // MinIOのURLを修正
-    if (url.includes('localhost:9000')) {
+    // MinIOのURLを修正（内部ネットワークのURLを外部アクセス可能なURLに変換）
+    if (url.includes(':9000/')) {
       try {
-        const parsed = new URL(url);
-        const newUrl = `http://${window.location.hostname}:9000${parsed.pathname}`;
-        console.log('MinIO URLを修正:', newUrl);
-        return newUrl;
+        const urlParts = url.split(':9000/');
+        if (urlParts.length === 2) {
+          const newUrl = `http://${window.location.hostname}/minio/${urlParts[1]}`;
+          console.log('MinIO URLを修正:', newUrl);
+          return newUrl;
+        }
       } catch (e) {
         console.error('URLの解析に失敗:', url, e);
         return 'https://via.placeholder.com/50?text=User';
@@ -335,6 +328,23 @@ function EventDetailPage() {
     const l = 45 + (Math.abs(hash) % 10); // 明度 45-55%
     
     return `hsl(${h}, ${s}%, ${l}%)`;
+  };
+
+  // プロフィール画像URLを処理する関数
+  const processProfileImageUrl = (url: string | null): string => {
+    if (!url) return 'https://via.placeholder.com/50x50?text=User';
+    
+    // MinIOのURLを修正（内部ネットワークのURLを外部アクセス可能なURLに変換）
+    if (url.includes(':9000/')) {
+      // MinIOのURLの場合、nginxプロキシ経由に変換
+      const urlParts = url.split(':9000/');
+      if (urlParts.length === 2) {
+        const newUrl = `http://${window.location.hostname}/minio/${urlParts[1]}`;
+        return newUrl;
+      }
+    }
+    
+    return url;
   };
 
   // コンポーネントレンダリング中にデバッグ情報を表示

@@ -125,34 +125,22 @@ function UserProfilePage() {
     }
   }
 
-  // ユーザーアイコンのURLを処理する関数
-  const processUserImageUrl = (url: string | null): string => {
-    if (!url) {
-      return 'https://via.placeholder.com/150?text=User'
-    }
+  // 画像URLを処理する関数
+  const processImageUrl = (url: string | null): string => {
+    if (!url) return 'https://via.placeholder.com/200x200?text=No+Image';
     
-    // URLが無効な値の場合
-    if (url === 'null' || url === 'undefined' || url === '') {
-      return 'https://via.placeholder.com/150?text=User'
-    }
-    
-    // 相対パスの場合はベースURLを追加
-    if (url.startsWith('/')) {
-      return `${window.location.origin}${url}`
-    }
-    
-    // MinIOのURLを修正
-    if (url.includes('localhost:9000')) {
-      try {
-        const parsed = new URL(url)
-        return `http://${window.location.hostname}:9000${parsed.pathname}`
-      } catch (e) {
-        return 'https://via.placeholder.com/150?text=User'
+    // MinIOのURLを修正（内部ネットワークのURLを外部アクセス可能なURLに変換）
+    if (url.includes(':9000/')) {
+      // MinIOのURLの場合、nginxプロキシ経由に変換
+      const urlParts = url.split(':9000/');
+      if (urlParts.length === 2) {
+        const newUrl = `http://${window.location.hostname}/minio/${urlParts[1]}`;
+        return newUrl;
       }
     }
     
-    return url
-  }
+    return url;
+  };
 
   // フォローボタンの表示テキストを取得
   const getFollowButtonText = () => {
@@ -213,7 +201,7 @@ function UserProfilePage() {
         <div className={styles.profileHeader}>
           {userData.user_image_url && (
             <img 
-              src={processUserImageUrl(userData.user_image_url)} 
+              src={processImageUrl(userData.user_image_url)} 
               alt="プロフィール画像" 
               className={styles.profileImage} 
             />

@@ -9,6 +9,54 @@
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
 
+## 🚀 EC2ワンクリックデプロイ
+
+EC2インスタンスで1つのコマンドでデプロイできます：
+
+### 1. EC2インスタンスの準備
+- Amazon Linux 2023を推奨
+- インスタンスタイプ: t3.micro以上
+- セキュリティグループで以下のポートを開放：
+  - 22 (SSH)
+  - 80 (HTTP) - フロントエンド・API
+  - 9000-9001 (MinIO)
+
+### 2. プロジェクトファイルをEC2にアップロード
+```sh
+# ローカルからEC2にファイルをコピー
+scp -r . ec2-user@<EC2のパブリックIP>:~/front-backend-1/
+```
+
+### 3. EC2でワンクリックデプロイ実行
+```sh
+# EC2にSSH接続
+ssh ec2-user@<EC2のパブリックIP>
+
+# プロジェクトディレクトリに移動
+cd front-backend-1
+
+# デプロイスクリプトを実行可能にして実行
+chmod +x deploy-ec2.sh
+./deploy-ec2.sh
+```
+
+### 4. アクセス確認
+デプロイ完了後、以下のURLでアクセスできます：
+- **フロントエンド**: `http://<EC2のパブリックIP>`
+- **バックエンドAPI**: `http://<EC2のパブリックIP>/api/`
+- **MinIOコンソール**: `http://<EC2のパブリックIP>:9001`
+
+### セキュリティグループ自動設定（オプション）
+AWS CLIが設定済みの場合、セキュリティグループを自動設定できます：
+```sh
+chmod +x setup-security-group.sh
+./setup-security-group.sh <your-security-group-id>
+```
+
+---
+
+## ローカル開発環境
+
 ## 使い方
 # .env を生成する
 （ただし、共有した内容を入力・保存した上で実行）

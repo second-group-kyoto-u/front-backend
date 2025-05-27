@@ -146,14 +146,18 @@ const CharacterSelect: React.FC<Props> = ({ onSelect, isModal = false }) => {
     }
   };
 
-  // アバター画像のURLを処理する関数
-  const processAvatarUrl = (url: string | undefined): string => {
-    if (!url) return '';
+  // 画像URLを処理する関数
+  const processImageUrl = (url: string | null): string => {
+    if (!url) return 'https://via.placeholder.com/80x80?text=Character';
     
-    // MinIOのURLを修正（必要に応じて）
-    if (url.includes('localhost:9000')) {
-      const parsed = new URL(url);
-      return `http://${window.location.hostname}:9000${parsed.pathname}`;
+    // MinIOのURLを修正（内部ネットワークのURLを外部アクセス可能なURLに変換）
+    if (url.includes(':9000/')) {
+      // MinIOのURLの場合、nginxプロキシ経由に変換
+      const urlParts = url.split(':9000/');
+      if (urlParts.length === 2) {
+        const newUrl = `http://${window.location.hostname}/minio/${urlParts[1]}`;
+        return newUrl;
+      }
     }
     
     return url;
@@ -181,7 +185,7 @@ const CharacterSelect: React.FC<Props> = ({ onSelect, isModal = false }) => {
                 <div className={styles.compactCharacterAvatar}>
                   {character.avatar_url ? (
                     <img 
-                      src={processAvatarUrl(character.avatar_url)} 
+                      src={processImageUrl(character.avatar_url)} 
                       alt={character.name} 
                       className={styles.compactAvatarImage}
                       onError={(e: React.ChangeEvent<HTMLImageElement>) => {
@@ -282,7 +286,7 @@ const CharacterSelect: React.FC<Props> = ({ onSelect, isModal = false }) => {
               <div className={styles.characterAvatar}>
                 {character.avatar_url ? (
                   <img 
-                    src={processAvatarUrl(character.avatar_url)} 
+                    src={processImageUrl(character.avatar_url)} 
                     alt={character.name} 
                     className={styles.avatarImage}
                     onError={(e: React.ChangeEvent<HTMLImageElement>) => {
@@ -343,4 +347,4 @@ const CharacterSelect: React.FC<Props> = ({ onSelect, isModal = false }) => {
   );
 };
 
-export default CharacterSelect; 
+export default CharacterSelect;

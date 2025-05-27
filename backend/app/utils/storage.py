@@ -126,10 +126,12 @@ def upload_file(file_data, filename, content_type=None):
         endpoint_url = os.getenv('MINIO_ENDPOINT')
         if endpoint_url:  # Minio
             # PUBLIC_MINIO_ENDPOINT環境変数が設定されている場合はそれを使用
-            # そうでなければデフォルトのエンドポイントURLをlocalhostに置き換え
+            # そうでなければnginxプロキシ経由のURLを生成
             public_endpoint = os.getenv('PUBLIC_MINIO_ENDPOINT')
             if not public_endpoint:
-                public_endpoint = endpoint_url.replace('minio:9000', 'localhost:9000')
+                # nginxプロキシ経由でアクセス
+                public_host = os.getenv('PUBLIC_HOST', 'localhost')
+                public_endpoint = f"http://{public_host}/minio"
             file_url = f"{public_endpoint}/{bucket_name}/{filename}"
         else:  # AWS S3
             file_url = f"https://{bucket_name}.s3.{os.getenv('AWS_REGION', 'ap-northeast-1')}.amazonaws.com/{filename}"
