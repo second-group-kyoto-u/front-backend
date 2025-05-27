@@ -87,6 +87,22 @@
     background: #ffffff;
   }
   
+  .tagSelect__option {
+    color: #5c4033; 
+  }
+  
+  .tagSelect__multi-value__label {
+    color: #5c4033; /* 選択された tag label */
+  }
+  
+  .tagSelect__input {
+    color: #5c4033; /* ユーザー入力文字 */
+  }
+  
+  .tagSelect__placeholder {
+    color: #5c4033; /* Placeholder 文字 */
+  }
+  
   .submitButton {
     margin-top: 20px;
     background-color: transparent;
