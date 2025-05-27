@@ -1,8 +1,9 @@
-import { useState, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createThread } from '@/api/thread'
 import { useAuth } from '@/hooks/useAuth'
 import styles from './CreateThread.module.css'
+import { getTags } from '@/api/tag'
 
 function CreateThreadPage() {
   const [tag, setTag] = useState('')
@@ -11,6 +12,8 @@ function CreateThreadPage() {
   const [content, setContent] = useState('')
   const [error, setError] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [availableTags, setAvailableTags] = useState<string[]>([])
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { token } = useAuth()
@@ -29,7 +32,7 @@ function CreateThreadPage() {
         message: content,
         image_id: null,
         area_id: null,
-        tags: tag ? [tag] : []
+        tags: selectedTags
       }, token!)
 
       navigate('/threads', { state: { newThread } })
@@ -54,10 +57,30 @@ function CreateThreadPage() {
     }
   }
 
+  const handleTagToggle = (tag: string) => {
+  setSelectedTags(prev =>
+    prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+  );
+};
+
+
   const cancelImage = () => {
     setSelectedFile(null)
     setPreviewUrl(null)
   }
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const tags = await getTags()
+        const tagNames = tags.map(t => t.tag_name)
+        setAvailableTags(tagNames)
+      } catch (e) {
+        console.error('タグの取得に失敗しました', e)
+      }
+    }
+    fetchTags()
+  }, [])
 
   return (
     <div className={styles.pageBackground}>
@@ -73,24 +96,6 @@ function CreateThreadPage() {
         </div>
 
         {error && <p className={styles.error}>{error}</p>}
-
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formGroup}>
-            <input
-              type="text"
-              value={tag}
-              onChange={(e) => setTag(e.target.value)}
-              placeholder="種類（タグ）"
-              list="tag-options"
-            />
-            <datalist id="tag-options">
-              <option value="旅行" />
-              <option value="グルメ" />
-              <option value="趣味" />
-              <option value="友達募集" />
-              <option value="相談" />
-            </datalist>
-          </div>
 
           <div className={styles.formGroup}>
             <label className={styles.checkboxLabel}>
@@ -123,6 +128,24 @@ function CreateThreadPage() {
               required
               className={styles.textarea}
             />
+          </div>
+
+        <form onSubmit={handleSubmit} className={styles.form}>
+          {/* タグ選択 */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>タグ:</label>
+            <div className={styles.tagContainer}>
+              {availableTags.map(tag => (
+                <button
+                  type="button"
+                  key={tag}
+                  className={`${styles.tagButton} ${selectedTags.includes(tag) ? styles.tagSelected : ''}`}
+                  onClick={() => handleTagToggle(tag)}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className={styles.formGroup}>

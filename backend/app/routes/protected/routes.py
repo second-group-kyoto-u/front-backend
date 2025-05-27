@@ -95,11 +95,31 @@ def update_profile():
         return jsonify(error_response), error_code
 
     data = request.get_json()
+
+    # ユーザー基本情報更新
     user.user_name = data.get("user_name", user.user_name)
     user.profile_message = data.get("profile_message", user.profile_message)
     user.birthdate = data.get("birthdate", user.birthdate)
     user.living_place = data.get("living_place", user.living_place)
     user.gender = data.get("gender", user.gender)
 
+    # 🔽 タグ更新処理
+    tag_names = data.get("favorite_tags", [])
+    if isinstance(tag_names, list):
+        # 現在のタグ関連を全削除
+        UserTagAssociation.query.filter_by(user_id=user.id).delete()
+
+        for tag_name in tag_names:
+            tag = TagMaster.query.filter_by(tag_name=tag_name).first()
+            if tag:
+                new_assoc = UserTagAssociation(
+                    id=str(uuid.uuid4()),
+                    user_id=user.id,
+                    tag_id=tag.id,
+                    created_at=datetime.now(timezone.utc)
+                )
+                db.session.add(new_assoc)
+
     db.session.commit()
+
     return jsonify({"message": "プロフィールを更新しました", "user": user.to_dict()})
