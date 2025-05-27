@@ -3,6 +3,7 @@ import { fetchProtected, updateProfile } from '@/api/auth/protected'
 import { getTags, Tag } from '@/api/tag'
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
+import CreatableSelect from 'react-select/creatable'
 import styles from './EditMypage.module.css'
 
 interface UserData {
@@ -13,6 +14,7 @@ interface UserData {
   birthdate: string;
   living_place: string;
   gender: string;
+  favorite_tags: string[];
 }
 
 interface MypageResponse {
@@ -27,6 +29,7 @@ interface UpdateUserData {
   living_place: string;
   gender: string;
   favorite_tags: string[];
+  favorite_tags: string[];
 }
 
 
@@ -35,7 +38,8 @@ function EditMypage() {
   const { token, logout } = useAuth()
   const [userData, setUserData] = useState<UserData | null>(null)
   const [message, setMessage] = useState('')
-  const [allTags, setAllTags] = useState<Tag[]>([]) // 全タグ一覧
+  const [selectedTags, setSelectedTags] = useState<{ value: string; label: string }[]>([])
+  const [allTagOptions, setAllTagOptions] = useState<{ value: string; label: string }[]>([])
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -68,10 +72,29 @@ function EditMypage() {
     })
   }, [token])
   
+  // 🔧 現在は手動で空配列、/tags API 実装後にここで取得するようにする
+  useEffect(() => {
+    // axios.get('/tags')
+    //   .then((res) => {
+    //     const options = res.data.map((tag: string) => ({ value: tag, label: tag }))
+    //     setAllTagOptions(options)
+    //   })
+    //   .catch((err) => console.error('タグ取得失敗:', err))
+  }, [])
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
+  // 初期化：userData.favorite_tags から selectedTags を作成
+  useEffect(() => {
+    if (userData?.favorite_tags) {
+      const initialTags = userData.favorite_tags.map(tag => ({
+        value: tag,
+        label: tag
+      }))
+      setSelectedTags(initialTags)
+      setAllTagOptions(initialTags)
+    }
+  }, [userData])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (!userData) return
     const { name, value, multiple, options } = e.target
 
@@ -95,12 +118,13 @@ function EditMypage() {
         birthdate: new Date(userData.birthdate).toISOString().slice(0, 10),
         living_place: userData.living_place,
         gender: userData.gender,
-        favorite_tags: userData.favorite_tags
+        favorite_tags: selectedTags.map(tag => tag.value)
       }
       try {
         await updateProfile(updateData)
         alert('プロフィールを更新しました！')
         navigate('/mypage')
+        window.location.reload()
       } catch (err) {
         console.error('プロフィール更新エラー:', err)
         alert('更新に失敗しました。もう一度お試しください。')
@@ -193,19 +217,16 @@ function EditMypage() {
 
             <div className={styles.formGroup}>
               <label>旅のキーワード</label>
-              <select
-                name="favorite_tags"
-                multiple
-                value={userData.favorite_tags}
-                onChange={handleChange}
-                className={styles.multiSelect}
-              >
-                {allTags.map(tag => (
-                  <option key={tag.id} value={tag.tag_name}>
-                    {tag.tag_name}
-                  </option>
-                ))}
-              </select>
+              <CreatableSelect
+                isMulti
+                options={allTagOptions} // 🔧 将来ここに /tags API の値を使う
+                value={selectedTags}
+                onChange={(selected: readonly { value: string; label: string }[] | null) =>
+                  setSelectedTags(selected ? [...selected] : [])
+                }                
+                placeholder="タグを選択または入力してください"
+                className={styles.tagSelect}
+              />
             </div>
 
 
