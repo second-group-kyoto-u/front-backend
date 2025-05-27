@@ -93,6 +93,7 @@
   
   .tagSelect__multi-value__label {
     color: #5c4033; /* 選択された tag label */
+    border-radius: 9999px;
   }
   
   .tagSelect__input {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchProtected, updateProfile } from '@/api/auth/protected'
-import { getTags, Tag } from '@/api/tag'
+import { getTags } from '@/api/tag'
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import CreatableSelect from 'react-select/creatable'
@@ -79,17 +79,6 @@ function EditMypage() {
   
     fetchData()
   }, [token])  
-
-  // 初期化：userData.favorite_tags から selectedTags を作成
-  useEffect(() => {
-    if (userData?.favorite_tags) {
-      const initialTags = userData.favorite_tags.map(tag => ({
-        value: tag,
-        label: tag
-      }))
-      setSelectedTags(initialTags)
-    }
-  }, [userData])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (!userData) return
