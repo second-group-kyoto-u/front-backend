@@ -439,31 +439,6 @@ const TalkListPage = () => {
           ))}
         </ul>
       )}
-
-      {/* Bottom Navigation */}
-      <nav className={styles.bottomNav}>
-        <div className={styles.navItem} onClick={() => navigate('/events')}>
-          {/* Icon for Events */}
-          <div className={styles.navIcon}></div>
-          <span>イベント</span>
-        </div>
-        <div className={styles.navItem} onClick={() => navigate('/threads')}>
-          {/* Icon for Threads */}
-          <div className={styles.navIcon}></div>
-          <span>スレッド</span>
-        </div>
-        <div className={`${styles.navItem} ${styles.activeNavItem}`} onClick={() => navigate('/talks')}>
-          {/* Icon for Talk - active and with unread count */}
-          <div className={styles.navIcon}></div>
-          <span className={styles.navText}>トーク</span>
-          <div className={styles.bottomNavUnreadCount}>3</div> {/* Example unread count for Talk */}
-        </div>
-        <div className={styles.navItem} onClick={() => navigate('/mypage')}>
-          {/* Icon for My Page */}
-          <div className={styles.navIcon}></div>
-          <span>マイページ</span>
-        </div>
-      </nav>
     </div>
   )
 }
