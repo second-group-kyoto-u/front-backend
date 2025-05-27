@@ -1,23 +1,41 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import LoginPage from './pages/Login'
 import Mypage from './pages/Mypage'
 import EditMypage from './pages/EditMypage'
+import UserProfilePage from './pages/UserProfile'
 import ThreadsPage from './pages/Threads'
 import ThreadDetailPage from './pages/ThreadDetail'
 import CreateThreadPage from './pages/CreateThread'
 import EventsPage from './pages/Events'
+import CreateEventPage from './pages/CreateEvent'
 import EventDetailPage from './pages/EventDetail'
 import EventTalkPage from './pages/EventTalk'
 import RegisterPage from './pages/Register'
+import TalkListPage from './pages/TalkList'
+import DirectMessagePage from './pages/DirectMesage'
 import './App.css'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AuthRoute } from './components/AuthRoute'
 import Layout from './components/Layout/Layout.tsx' // 固定メニューを全ページに共通化するためのレイアウト
+import CreateNewDMPage from './pages/CreateNewDM/index.tsx'
+
+// ルーティングのデバッグ用コンポーネント
+const RouteLogger = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    console.log('ルーティング: 現在のパス:', location.pathname);
+    console.log('ルーティング: 完全なURL:', window.location.href);
+  }, [location]);
+  
+  return null;
+};
 
 function App(): JSX.Element {
   return (
     <Router>
+      <RouteLogger />
       <Routes>
         {/* ログインページ（未ログインユーザー向け） */}
         <Route
@@ -74,6 +92,28 @@ function App(): JSX.Element {
           }
         />
 
+        {/* イベント作成（認証確認なし） */}
+        <Route
+          path="/event/create"
+          element={
+            <Layout>
+              {console.log('イベント作成ページをレンダリングします')}
+              <CreateEventPage />
+            </Layout>
+          }
+        />
+
+        {/* 重要: イベントIDのパターンよりも先にマッチさせる */}
+        <Route
+          path="/event/create/*"
+          element={
+            <Layout>
+              {console.log('イベント作成ページ（ワイルドカードあり）をレンダリングします')}
+              <CreateEventPage />
+            </Layout>
+          }
+        />
+
         {/* イベント詳細 */}
         <Route
           path="/event/:eventId"
@@ -84,12 +124,62 @@ function App(): JSX.Element {
           }
         />
 
+        {/* イベントキャラクター選択 - EventTalkで実装しているのでリダイレクト */}
+        <Route
+          path="/event/:eventId/character-select"
+          element={
+            <Navigate to="../talk" replace />
+          }
+        />
+
         {/* イベントトーク */}
         <Route
           path="/event/:eventId/talk"
           element={
             <Layout>
               <EventTalkPage />
+            </Layout>
+          }
+        />
+
+        {/* 参加中のイベントトークとDMの表示 */}
+        <Route 
+          path="/talk" 
+          element={
+            <Layout>
+              <TalkListPage />
+            </Layout>
+          }
+        />
+
+        {/* DM */}
+        <Route 
+          path="/friend/:userId/dm"
+          element={
+            <Layout>
+              <DirectMessagePage />
+            </Layout>
+          }
+        />
+
+        {/* 新規DMの作成 */}
+        <Route 
+          path="/friend/create-DMpage"
+          element={
+            <Layout>
+              <CreateNewDMPage />
+            </Layout>
+          }
+        />
+
+
+
+        {/* ユーザープロフィール */}
+        <Route
+          path="/user/:userId"
+          element={
+            <Layout>
+              <UserProfilePage />
             </Layout>
           }
         />
@@ -118,18 +208,22 @@ function App(): JSX.Element {
           }
         />
 
-        {/* 初期表示：マイページへ */}
+        {/* 初期表示：イベントページへ */}
         <Route
           path="/"
-          element={
-            <ProtectedRoute>
-              <Navigate to="/mypage" replace />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/events" replace />}
         />
 
         {/* 404 */}
-        <Route path="*" element={<div>404 - ページが見つかりません</div>} />
+        <Route 
+          path="*" 
+          element={
+            <div>
+              <h1>404 - ページが見つかりません</h1>
+              <p>URL: {window.location.href}</p>
+            </div>
+          } 
+        />
       </Routes>
     </Router>
   )

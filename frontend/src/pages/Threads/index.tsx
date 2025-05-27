@@ -1,27 +1,43 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
-import { getThreads, Thread } from '@/api/thread'
+import { getThreads, heartThread, unheartThread, Thread } from '@/api/thread'
 import styles from './Threads.module.css'
 
 function ThreadsPage() {
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [threads, setThreads] = useState<Thread[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [total, setTotal] = useState(0) //しばらく使ってない
-  const [page, setPage] = useState(1)　//しばらく使ってない
+  const [fadingThreadId, setFadingThreadId] = useState<string | null>(null)
+  const newThread = location.state?.newThread
+  const queryParams = new URLSearchParams(location.search)
+  const selectedTag = queryParams.get('tag') || undefined
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
   const perPage = 10
 
   useEffect(() => {
     fetchThreads()
-  }, [page])
+  }, [page, selectedTag]) // ← ここに selectedTag を追加！
+
+  useEffect(() => {
+    if (newThread) {
+      setThreads(prev => [newThread, ...prev])
+      window.history.replaceState({}, '')
+    }
+  }, [newThread])
 
   const fetchThreads = async () => {
     setLoading(true)
     try {
-      const data = await getThreads({ page, per_page: perPage })
+      const data = await getThreads({
+        page,
+        per_page: perPage,
+        tags: selectedTag ? [selectedTag] : undefined
+      })
       setThreads(data.threads)
       setTotal(data.total)
     } catch (err: any) {
@@ -33,31 +49,64 @@ function ThreadsPage() {
   }
 
   const handleViewThread = (threadId: string) => {
-    navigate(`/thread/${threadId}`)
+    setFadingThreadId(threadId)
+    setTimeout(() => {
+      navigate(`/thread/${threadId}`)
+    }, 400)
   }
 
   const handleCreateThread = () => {
     isAuthenticated ? navigate('/threads/create') : navigate('/login')
   }
 
-  const handleLike = (e: React.MouseEvent, threadId: string) => {
+  const handleLike = async (e: React.MouseEvent, threadId: string) => {
     e.stopPropagation()
-    setThreads((prev) =>
-      prev.map((t) =>
-        t.id === threadId ? { ...t, hearts_count: t.hearts_count + 1 } : t
+    if (!isAuthenticated) {
+      alert('いいねするためにはログインが必要です')
+      return
+    }
+    const thread = threads.find((t) => t.id === threadId)
+    if (!thread) return
+
+    try {
+      if (thread.is_hearted) {
+        await unheartThread(threadId)
+      } else {
+        await heartThread(threadId)
+      }
+      setThreads((prev) =>
+        prev.map((t) =>
+          t.id === threadId
+            ? {
+                ...t,
+                is_hearted: !t.is_hearted,
+                hearts_count: t.hearts_count + (t.is_hearted ? -1 : 1),
+              }
+            : t
+        )
       )
-    )
+    } catch (error) {
+      console.error('いいね操作失敗', error)
+      alert("いいね操作に失敗しました")
+    }
   }
 
   const handleReply = (e: React.MouseEvent, threadId: string) => {
     e.stopPropagation()
-    navigate(`/thread/${threadId}`)
+    handleViewThread(threadId)
   }
 
   return (
     <div className={styles.threadsContainer}>
       <div className={styles.threadsHeader}>
-        <div className={styles.threadsTitle}>スレッド</div>
+        {selectedTag && (
+          <button onClick={() => navigate(-1)} className={styles.backButton}>←</button>
+        )}
+        <div className={styles.threadsTitle}>
+          {selectedTag
+            ? `「${threads[0]?.tags.find(t => t.id === selectedTag)?.name || 'タグ'}」のスレッド`
+            : 'スレッド'}
+        </div>
       </div>
 
       {loading ? (
@@ -72,12 +121,29 @@ function ThreadsPage() {
             threads.map((thread) => (
               <div
                 key={thread.id}
-                className={styles.threadItem}
+                className={`
+                  ${styles.threadItem}
+                  ${fadingThreadId && fadingThreadId !== thread.id ? styles.fadeOut : ''}
+                  ${newThread && thread.id === newThread.id ? styles.fadeIn : ''}
+                `}
                 onClick={() => handleViewThread(thread.id)}
               >
                 <div className={styles.threadAuthor}>
-                  <div className={styles.authorAvatar}></div>
-                  <div className={styles.authorName}>{thread.created_by.user_name}</div>
+                  <a
+                    href={`/user/${thread.created_by.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className={styles.authorLink}
+                  >
+                    <img
+                      className={styles.authorAvatar}
+                      src={thread.created_by.profile_image_url || '/default-avatar.png'}
+                      onError={(e) => {
+                        e.currentTarget.src = '/default-avatar.png'
+                      }}
+                      alt={`${thread.created_by.user_name}のプロフィール画像`}
+                    />
+                    <div className={styles.authorName}>{thread.created_by.user_name}</div>
+                  </a>
                   <div className={styles.threadTime}>
                     {new Date(thread.created_at).toLocaleTimeString([], {
                       hour: '2-digit',
@@ -87,6 +153,21 @@ function ThreadsPage() {
                 </div>
 
                 <div className={styles.threadContent}>{thread.title}</div>
+
+                {thread.tags && thread.tags.length > 0 && (
+                  <div className={styles.threadTags}>
+                    {thread.tags.map(tag => (
+                      <Link
+                        key={tag.id}
+                        to={`/threads?tag=${tag.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className={styles.tag}
+                      >
+                        {tag.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
 
                 <div className={styles.threadActions}>
                   <button

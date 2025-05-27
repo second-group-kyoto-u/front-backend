@@ -1,4 +1,6 @@
 import axios from '@/lib/axios'
+import { getAuthHeader } from './auth';
+
 
 // スレッド一覧を取得するAPI
 export type ThreadListParams = {
@@ -95,7 +97,9 @@ export type CreateThreadResponse = {
 export const createThread = async (
   data: CreateThreadRequest
 ): Promise<CreateThreadResponse> => {
-  const res = await axios.post<CreateThreadResponse>('thread', data)
+  const res = await axios.post<CreateThreadResponse>('thread', data, {
+        headers: getAuthHeader()
+      });
   return res.data
 }
 

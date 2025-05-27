@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
@@ -7,6 +7,7 @@ import pymysql
 from app.models.user import User
 from app.models.area import AreaList
 from app.models.thread import Thread, ThreadMessage, UserHeartThread
+from flask_jwt_extended import JWTManager
 
 # MySQLをSQLAlchemyに接続するためのセットアップ
 pymysql.install_as_MySQLdb()
@@ -22,19 +23,75 @@ def create_app():
     cors_allowed = os.getenv('CORS_ALLOWED', 'http://localhost:3000')
     allowed_origins = cors_allowed.split(',')
     
-    CORS(app,
-        resources={r"/*": {"origins": allowed_origins}},
-        supports_credentials=False,
+    # より詳細なCORS設定 - 特定のオリジンを許可
+    cors = CORS(app,
+        resources={r"/*": {"origins": allowed_origins}},  # 環境変数で指定されたオリジンを許可
+        supports_credentials=True,  # Cookieの送受信を許可
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=["Content-Type", "Authorization"])  # ← Authorization を明示
+        allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Access-Control-Allow-Origin"],
+        expose_headers=["Content-Type", "Authorization"],
+        max_age=3600)  # プリフライトリクエストのキャッシュ時間を1時間に設定
     
     app.logger.info(f"CORS設定: 許可オリジン = {allowed_origins}")
+
+    # プリフライトリクエスト用のグローバルルートを追加
+    @app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
+    @app.route('/<path:path>', methods=['OPTIONS'])
+    def handle_options(path):
+        # リクエスト元のオリジンを取得
+        origin = request.headers.get('Origin', allowed_origins[0] if allowed_origins else 'http://localhost:3000')
+        
+        # すべてのOPTIONSリクエストに対してCORSヘッダーを含むレスポンスを返す
+        response = app.response_class(
+            response='',
+            status=200
+        )
+        
+        # CORSヘッダーを追加
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
+        response.headers['Access-Control-Max-Age'] = '3600'
+        
+        return response
+
+    # エラーハンドラーを追加して、500エラー時にもCORSヘッダーを設定
+    @app.errorhandler(500)
+    def handle_500_error(e):
+        # エラーメッセージをログ記録
+        app.logger.error(f"500エラー: {str(e)}")
+        
+        # リクエスト元のオリジンを取得
+        origin = request.headers.get('Origin', allowed_origins[0] if allowed_origins else 'http://localhost:3000')
+        
+        # レスポンスを作成
+        response = app.response_class(
+            response='{"error": "内部サーバーエラーが発生しました"}',
+            status=500,
+            mimetype='application/json'
+        )
+        
+        # CORSヘッダーを追加
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
+        
+        return response
 
     app.config['ENV'] = os.getenv('FLASK_ENV', 'production') # FLASK_ENVに値を入れてたら自動的に開発モード（development）になる。本番では絶対に debug=True にしない：セキュリティリスクが極めて高くなるから。アプリの内部情報（ソースコード・環境変数・サーバー情報）まで外部から丸見えになる。。
     app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', '') # .env に FLASK_SECRET_KEY が定義されてなければ 'fallback-key' を代わりに使うことで、開発中の事故防止
     
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # JWT設定
+    app.config['JWT_SECRET_KEY'] = app.config['SECRET_KEY']
+    app.config['JWT_TOKEN_LOCATION'] = ['headers']
+    app.config['JWT_HEADER_NAME'] = 'Authorization'
+    app.config['JWT_HEADER_TYPE'] = 'Bearer'
+    jwt = JWTManager(app)
 
     # アップロードフォルダ設定
     app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'uploads')
@@ -63,6 +120,16 @@ def create_app():
     
     from app.routes.protected.friend_routes import friend_bp
     app.register_blueprint(friend_bp, url_prefix="/api/friend")
+    
+    from app.routes.user_routes import user_bp
+    app.register_blueprint(user_bp, url_prefix="/api/user")
+
+    from app.routes.area_routes import area_bp
+    app.register_blueprint(area_bp, url_prefix="/api/area")
+    
+    from app.routes.character_routes import character_bp
+    app.register_blueprint(character_bp, url_prefix="/api/character")
+
 
     # modelsに定義されたモデルクラスと見て、対応するテーブルをデータベースに作成し、appではモデルクラスを介してデータベーステーブルと対話する。
     with app.app_context():

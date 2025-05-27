@@ -1,116 +1,183 @@
-.threads-container {
+.threadsContainer {
+  background-color: #f9f7f1;
+  padding: 20px;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  width: 100%;
-  max-width: 100%;
-  background-color: #e8f5e9;
-  overflow-x: hidden;
+  position: relative;
 }
 
-.threads-header {
-  background-color: white;
-  padding: 15px;
-  width: 100%;
+.backButton {
+  color: #5c4033;
+  background-color: rgba(92, 64, 51, 0.1);
+  border: 2px solid #5c4033;
+  font-size: 20px;
+  border-radius: 9999px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  margin: 16px;
+  z-index: 20;
+  position: sticky;
+  top: 0;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.threadsHeader {
+  background-color: transparent;
+  padding: 16px;
   border-bottom: 1px solid #ddd;
-  display: flex;
-  justify-content: center; 
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  text-align: center;
 }
 
-.threads-title {
-  font-size: 18px;
+.threadsTitle {
+  font-size: 24px;
   font-weight: bold;
-  color: #333;
+  color: #5c4033;
 }
 
-.threads-list {
+.threadsList {
+  margin-top: 16px;
   flex: 1;
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   overflow-y: auto;
-  max-height: calc(100vh - 180px); 
-  padding: 10px;
+  padding: 0 12px 100px;
+  transition: opacity 0.4s ease;
 }
 
-.thread-item {
-  background-color: white;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 10px;
-  width: 100%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+.threadItem {
+  background-color: transparent;
+  padding: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  position: relative;
 }
 
-.thread-author {
+.threadItem:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.threadItem.fadeOut {
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+}
+
+.threadAuthor {
   display: flex;
   align-items: center;
   margin-bottom: 8px;
 }
 
-.author-avatar {
-  width: 32px;
-  height: 32px;
+.authorAvatar {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
+  object-fit: cover;
   background-color: #e0e0e0;
-  margin-right: 10px;
 }
 
-.author-name {
-  font-weight: 500;
+.authorName {
+  font-weight: bold;
+  color: #5c4033;
+  font-size: 14px;
+  margin-right: auto;
 }
 
-.thread-time {
-  font-size: 12px;
-  color: #666;
-  text-align: right;
-}
-
-.thread-content {
-  margin-bottom: 8px;
-}
-
-.thread-actions {
+.authorLink {
   display: flex;
-  gap: 15px;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
 }
 
-.action-button {
-  display: inline-flex;
+.authorLink:hover .authorName {
+  text-decoration: underline;
+}
+
+.threadTime {
+  font-size: 12px;
+  color: #5c4033;
+  margin-left: auto;
+}
+
+.threadContent {
+  font-size: 16px;
+  color: #5c4033;
+  padding: 0;
+  border-radius: 0;
+  display: block;
+  margin-top: 6px;
+  background-color: transparent;
+  text-align: left;
+}
+
+.threadTags {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  background-color: #f3f4f6;
+  color: #5c4033;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.threadActions {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.actionButton {
+  display: flex;
   align-items: center;
   gap: 4px;
-  color: #666;
+  color: #5c4033;
   font-size: 14px;
-  border: none;
   background: none;
+  border: none;
   cursor: pointer;
-  padding: 4px 8px;
-  transition: transform 0.2s ease;
 }
 
-.action-button:hover {
-  transform: scale(1.1);
+.actionButton:hover {
+  text-decoration: underline;
 }
 
-.create-button {
+.createButton {
   position: fixed;
-  right: 20px;
   bottom: 80px;
-  width: 50px;
-  height: 50px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
   border-radius: 25px;
   background-color: #5c4033;
   color: white;
+  font-size: 28px;
+  font-weight: bold;
   display: flex;
-  justify-content: center;
   align-items: center;
-  font-size: 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  justify-content: center;
   border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   cursor: pointer;
+  z-index: 1000;
 }
 
-.create-button:hover {
+.createButton:hover {
   background-color: #3e2b22;
 }
 
@@ -119,34 +186,63 @@
   bottom: 0;
   left: 0;
   right: 0;
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
   background-color: white;
-  padding: 10px 0;
   border-top: 1px solid #ddd;
-}
-
-.nav-item {
-  flex: 1;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 12px;
+  justify-content: space-around;
+  padding: 8px 0;
+}
+
+.navItem {
+  text-align: center;
   color: #666;
+  font-size: 12px;
   text-decoration: none;
-  transition: color 0.2s ease;
 }
 
-.nav-item:hover {
-  color: #000;
+.navItem:hover {
+  color: #5c4033;
 }
 
-.nav-item div {
-  font-size: 10px;
-}
-
-.nav-item.active {
-  color: #f44336;
+.navItem.active {
+  color: #e53935;
   font-weight: bold;
+}
+
+.loading,
+.error,
+.noData {
+  text-align: center;
+  padding: 20px;
+  font-size: 14px;
+  color: #5c4033;
+}
+
+@keyframes fadeInAnimation {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fadeIn {
+  animation: fadeInAnimation 0.5s ease-out;
+}
+
+/*ThreadDetailへの遷移*/
+.threadDetailMessage {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeSlideIn 0.4s forwards;
+}
+
+@keyframes fadeSlideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

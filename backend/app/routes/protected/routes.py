@@ -55,16 +55,18 @@ def mypage():
     
     # ユーザーが参加しているイベント数を取得
     joined_events_count = UserMemberGroup.query.filter_by(user_id=user.id).count()
-    
+
+
     # ユーザーデータをJSON形式で返す
     user_data = {
         "id": user.id,
         "user_name": user.user_name,
         "profile_message": user.profile_message or "",
         "profile_image_url": user.user_image_url or "",
-        "age": 28,
-        "location":"東京都",
-        "gender":"男性",
+        "birthdate": user.birthdate,
+        "living_place": user.living_place or "",
+        "gender": user.gender or "",
+        "is_certificated": user.is_certificated if hasattr(user, "is_certificated") else False
     }
 
     # イベントデータをJSON形式で返す
@@ -85,3 +87,19 @@ def mypage():
         "created_events": created_events,
         "message": f"ようこそ、{user.user_name}さん！"
     })
+
+@protected_bp.route("/update-profile", methods=["PUT"])
+def update_profile():
+    user, error_response, error_code = get_authenticated_user()
+    if error_response:
+        return jsonify(error_response), error_code
+
+    data = request.get_json()
+    user.user_name = data.get("user_name", user.user_name)
+    user.profile_message = data.get("profile_message", user.profile_message)
+    user.birthdate = data.get("birthdate", user.birthdate)
+    user.living_place = data.get("living_place", user.living_place)
+    user.gender = data.get("gender", user.gender)
+
+    db.session.commit()
+    return jsonify({"message": "プロフィールを更新しました", "user": user.to_dict()})

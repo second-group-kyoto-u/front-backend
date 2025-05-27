@@ -21,11 +21,20 @@
     align-items: center;
     z-index: 1000;
   }
+
+  .material-icons {
+    font-size: 24px;
+    line-height: 1;
+    display: block;
+    margin-bottom: 4px;
+    color: #5c4033;
+  }
+  
   
   .navItem {
     text-align: center;
     font-size: 12px;
-    color: #666;
+    color: #5c4033;
     text-decoration: none;
   }
   
@@ -36,5 +45,18 @@
   .active {
     color: #f44336;
     font-weight: bold;
+  }
+  
+  .debugInfo {
+    background-color: #ff9800;
+    color: white;
+    padding: 5px 10px;
+    text-align: center;
+    font-size: 14px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
   }
   

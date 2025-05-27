@@ -10,8 +10,8 @@ interface UserData {
   user_name: string;
   profile_message: string;
   profile_image_url: string;
-  age: number;
-  location: string;
+  birthdate: string;
+  living_place: string;
   gender: string;
 }
 
@@ -28,6 +28,28 @@ interface MypageResponse {
   created_events: EventData[];
   message: string;
 }
+
+const calculateAge = (birthdateStr: string): number | string => {
+  if (!birthdateStr) return '不明';
+
+  const birthDate = new Date(birthdateStr); // RFC1123, ISO 対応
+  if (isNaN(birthDate.getTime())) {
+    console.error('Invalid Date:', birthdateStr);
+    return '不明';
+  }
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  const dayDiff = today.getDate() - birthDate.getDate();
+
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+    age--;
+  }
+
+  return age;
+};
+
 
 function Mypage() {
   const { token, logout } = useAuth()
@@ -52,6 +74,7 @@ function Mypage() {
         // 仮対応として型アサーション(as MypageResponse)を使用していますが、
         // 将来的にはバックエンドのレスポンス仕様を確認・統一する必要があります。
         const data = res as MypageResponse
+        console.log('取得的ユーザーデータ:', data)
         setUserData(data.user)
         setFavoriteTags(data.favorite_tags)
         setCreatedEvents(data.created_events)
@@ -71,8 +94,11 @@ function Mypage() {
   }
 
   const handleShareProfile = () => {
-    navigator.clipboard.writeText(window.location.href)
-      .then(() => alert('プロフィールURLをコピーしました'))
+    if (!userData) return
+  
+    const publicProfileUrl = `${window.location.origin}/user/${userData.id}`
+    navigator.clipboard.writeText(publicProfileUrl)
+      .then(() => alert('シェアリンクをコピーしました'))
       .catch(() => alert('コピーに失敗しました'))
   }
 
@@ -87,6 +113,9 @@ function Mypage() {
                 <img src={userData.profile_image_url} alt="プロフィール画像" className={styles.profileImage} />
               )}
               <h2 className={styles.userName}>{userData.user_name}</h2>
+              {userData.is_certificated && (
+                <span className={styles.verified}>✓ 認証済み</span>
+              )}
               <p className={styles.profileMessage}>{userData.profile_message || "自己紹介未設定"}</p>
 
               <div className={styles.buttonGroup}>
@@ -100,9 +129,9 @@ function Mypage() {
             </div>
 
             <div className={styles.userInfo}>
-              <p><strong>年齢:</strong> {userData.age}歳</p>
-              <p><strong>居住地:</strong> {userData.location}</p>
-              <p><strong>性別:</strong> {userData.gender}</p>
+              <p><strong>年齢:</strong> {calculateAge(userData.birthdate)}歳</p>
+              <p><strong>居住地:</strong> {userData.living_place}</p>
+              <p><strong>性別:</strong> {userData.gender === 'male' ? '男' : userData.gender === 'female' ? '女' : '未設定'}</p>
             </div>
 
             <div className={styles.tagsSection}>
@@ -119,7 +148,11 @@ function Mypage() {
               {createdEvents.length > 0 ? (
                 <div className={styles.eventList}>
                   {createdEvents.map(event => (
-                    <div key={event.id} className={styles.eventCard}>
+                    <div 
+                      key={event.id} 
+                      className={styles.eventCard}
+                      onClick={() => navigate(`/event/${event.id}`)}
+                    >
                       <h3 className={styles.eventTitle}>{event.title}</h3>
                       <p className={styles.eventDescription}>{event.description}</p>
                     </div>
@@ -129,6 +162,7 @@ function Mypage() {
                 <p>まだ主催したイベントがありません</p>
               )}
             </div>
+
 
             <button onClick={handleLogout} className={styles.logoutButton}>
               ログアウト

@@ -1,101 +1,171 @@
 .pageBackground {
-    min-height: 100vh;
-    background-color: #f9f7f1;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 30px;
-  }
-  
-  .container {
-    max-width: 600px;
-    width: 100%;
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .title {
-    text-align: center;
-    color: #5c4033;
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
-  }
-  
-  .form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  
-  .formGroup {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .formGroup label {
-    color: #5c4033;
-    font-weight: bold;
-    margin-bottom: 8px;
-  }
-  
-  .formGroup input,
-  .formGroup textarea,
-  .formGroup select {
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #cccccc;
-    font-size: 16px;
-    color: #5c4033;
-    background: #ffffff;
-  }
-  
-  .note {
-    font-size: 12px;
-    color: #999;
-    margin-top: 4px;
-  }
-  
-  .submitButton {
-    margin-top: 20px;
-    background-color: #5c4033;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 9999px; /* 完全圓形的兩側 */
-    font-weight: bold;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  
-  .submitButton:hover {
-    background-color: #3e2b22;
-  }
-  
-  .visibility-section {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .visibility-section > .formGroup select {
-    margin-top: 4px;
-  }
+  min-height: 100vh;
+  background-color: #f9f7f1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 30px;
+}
 
-  .sectionLabel {
-    font-size: 16px;
-    font-weight: bold;
-    color: #5c4033;
-    margin-bottom: 8px;
-  }
-  
-  .subLabel {
-    font-size: 14px;
-    font-weight: 500;
-    color: #5c4033;
-    margin-bottom: 4px;
-  }
-  
-  
+.container {
+  max-width: 800px;
+  width: 100%;
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.backButton {
+  color: #5c4033;
+  background-color: rgba(92, 64, 51, 0.1);
+  border: 2px solid #5c4033;
+  font-size: 20px;
+  border-radius: 9999px;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.backButton:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.title {
+  text-align: center;
+  color: #5c4033;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup label {
+  color: #5c4033;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.formGroup input,
+.formGroup textarea,
+.formGroup select {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #cccccc;
+  font-size: 16px;
+  color: #5c4033;
+  background: #ffffff;
+}
+
+.note {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.submitButton {
+  margin-top: 20px;
+  background-color: #5c4033;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 9999px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.submitButton:hover {
+  background-color: #3e2b22;
+}
+
+.imageInput {
+  display: none;
+}
+
+.imageUploadButton {
+  background-color: #ffffff;
+  color: #3e2b22;
+  border: 2px solid #3e2b22;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.imageUploadButton:hover {
+  background-color: #f0f0f0;
+  color: #3e2b22;
+}
+
+.imagePreview {
+  max-width: 100px;
+  max-height: 100px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.imagePreviewWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.cancelPreviewButton {
+  background: #ffffff;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.visibility-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.visibility-section > .formGroup select {
+  margin-top: 4px;
+}
+
+.sectionLabel {
+  font-size: 16px;
+  font-weight: bold;
+  color: #5c4033;
+  margin-bottom: 8px;
+}
+
+.subLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #5c4033;
+  margin-bottom: 4px;
+}

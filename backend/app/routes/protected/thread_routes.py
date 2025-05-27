@@ -1,21 +1,25 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 from app.routes.protected.routes import get_authenticated_user
 from app.models.user import User
 from app.models.thread import Thread, ThreadMessage, UserHeartThread
 from app.models.event import TagMaster, ThreadTagAssociation
 from app.models import db
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import json
+
+JST = timezone(timedelta(hours=9))
 
 thread_bp = Blueprint("thread", __name__)
 
 @thread_bp.route("/threads", methods=["GET"])
 def get_threads():
-    # 認証チェックなし
-    # user, error_response, error_code = get_authenticated_user()
-    # if error_response:
-    #     return jsonify(error_response), error_code
+    # ユーザー認証（トークンがあれば使用、なければNoneで続行）
+    user = None
+    try:
+        user, _, _ = get_authenticated_user()
+    except Exception:
+        user = None
 
     page = request.args.get('page', default=1, type=int)
     per_page = request.args.get('per_page', default=10, type=int)
@@ -44,9 +48,7 @@ def get_threads():
 
     result = []
     for thread in threads:
-        thread_dict = thread.to_dict()
-        # ログインしてないのでいいね状態（is_hearted）は Falseにしておく
-        thread_dict['is_hearted'] = False
+        thread_dict = thread.to_dict(current_user_id=user.id if user else None)
         result.append(thread_dict)
 
     return jsonify({"threads": result, "total": total})
@@ -77,7 +79,7 @@ def get_thread(thread_id):
     messages_data = [message.to_dict() for message in messages]
     
     # スレッドデータを取得
-    thread_data = thread.to_dict()
+    thread_data = thread.to_dict(current_user_id=user.id if user else None)
     
     # タグを取得
     thread_tags = ThreadTagAssociation.query.filter_by(
@@ -112,8 +114,17 @@ def get_thread(thread_id):
         "messages": messages_data
     })
 
-@thread_bp.route("/", methods=["POST"])
+@thread_bp.route("", methods=["POST", "OPTIONS"])
 def create_thread():
+    if request.method == "OPTIONS":
+        # プリフライトリクエストに対しては何もしないで 200 を返す
+        response = make_response('', 200)
+        response.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin', '*')
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+    
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
     if error_response:
@@ -141,7 +152,7 @@ def create_thread():
         message=message,
         image_id=image_id,
         area_id=area_id,
-        published_at=datetime.now(timezone.utc),
+        published_at=datetime.now(JST),
         author_id=user.id
     )
     
@@ -157,7 +168,7 @@ def create_thread():
                 id=str(uuid.uuid4()),
                 tag_name=tag_name,
                 is_active=True,
-                created_at=datetime.now(timezone.utc)
+                created_at=datetime.now(JST)
             )
             db.session.add(tag)
             db.session.flush()
@@ -167,7 +178,7 @@ def create_thread():
             id=str(uuid.uuid4()),
             tag_id=tag.id,
             thread_id=thread.id,
-            created_at=datetime.now(timezone.utc)
+            created_at=datetime.now(JST)
         )
         db.session.add(tag_assoc)
     
@@ -177,7 +188,7 @@ def create_thread():
         thread_id=thread.id,
         sender_user_id=user.id,
         content=message,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(JST),
         image_id=image_id,
         message_type='text'
     )
@@ -262,7 +273,7 @@ def post_thread_message(thread_id):
         thread_id=thread_id,
         sender_user_id=user.id,
         content=content,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(JST),
         image_id=image_id,
         message_type=message_type
     )
@@ -306,7 +317,7 @@ def heart_thread(thread_id):
     
     return jsonify({
         "message": "スレッドにいいねしました",
-        "thread": thread.to_dict()
+        "thread": thread.to_dict(current_user_id=user.id if user else None)
     })
 
 @thread_bp.route("/<thread_id>/unheart", methods=["POST"])
@@ -336,5 +347,5 @@ def unheart_thread(thread_id):
     
     return jsonify({
         "message": "いいねを取り消しました",
-        "thread": thread.to_dict()
+        "thread": thread.to_dict(current_user_id=user.id if user else None)
     }) 

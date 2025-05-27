@@ -1,0 +1,460 @@
+.container {
+  background: transparent;
+  min-height: unset;
+  box-shadow: none;
+  padding: 0;
+  max-width: 800px;
+  width: 90vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.error {
+  background-color: #fadbd8;
+  color: #e74c3c;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.characterList {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.characterItem {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #fff;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+/* 選択されたキャラクターのスタイル */
+.characterItemSelected {
+  border-color: #3498db;
+  box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+}
+
+.characterHeader {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  position: relative;
+  background-color: #ffffff;
+  gap: 15px;
+}
+
+.radioContainer {
+  display: inline-block;
+  position: relative;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.radioInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.radioCheckmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: #fff;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+}
+
+.radioInput:checked ~ .radioCheckmark {
+  background-color: #fff;
+  border-color: #3498db;
+}
+
+.radioCheckmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  top: 4px;
+  left: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #3498db;
+}
+
+.radioInput:checked ~ .radioCheckmark:after {
+  display: block;
+}
+
+.characterAvatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #e3f2fd;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  width: 100%;
+  height: 100%;
+  background-color: #e3f2fd;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  color: #3498db;
+}
+
+.characterName {
+  flex-grow: 1;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.toggleButton {
+  background: none;
+  border: none;
+  color: #777;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.characterDetails {
+  padding: 0 15px 15px;
+  border-top: 1px solid #eee;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.expanded {
+  max-height: 500px;
+  opacity: 1;
+}
+
+.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top: none;
+}
+
+.detailSection {
+  margin-top: 10px;
+  padding-bottom: 8px;
+}
+
+.detailSection h3 {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.detailSection p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #666;
+}
+
+.startButton {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 15px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.startButton:hover {
+  background-color: #2980b9;
+}
+
+.startButton:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .title {
+    font-size: 20px;
+  }
+  
+  .characterHeader {
+    padding: 12px;
+  }
+  
+  .characterAvatar {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .characterName {
+    font-size: 16px;
+  }
+  
+  .detailSection h3 {
+    font-size: 13px;
+  }
+  
+  .detailSection p {
+    font-size: 13px;
+  }
+  
+  .startButton {
+    padding: 12px;
+    font-size: 15px;
+  }
+}
+
+/* モーダル用スタイル */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.1);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalContainer {
+  padding: 0;
+  width: 100%;
+}
+
+.modalTitle {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 20px;
+  color: #333;
+  font-weight: bold;
+  padding: 0 10px;
+}
+
+.compactCharacterList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 420px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+  padding: 0 10px 5px;
+}
+
+.compactCharacterWrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.compactCharacterItem:hover {
+  background-color: #f5f9ff;
+}
+
+.modalContent {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+  width: 90vw;
+  max-width: 380px;
+  max-height: 80vh;
+  overflow: hidden;
+  padding: 20px 0;
+}
+
+.compactCharacterItem {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px 8px 0 0;
+  background-color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 60px;
+}
+
+.compactCharacterItem.compactCharacterItemSelected:not(.expanded) {
+  border-radius: 8px;
+}
+
+.compactCharacterItemSelected {
+  border-color: #3498db;
+  background-color: #ebf5fb;
+}
+
+.compactControls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.compactToggleButton {
+  background: none;
+  border: none;
+  color: #777;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.compactToggleButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.compactCharacterDetails {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 0 15px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.compactCharacterDetails.expanded {
+  max-height: 500px;
+  opacity: 1;
+  padding: 10px 15px 15px;
+}
+
+.compactCharacterDetails.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+  pointer-events: none;
+}
+
+.compactCharacterAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e3f2fd;
+  overflow: hidden;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.compactAvatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.compactCharacterInfo {
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.compactCharacterName {
+  font-weight: bold;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.compactCharacterDesc {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.compactRadioInput {
+  margin-left: 10px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.modalStartButton {
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  margin: 15px auto;
+  padding: 12px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modalStartButton:hover {
+  background-color: #2980b9;
+}
+
+.modalStartButton:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+} 

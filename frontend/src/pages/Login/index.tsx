@@ -1,23 +1,57 @@
 import React, { useState, useEffect, FormEvent } from 'react'
 import { loginUser } from '../../api/auth/login'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import styles from './Login.module.css'
+
+// 前のページからの情報を取得するための型
+interface PrevLocationData {
+  from?: string;
+  message?: string;
+}
 
 function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
   const { login, isAuthenticated, isLoading } = useAuth()
+  // リダイレクト先URLを保存
+  const [redirectUrl, setRedirectUrl] = useState('/mypage')
+
+  useEffect(() => {
+    // 前のページからのメッセージとリダイレクト先を取得
+    const state = location.state as PrevLocationData
+    
+    if (state?.message) {
+      setMessage(state.message)
+    }
+    
+    if (state?.from) {
+      console.log('👉 リダイレクト先の保存:', state.from)
+      setRedirectUrl(state.from)
+    }
+  }, [location])
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      console.log('✅ ログイン済みなのでマイページへ遷移')
-      navigate('/mypage', { replace: true })
+      console.log('✅ ログイン済みのためリダイレクトします')
+      console.log('👉 リダイレクト先:', redirectUrl)
+      
+      // イベント作成ページへのリダイレクトの場合、直接URLを使用
+      if (redirectUrl === '/event/create') {
+        console.log('🎯 イベント作成ページへ直接リダイレクトします')
+        window.location.href = redirectUrl
+        return
+      }
+      
+      // 通常のナビゲーション
+      navigate(redirectUrl, { replace: true })
     }
-  }, [isAuthenticated, isLoading, navigate])
+  }, [isAuthenticated, isLoading, navigate, redirectUrl])
 
   const handleSubmit = async (e?: FormEvent) => {
     if (e) e.preventDefault()
@@ -29,8 +63,13 @@ function LoginPage() {
     try {
       setLoading(true)
       setError('')
+      console.log('🔑 ログイン試行中...')
       const data = await loginUser({ email, password })
-      login(data.token)
+      console.log('✅ ログイン成功、トークンを保存します')
+      await login(data.token)
+      
+      // ログイン成功後のリダイレクト先を再確認
+      console.log('👉 ログイン後のリダイレクト先:', redirectUrl)
     } catch (err: any) {
       console.error('❌ ログイン失敗:', err)
       setError(err.message || 'ログインできませんでした')
@@ -43,6 +82,20 @@ function LoginPage() {
     <div className={styles.pageBackground}>
       <div className={styles.loginContainer}>
         <h1 className={styles.loginTitle}>ログイン</h1>
+
+        {/* デバッグ情報 */}
+        {redirectUrl !== '/mypage' && (
+          <div className={styles.redirectInfo}>
+            ログイン後の遷移先: {redirectUrl}
+          </div>
+        )}
+
+        {/* 前のページからのメッセージがあれば表示 */}
+        {message && (
+          <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4 rounded">
+            {message}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className={styles.loginForm}>
           <div className={styles.formGroup}>
