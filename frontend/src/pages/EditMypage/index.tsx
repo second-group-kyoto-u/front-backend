@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { fetchProtected, updateProfile } from '@/api/auth/protected'
+import { getTags, Tag } from '@/api/tag'
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
+import CreatableSelect from 'react-select/creatable'
 import styles from './EditMypage.module.css'
 
 interface UserData {
@@ -12,6 +14,7 @@ interface UserData {
   birthdate: string;
   living_place: string;
   gender: string;
+  favorite_tags: string[];
 }
 
 interface MypageResponse {
@@ -25,6 +28,7 @@ interface UpdateUserData {
   birthdate: string;
   living_place: string;
   gender: string;
+  favorite_tags: string[];
 }
 
 
@@ -33,6 +37,8 @@ function EditMypage() {
   const { token, logout } = useAuth()
   const [userData, setUserData] = useState<UserData | null>(null)
   const [message, setMessage] = useState('')
+  const [selectedTags, setSelectedTags] = useState<{ value: string; label: string }[]>([])
+  const [allTagOptions, setAllTagOptions] = useState<{ value: string; label: string }[]>([])
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -42,29 +48,63 @@ function EditMypage() {
       return
     }
   
-    fetchProtected()
-      .then((res) => {
-        // 🔵 【注意】現在のfetchProtected()の戻り値型(ProtectedResponse)は、
-        // 期待するデータ型(MypageResponse)と一致していません。
-        // 仮対応として型アサーション(as MypageResponse)を使用していますが、
-        // 将来的にはバックエンドのレスポンス仕様を確認・統一する必要があります。
+    const fetchData = async () => {
+      try {
+        const res = await fetchProtected()
         const data = res as MypageResponse
         setUserData(data.user)
         setMessage(data.message)
-      })
-      .catch((err) => {
-        console.error("❌ 認証エラー:", err)
+  
+        const tags = await getTags()
+        const tagOptions = tags.map(tag => ({
+          value: tag.tag_name,
+          label: tag.tag_name
+        }))
+        setAllTagOptions(tagOptions)
+  
+        // ユーザーのタグと照合して初期選択状態にする
+        if (data.user.favorite_tags) {
+          const initialSelected = data.user.favorite_tags.map(tag => ({
+            value: tag,
+            label: tag
+          }))
+          setSelectedTags(initialSelected)
+        }
+      } catch (err) {
+        console.error("❌ 初期データ取得エラー:", err)
         logout()
         navigate('/login')
-      })
-  }, [token])
+      }
+    }
   
+    fetchData()
+  }, [token])  
+
+  // 初期化：userData.favorite_tags から selectedTags を作成
+  useEffect(() => {
+    if (userData?.favorite_tags) {
+      const initialTags = userData.favorite_tags.map(tag => ({
+        value: tag,
+        label: tag
+      }))
+      setSelectedTags(initialTags)
+    }
+  }, [userData])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (!userData) return
-    const { name, value } = e.target
-    setUserData({ ...userData, [name]: value })
+    const { name, value, multiple, options } = e.target
+
+    if (multiple) {
+      const selectedValues = Array.from(options)
+        .filter(option => option.selected)
+        .map(option => option.value)
+      setUserData({ ...userData, [name]: selectedValues })
+    } else {
+      setUserData({ ...userData, [name]: value })
+    }
   }
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,11 +115,13 @@ function EditMypage() {
         birthdate: new Date(userData.birthdate).toISOString().slice(0, 10),
         living_place: userData.living_place,
         gender: userData.gender,
+        favorite_tags: selectedTags.map(tag => tag.value)
       }
       try {
         await updateProfile(updateData)
         alert('プロフィールを更新しました！')
         navigate('/mypage')
+        window.location.reload()
       } catch (err) {
         console.error('プロフィール更新エラー:', err)
         alert('更新に失敗しました。もう一度お試しください。')
@@ -172,13 +214,18 @@ function EditMypage() {
 
             <div className={styles.formGroup}>
               <label>旅のキーワード</label>
-              <input
-                type="text"
-                name="tag"
-                value={userData.tag}
-                onChange={handleChange}
+              <CreatableSelect
+                isMulti
+                options={allTagOptions}
+                value={selectedTags}
+                onChange={(selected: readonly { value: string; label: string }[] | null) =>
+                  setSelectedTags(selected ? [...selected] : [])
+                }                
+                placeholder="タグを選択または入力してください"
+                className={styles.tagSelect}
               />
             </div>
+
 
             <button type="submit" className={styles.submitButton}>
               プロフィールを更新

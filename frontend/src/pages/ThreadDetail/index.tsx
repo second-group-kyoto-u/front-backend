@@ -11,6 +11,17 @@ import { useAuth } from '@/hooks/useAuth'
 import { uploadImage } from '@/api/upload'
 import styles from './ThreadDetail.module.css'
 
+
+const resolveImageSrc = (content: string): string => {
+  // 完全URLならそのまま返す
+  if (content.startsWith('http://') || content.startsWith('https://')) {
+    return content
+  }
+  // それ以外は自前サーバー上の画像とみなしてパスを付ける
+  return `/image/${content}`
+}
+
+
 function ThreadDetailPage() {
   const { threadId } = useParams<{ threadId?: string }>()
   const location = useLocation()
@@ -87,17 +98,17 @@ function ThreadDetailPage() {
       let content = newMessage
 
       if (selectedFile) {
+        // ✅ テキストを無視
         const uploadResult = await uploadImage(selectedFile, token, (progress) => {
           setUploadProgress(progress)
         })
 
-        if (newMessage.trim()) {
-          content = JSON.stringify({ text: newMessage, image: uploadResult.image.id })
-          message_type = 'mixed'
-        } else {
-          content = uploadResult.image.id
-          message_type = 'image'
-        }
+        content = uploadResult.image.id
+        message_type = 'image'
+
+      } else if (newMessage.trim()) {
+        message_type = 'text'
+        content = newMessage
       }
 
       await postMessage(threadId, { content, message_type }, token)
@@ -112,6 +123,7 @@ function ThreadDetailPage() {
       setUploadProgress(0)
     }
   }
+
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -199,11 +211,31 @@ function ThreadDetailPage() {
                 </div>
                 <div className={styles.threadContent}>
                   {msg.message_type === 'text' && <p>{msg.content}</p>}
-                  {msg.message_type === 'image' && <img src={`/image/${msg.content}`} alt="画像" className={styles.messageImage} onError={(e) => { e.currentTarget.src = '/fallback.png' }} />}
+                  {msg.message_type === 'image' && <img src={resolveImageSrc(msg.content)} alt="画像" className={styles.messageImage} onError={(e) => {
+                    const img = e.currentTarget;
+                    if (!img.dataset.fallback) {
+                      img.src = '/fallback.png';
+                      img.dataset.fallback = 'true';
+                    }
+                  }}
+                  />}
                   {msg.message_type === 'mixed' && (
                     <>
                       {content.text && <p>{content.text}</p>}
-                      {content.image && <img src={`/image/${content.image}`} alt="画像" className={styles.messageImage} onError={(e) => { e.currentTarget.src = '/fallback.png' }} />}
+                      {content.image && (
+                        <img
+                          src={resolveImageSrc(content.image)}
+                          alt="画像"
+                          className={styles.messageImage}
+                          onError={(e) => {
+                            const img = e.currentTarget
+                            if (!img.dataset.fallback) {
+                              img.src = '/fallback.png'
+                              img.dataset.fallback = 'true'
+                            }
+                          }}
+                        />
+                      )}
                     </>
                   )}
                 </div>
@@ -229,7 +261,7 @@ function ThreadDetailPage() {
         </div>
       )}
 
-      <form className={styles.fixedReplyForm} onSubmit={handleSubmit}>
+       <form className={styles.fixedReplyForm} onSubmit={handleSubmit}>
         <input
           type="file"
           id="thread-image"
@@ -253,6 +285,7 @@ function ThreadDetailPage() {
           }}
           className={styles.messageInput}
           placeholder="返信を入力..."
+          disabled={!!selectedFile}
         />
 
         <button

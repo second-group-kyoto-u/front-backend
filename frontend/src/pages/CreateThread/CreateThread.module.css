@@ -169,3 +169,31 @@
   color: #5c4033;
   margin-bottom: 4px;
 }
+
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.tagButton {
+  padding: 6px 12px;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, border 0.2s;
+}
+
+.tagButton:hover {
+  background-color: #e0e0e0;
+}
+
+.tagSelected {
+  background-color: #4caf50;   /* 緑系 */
+  color: white;
+  border-color: #4caf50;
+  font-weight: bold;
+}

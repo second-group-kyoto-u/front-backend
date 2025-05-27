@@ -130,6 +130,9 @@ def create_app():
     from app.routes.character_routes import character_bp
     app.register_blueprint(character_bp, url_prefix="/api/character")
 
+    from app.routes.tag_routes import tag_bp
+    app.register_blueprint(tag_bp, url_prefix="/api/tag")
+
 
     # modelsに定義されたモデルクラスと見て、対応するテーブルをデータベースに作成し、appではモデルクラスを介してデータベーステーブルと対話する。
     with app.app_context():
