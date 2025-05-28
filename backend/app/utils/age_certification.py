@@ -2,27 +2,6 @@
 import easyocr
 import re
 from datetime import datetime
-import cv2
-import numpy as np
-from ultralytics import YOLO
-from PIL import Image
-
-# reader = easyocr.Reader(['ja', 'en'])
-
-# 画像を読み込む(実験段階では画像をパスで指定しているが、実際はユーザが画像を送ってDBに登録？した画像を用いる)
-# image_path = 'mynumber.jpg'
-# image = cv2.imread(image_path)
-
-# # YOLOで生年月日欄を検出
-# model = YOLO('best.pt')
-# results = model(image_path, conf=0.25)
-# # YOLOで検出された領域のうち、最もスコアが高い1つを対象にする
-# # box = results[0].boxes.xyxy[0].cpu().numpy().astype(int)
-# # x1, y1, x2, y2 = box
-# # cropped = image[y1:y2, x1:x2]
-# # cv2.imwrite('cropped_birth.jpg', cropped)
-
-# print(results)
 
 
 # 処理を一つの関数に書く
@@ -93,6 +72,3 @@ def age_certify(image):
     # else:
     #     print("日付情報が見つかりませんでした。")
     return age
-
-
-# print(age_certify('mynumber.jpg'))

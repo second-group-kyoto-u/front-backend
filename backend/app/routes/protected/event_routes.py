@@ -13,6 +13,7 @@ import traceback
 import os
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
+from app.utils.recommend import get_event_recommendations_for_user,  get_initial_recommendations_for_user
 
 # 日本時間タイムゾーン
 JST = timezone(timedelta(hours=9))
@@ -56,28 +57,28 @@ event_bp = Blueprint("event", __name__)
 #     events = query.order_by(Event.published_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
     
     # 結果の整形
-    events_data = []
-    for event in events.items:
-        event_data = event.to_dict()
+#     events_data = []
+#     for event in events.items:
+#         event_data = event.to_dict()
         
-        # タグ情報を追加
-        event_tags = db.session.query(TagMaster)\
-            .join(EventTagAssociation, TagMaster.id == EventTagAssociation.tag_id)\
-            .filter(EventTagAssociation.event_id == event.id)\
-            .all()
+#         # タグ情報を追加
+#         event_tags = db.session.query(TagMaster)\
+#             .join(EventTagAssociation, TagMaster.id == EventTagAssociation.tag_id)\
+#             .filter(EventTagAssociation.event_id == event.id)\
+#             .all()
             
-        event_data['tags'] = [{'id': tag.id, 'tag_name': tag.tag_name} for tag in event_tags]
-        events_data.append(event_data)
+#         event_data['tags'] = [{'id': tag.id, 'tag_name': tag.tag_name} for tag in event_tags]
+#         events_data.append(event_data)
     
-    result = {
-        'events': events_data,
-        'total': total_count,
-        'page': page,
-        'per_page': per_page,
-        'pages': events.pages
-    }
+#     result = {
+#         'events': events_data,
+#         'total': total_count,
+#         'page': page,
+#         'per_page': per_page,
+#         'pages': events.pages
+#     }
     
-#     return jsonify(result)
+# #     return jsonify(result)
 
 # おすすめイベントを表示。いずれは投稿内容などを取得しておすすめを表示させる。
 @event_bp.route("/events", methods=["GET"]) # <--- ルートを変更
