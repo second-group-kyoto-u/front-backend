@@ -13,71 +13,113 @@ import traceback
 import os
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
+from app.utils.recommend import get_event_recommendations_for_user,  get_initial_recommendations_for_user
 
 # 日本時間タイムゾーン
 JST = timezone(timedelta(hours=9))
 
 event_bp = Blueprint("event", __name__)
 
-@event_bp.route("/events", methods=["GET"])
-def get_events():
-    # 認証チェックなし
-    # user, error_response, error_code = get_authenticated_user()
-    # if error_response:
-    #     return jsonify(error_response), error_code
+# @event_bp.route("/events", methods=["GET"])
+# def get_events():
+#     # 認証チェックなし
+#     # user, error_response, error_code = get_authenticated_user()
+#     # if error_response:
+#     #     return jsonify(error_response), error_code
     
-    # クエリパラメータの取得
-    area_id = request.args.get('area_id')
-    tag = request.args.get('tag')
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
+#     # クエリパラメータの取得
+#     area_id = request.args.get('area_id')
+#     tag = request.args.get('tag')
+#     page = request.args.get('page', 1, type=int)
+#     per_page = request.args.get('per_page', 10, type=int)
     
-    # イベントクエリのベース
-    query = Event.query.filter_by(is_deleted=False)
+#     # イベントクエリのベース
+#     query = Event.query.filter_by(is_deleted=False)
     
-    # エリアでフィルタリング
-    if area_id:
-        query = query.filter_by(area_id=area_id)
+#     # エリアでフィルタリング
+#     if area_id:
+#         query = query.filter_by(area_id=area_id)
     
-    # タグでフィルタリング
-    if tag:
-        tag_obj = TagMaster.query.filter_by(tag_name=tag).first()
-        if tag_obj:
-            tag_associations = EventTagAssociation.query.filter_by(
-                tag_id=tag_obj.id
-            ).all()
-            event_ids = [assoc.event_id for assoc in tag_associations]
-            query = query.filter(Event.id.in_(event_ids))
+#     # タグでフィルタリング
+#     if tag:
+#         tag_obj = TagMaster.query.filter_by(tag_name=tag).first()
+#         if tag_obj:
+#             tag_associations = EventTagAssociation.query.filter_by(
+#                 tag_id=tag_obj.id
+#             ).all()
+#             event_ids = [assoc.event_id for assoc in tag_associations]
+#             query = query.filter(Event.id.in_(event_ids))
     
-    # 総件数を取得
-    total_count = query.count()
+#     # 総件数を取得
+#     total_count = query.count()
     
-    # ページネーション
-    events = query.order_by(Event.published_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+#     # ページネーション
+#     events = query.order_by(Event.published_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
     
     # 結果の整形
-    events_data = []
-    for event in events.items:
-        event_data = event.to_dict()
+#     events_data = []
+#     for event in events.items:
+#         event_data = event.to_dict()
         
-        # タグ情報を追加
-        event_tags = db.session.query(TagMaster)\
-            .join(EventTagAssociation, TagMaster.id == EventTagAssociation.tag_id)\
-            .filter(EventTagAssociation.event_id == event.id)\
-            .all()
+#         # タグ情報を追加
+#         event_tags = db.session.query(TagMaster)\
+#             .join(EventTagAssociation, TagMaster.id == EventTagAssociation.tag_id)\
+#             .filter(EventTagAssociation.event_id == event.id)\
+#             .all()
             
-        event_data['tags'] = [{'id': tag.id, 'tag_name': tag.tag_name} for tag in event_tags]
-        events_data.append(event_data)
+#         event_data['tags'] = [{'id': tag.id, 'tag_name': tag.tag_name} for tag in event_tags]
+#         events_data.append(event_data)
     
-    result = {
-        'events': events_data,
-        'total': total_count,
-        'page': page,
-        'per_page': per_page,
-        'pages': events.pages
-    }
+#     result = {
+#         'events': events_data,
+#         'total': total_count,
+#         'page': page,
+#         'per_page': per_page,
+#         'pages': events.pages
+#     }
     
-    return jsonify(result)
+# #     return jsonify(result)
+
+# おすすめイベントを表示。いずれは投稿内容などを取得しておすすめを表示させる。
+@event_bp.route("/events", methods=["GET"]) # <--- ルートを変更
+def get_recommended_events_for_authenticated_user(): # <--- 関数名を変更
+    user, error_response, error_code = get_authenticated_user()
+    if error_response:
+        # 認証エラーの場合は、初期推薦 (人気イベントなど) を返すか、エラーを返すか選択
+        # ここでは初期推薦を返す例 (ユーザーIDなしで呼び出せるようにget_initial_recommendations_for_userを修正する必要があるかも)
+        # initial_recommendations = get_initial_recommendations_for_user(user_id=None) # user_id=Noneで人気順などを返すように修正想定
+        # return jsonify([event_data for event_data in initial_recommendations]), 200
+        return jsonify(error_response), error_code # もしくは認証エラーをそのまま返す
+
+    user_id = user.id
+
+    # recommend.py の推薦関数を呼び出す
+    # この関数は [{'id': event_id, 'title': title, 'similarity': score, 'reason': reason}, ...] の形式で返す想定
+    recommended_events_data = get_event_recommendations_for_user(user_id)
+
+    if not recommended_events_data:
+        # コンテンツベースで推薦が0件だった場合、フォールバックとして初期推薦を試みる
+        print(f"ユーザー {user_id} へのコンテンツベース推薦結果が0件。初期推薦にフォールバックします。")
+        recommended_events_data = get_initial_recommendations_for_user(user_id)
+
+    # イベントの詳細情報を取得する必要があれば、IDリストからEventオブジェクトを取得する
+    recommended_event_ids = [data['id'] for data in recommended_events_data]
+    events = Event.query.filter(Event.id.in_(recommended_event_ids)).all()
+    event_map = {event.id: event for event in events}
+    
+    # to_dict() を使って整形し、similarityやreasonも付加する
+    response_data = []
+    for data in recommended_events_data:
+        event_obj = event_map.get(data['id'])
+        if event_obj:
+            event_dict = event_obj.to_dict()
+            event_dict['similarity_score'] = data.get('similarity')
+            event_dict['recommend_reason'] = data.get('reason')
+            response_data.append(event_dict)
+    return jsonify(response_data)
+
+    # get_event_recommendations_for_user が既に整形済みの辞書のリストを返すと仮定
+    return jsonify(recommended_events_data)
 
 @event_bp.route("/<event_id>", methods=["GET"])
 def get_event(event_id):

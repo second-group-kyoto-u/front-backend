@@ -18,6 +18,8 @@ class User(db.Model):
     profile_message = db.Column(db.String(500))
     is_certificated = db.Column(db.Boolean, default=False)
     password_hash = db.Column(db.String(256), nullable=False)
+    is_age_verified = db.Column(db.Boolean, default=False)
+    age_verification_status = db.Column(db.String(50), default='none', nullable=False) # 'none', 'pending', 'approved', 'rejected', 'extraction_failed'
     
     # 追加するカラム
     gender = db.Column(db.String(20))  # 性別
@@ -104,6 +106,8 @@ class User(db.Model):
             'is_certificated': self.is_certificated,
             'email_verified': self.email_verified,
             'email_address': self.email_address,
+            "is_age_verified": self.is_age_verified, # 年齢認証
+            "age_verification_status": self.age_verification_status, # 年齢認証ステータス
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 

@@ -13,6 +13,8 @@ interface UserData {
   birthdate: string;
   living_place: string;
   gender: string;
+  is_certificated?: boolean;   // Eメール認証済みかどうか (既存)
+  is_age_verified?: boolean; // 新規追加: 年齢認証済みかどうか
 }
 
 interface EventData {
@@ -68,11 +70,6 @@ function Mypage() {
   
     fetchProtected()
       .then((res) => {
-        // 🔵 【注意】現在のfetchProtected()の戻り値型(ProtectedResponse)は、
-        // 期待するデータ型(MypageResponse)と一致していません。
-        // （特にcreated_eventsフィールドが存在しないため、型エラーになります）
-        // 仮対応として型アサーション(as MypageResponse)を使用していますが、
-        // 将来的にはバックエンドのレスポンス仕様を確認・統一する必要があります。
         const data = res as MypageResponse
         console.log('取得的ユーザーデータ:', data)
         setUserData(data.user)
@@ -113,8 +110,13 @@ function Mypage() {
                 <img src={userData.profile_image_url} alt="プロフィール画像" className={styles.profileImage} />
               )}
               <h2 className={styles.userName}>{userData.user_name}</h2>
+              {/* Eメール認証の表示 */}
               {userData.is_certificated && (
-                <span className={styles.verified}>✓ 認証済み</span>
+                <span className={styles.verified}>✓ Eメール認証済み</span>
+              )}
+              {/* 年齢認証の表示 */}
+              {userData.is_age_verified && (
+                <span className={styles.verified}>✓ 年齢認証済み</span>
               )}
               <p className={styles.profileMessage}>{userData.profile_message || "自己紹介未設定"}</p>
 
@@ -125,6 +127,12 @@ function Mypage() {
                 <button onClick={handleShareProfile} className={styles.shareButton}>
                   プロフィールをシェア
                 </button>
+                {/* 年齢認証ページへのボタン: 年齢認証が完了していない場合のみ表示 */}
+                {!userData.is_age_verified && (
+                  <button onClick={() => navigate('/age-verification')} className={styles.verifyAgeButton}>
+                    年齢認証を行う
+                  </button>
+                )}
               </div>
             </div>
 
@@ -176,4 +184,4 @@ function Mypage() {
   )
 }
 
-export default Mypage
+export default Mypage;
