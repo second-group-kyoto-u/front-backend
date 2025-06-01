@@ -30,8 +30,21 @@ function LoginPage() {
       setMessage(state.message)
     }
     
-    if (state?.from) {
-      console.log('👉 リダイレクト先の保存:', state.from)
+    // sessionStorageからエラーメッセージを確認
+    const savedErrorMessage = sessionStorage.getItem('loginErrorMessage')
+    if (savedErrorMessage) {
+      console.log('👉 sessionStorageからエラーメッセージを復元:', savedErrorMessage)
+      setMessage(savedErrorMessage)
+      sessionStorage.removeItem('loginErrorMessage') // 一度表示したら削除
+    }
+    
+    // sessionStorageからリダイレクト先を確認
+    const savedRedirect = sessionStorage.getItem('redirectAfterLogin')
+    if (savedRedirect) {
+      console.log('👉 sessionStorageからリダイレクト先を復元:', savedRedirect)
+      setRedirectUrl(savedRedirect)
+    } else if (state?.from) {
+      console.log('👉 stateからリダイレクト先を設定:', state.from)
       setRedirectUrl(state.from)
     }
   }, [location])
@@ -70,6 +83,10 @@ function LoginPage() {
       
       // ログイン成功後のリダイレクト先を再確認
       console.log('👉 ログイン後のリダイレクト先:', redirectUrl)
+      
+      // sessionStorageをクリア
+      sessionStorage.removeItem('redirectAfterLogin')
+      
     } catch (err: any) {
       console.error('❌ ログイン失敗:', err)
       setError(err.message || 'ログインできませんでした')

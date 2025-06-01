@@ -149,7 +149,7 @@ function ThreadDetailPage() {
 
   return (
     <div ref={containerRef} className={styles.threadContainer} onClick={handleClickOutside}>
-      <button onClick={() => navigate(-1)} className={styles.backButton}>←</button>
+      <button onClick={() => navigate('/threads')} className={styles.backButton}>←</button>
 
       <div className={styles.threadItem} onClick={handleClickItem}>
         <div className={styles.threadAuthor}>

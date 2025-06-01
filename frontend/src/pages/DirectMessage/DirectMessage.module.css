@@ -1,0 +1,634 @@
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 80px); /* メニューバーの高さを引く */
+  background-color: #f5f3f0;
+  position: relative;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #5c4033;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.messageList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.messageItem {
+  display: flex;
+  gap: 8px;
+  max-width: 80%;
+}
+
+.messageItem.sent {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.messageItem.received {
+  align-self: flex-start;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #888;
+  flex-shrink: 0;
+  align-self: flex-end;
+  overflow: hidden;
+  position: relative;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.messageContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.messageContent.sent {
+  align-items: flex-end;
+}
+
+.senderName {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.messageBubble {
+  padding: 10px 12px;
+  border-radius: 12px;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.sent .messageBubble {
+  background-color: #8d6e63;
+  color: white;
+  border-top-right-radius: 4px;
+}
+
+.received .messageBubble {
+  background-color: #f9e7dd;
+  color: #333;
+  border-top-left-radius: 4px;
+}
+
+.timestamp {
+  font-size: 10px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.imageMessage {
+  max-width: 240px;
+  max-height: 240px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.imageMessage img {
+  width: 100%;
+  height: auto;
+}
+
+.systemMessage {
+  align-self: center;
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #666;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  max-width: 80%;
+  text-align: center;
+}
+
+/* botメッセージのスタイル */
+.botMessage {
+  align-self: flex-start;
+  max-width: 70%;
+  margin: 8px 0;
+}
+
+.botMessageContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.botAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e3f2fd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2196f3;
+  font-weight: bold;
+  font-size: 16px;
+  margin-right: 8px;
+  overflow: hidden;
+  position: relative;
+  border: 2px solid #b3e5fc;
+  flex-shrink: 0;
+}
+
+.botAvatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.avatarPlaceholder {
+  width: 100%;
+  height: 100%;
+  background-color: #f0e4d7;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #8b572a;
+}
+
+.userAvatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.botContent {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 12px;
+  color: #333;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.botName {
+  font-size: 12px;
+  font-weight: bold;
+  color: #2196f3;
+  margin-bottom: 4px;
+}
+
+.botTimestamp {
+  font-size: 10px;
+  color: #999;
+  margin-top: 4px;
+  text-align: right;
+}
+
+.inputArea {
+  display: flex;
+  padding: 12px;
+  background-color: white;
+  border-top: 1px solid #eee;
+  position: sticky;
+  bottom: 0;
+}
+
+.messageInput {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 24px;
+  padding: 8px 16px;
+  font-size: 16px;
+  color: #333;
+  resize: none;
+  outline: none;
+  max-height: 120px;
+  min-height: 40px;
+}
+
+.messageInput:focus {
+  border-color: #5c4033;
+}
+
+.sendButton {
+  background-color: #5c4033;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin-left: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sendButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* アドバイザーチェックボックス */
+.adviserContainer {
+  display: flex;
+  flex-direction: column;
+  margin-right: 8px;
+  width: auto;
+  padding: 0;
+  background-color: transparent;
+  border-radius: 0;
+  border: none;
+}
+
+.adviserCheckboxContainer {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.adviserCheckbox {
+  margin-right: 6px;
+  transform: scale(1.2);
+  accent-color: #5c4033;
+}
+
+.adviserCheckboxLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #5c4033;
+  white-space: nowrap;
+}
+
+.changeAdviserButton {
+  font-size: 11px;
+  padding: 2px 4px;
+  background-color: #e0e0ff;
+  border: 1px solid #7070ff;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.changeAdviserButton:hover {
+  background-color: #c0c0ff;
+}
+
+.attachButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #888;
+  cursor: pointer;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.attachButton:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.fileInput {
+  display: none;
+}
+
+.loadingSpinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.errorMessage {
+  color: #d32f2f;
+  text-align: center;
+  padding: 16px;
+}
+
+.noMessages {
+  color: #888;
+  text-align: center;
+  padding: 16px;
+}
+
+/* ファイル選択中の表示 */
+.selectedFile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f5f5f5;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.selectedFileName {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.cancelFileButton {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* 画像プレビュー */
+.imagePreview {
+  max-width: 100px;
+  max-height: 100px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+/* アップロード進捗表示 */
+.uploadProgress {
+  position: relative;
+  height: 30px;
+  background-color: #f0f0f0;
+  margin: 0 16px 8px 16px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.uploadProgressBar {
+  height: 100%;
+  background-color: #8d6e63;
+  transition: width 0.3s ease;
+}
+
+.uploadProgressText {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  font-size: 12px;
+}
+
+.emptyImage {
+  width: 100%;
+  height: 100px;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+/* イベント操作ボタン */
+.eventControls {
+  padding: 12px 16px;
+  background-color: #f9f6f2;
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid #e6e1d8;
+}
+
+/* bot操作ボタン */
+.botControls {
+  padding: 8px 16px;
+  background-color: #f0f7ff;
+  display: flex;
+  justify-content: space-around;
+  gap: 12px;
+  border-bottom: 1px solid #d0e3ff;
+}
+
+.botControlButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: none;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+  background-color: white;
+  color: #333;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.botControlButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.botControlButton:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.botControlButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.triviaButton {
+  border-left: 3px solid #2196f3;
+}
+
+.conversationButton {
+  border-left: 3px solid #ff9800;
+}
+
+.locationButton {
+  border-left: 3px solid #4caf50;
+}
+
+.botButtonIcon {
+  margin-right: 6px;
+  font-size: 14px;
+}
+
+.eventControlButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 24px;
+  border: none;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.eventControlButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.eventControlButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 2px rgba(0,0,0,0.1);
+}
+
+.eventControlButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.startButton {
+  background-color: #4caf50;
+  color: white;
+}
+
+.endButton {
+  background-color: #f44336;
+  color: white;
+}
+
+.eventButtonIcon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.1);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalContent {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+  width: auto;
+  height: auto;
+}
+
+/* キャラクター別ボットスタイル */
+.bot_nyanta .botContent {
+  background-color: #fff6e1;
+  border-color: #ffd680;
+}
+
+.bot_nyanta .botName {
+  color: #ff9d00;
+}
+
+.bot_hitsuji .botContent {
+  background-color: #f0f8ff;
+  border-color: #b8d0e8;
+}
+
+.bot_hitsuji .botName {
+  color: #4a86e8;
+}
+
+.bot_koko .botContent {
+  background-color: #fff0f5;
+  border-color: #ffcce0;
+}
+
+.bot_koko .botName {
+  color: #ff66a3;
+}
+
+.bot_fukurou .botContent {
+  background-color: #f3f1ed;
+  border-color: #d9d6d0;
+}
+
+.bot_fukurou .botName {
+  color: #7c6e5c;
+}
+
+.bot_toraberu .botContent {
+  background-color: #edfff3;
+  border-color: #a8e0be;
+}
+
+.bot_toraberu .botName {
+  color: #38a553;
+}
+
+/* メニュードロップダウン */
+.menuDropdown {
+  position: absolute;
+  top: 56px;
+  right: 8px;
+  width: 180px;
+}

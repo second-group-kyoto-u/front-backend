@@ -1,11 +1,11 @@
 // 汎用ライブラリ（axiosの設定)
-import axios from 'axios'
+import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 
 console.log("🔧 API URL:", import.meta.env.VITE_API_URL)
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api/',
-  timeout: 20000,  // 10000から20000に増やしてタイムアウトの余裕を持たせる
+  timeout: 60000,  // 20000から60000に増量（音声チャットの複数API呼び出し対応）
   withCredentials: true,  // CORS設定のためにtrueに変更
   headers: {
     'Content-Type': 'application/json',
@@ -22,7 +22,7 @@ console.log("🔧 Axios設定:", {
 
 // リクエストインターセプター
 instance.interceptors.request.use(
-  (config) => {
+  (config: AxiosRequestConfig) => {
     // 認証トークンがあれば自動的にヘッダーに追加
     const token = localStorage.getItem('token');
     if (token && config.headers) {
@@ -37,7 +37,7 @@ instance.interceptors.request.use(
                 'withCredentials:', config.withCredentials);
     return config;
   },
-  (error) => {
+  (error: AxiosError) => {
     console.error('❌ リクエストエラー:', error);
     return Promise.reject(error);
   }
@@ -45,11 +45,11 @@ instance.interceptors.request.use(
 
 // レスポンスインターセプター
 instance.interceptors.response.use(
-  (response) => {
+  (response: AxiosResponse) => {
     console.log('✅ レスポンス受信:', response.status, response.data);
     return response;
   },
-  (error) => {
+  (error: AxiosError) => {
     // CORS関連のエラーをより詳細にログ
     if (error.message && error.message.includes('Network Error')) {
       console.error('❌ ネットワークエラー (可能性のあるCORS問題):', error.message);
@@ -61,6 +61,30 @@ instance.interceptors.response.use(
           headers: error.response.headers
         } : error.message);
     }
+
+    // 認証エラー（401）の場合のみログイン画面にリダイレクト
+    if (error.response && error.response.status === 401) {
+      console.warn('🔒 認証エラーのため、ログイン画面に遷移します');
+      
+      const errorMessage = '認証が必要です。ログインしてください。';
+      
+      // トークンを削除
+      localStorage.removeItem('token');
+      
+      // ログイン画面にリダイレクト（現在のページを保存）
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login') {
+        console.log('📍 現在のページ:', currentPath);
+        sessionStorage.setItem('redirectAfterLogin', currentPath);
+        sessionStorage.setItem('loginErrorMessage', errorMessage);
+        
+        // 少し遅延してリダイレクト（ユーザーがエラーメッセージを読めるように）
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
+      }
+    }
+
     return Promise.reject(error);
   }
 );

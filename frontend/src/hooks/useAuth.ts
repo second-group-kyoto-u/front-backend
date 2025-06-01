@@ -32,6 +32,13 @@ export function useAuth() {
           data: error.response.data,
           headers: error.response.headers
         })
+        
+        // 401エラーの場合は確実にログアウト処理
+        if (error.response.status === 401) {
+          console.warn('🔒 401エラー: 認証トークンが無効です');
+          localStorage.removeItem('token')
+          setIsAuthenticated(false)
+        }
       } else if (error.request) {
         console.error('📡 リクエスト送信済みだが応答なし:', error.request)
       } else {
@@ -43,7 +50,6 @@ export function useAuth() {
     }
   }, [getToken])
 
-
   // 認証状態の初期化
   useEffect(() => {
     const initAuth = async () => {
@@ -54,6 +60,7 @@ export function useAuth() {
       } catch (error) {
         console.error('認証状態の初期化に失敗:', error)
         setIsAuthenticated(false)
+        localStorage.removeItem('token')
       } finally {
         setIsLoading(false)
       }
@@ -71,13 +78,24 @@ export function useAuth() {
     setIsAuthenticated(valid)
   }, [verifyToken])
   
-  
   // ログアウト処理
   const logout = useCallback(() => {
     console.log('🚪 ログアウト処理')
     localStorage.removeItem('token')
+    sessionStorage.removeItem('redirectAfterLogin')
     setIsAuthenticated(false)
   }, [])
+
+  // 強制的にログイン画面にリダイレクトする関数
+  const redirectToLogin = useCallback(() => {
+    console.log('🔀 ログイン画面に強制リダイレクト')
+    logout()
+    const currentPath = window.location.pathname
+    if (currentPath !== '/login') {
+      sessionStorage.setItem('redirectAfterLogin', currentPath)
+      window.location.href = '/login'
+    }
+  }, [logout])
 
   const token = getToken()
 
@@ -87,6 +105,7 @@ export function useAuth() {
     login,
     logout,
     getToken,
-    token
+    token,
+    redirectToLogin
   }
 }

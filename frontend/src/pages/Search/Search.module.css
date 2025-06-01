@@ -1,0 +1,65 @@
+/* SearchFilterPage.css */
+.search-page {
+    background-color: #fef6f3;
+    min-height: 100vh;
+    padding: 24px;
+    font-family: 'Noto Sans JP', sans-serif;
+    color: #3b2b24;
+  }
+  
+  .search-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .input-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  
+  input[type="text"],
+  input[type="date"],
+  select {
+    padding: 12px;
+    border: 1px solid #8c6d5d;
+    border-radius: 6px;
+    font-size: 16px;
+    background-color: white;
+    flex: 1;
+    min-width: 140px;
+  }
+  
+  .search-button {
+    margin-top: 32px;
+    padding: 14px;
+    background-color: #8c4b2f;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    border: none;
+    border-radius: 9999px;
+    width: 100%;
+    max-width: 400px;
+    align-self: center;
+    cursor: pointer;
+  }
+  
+  .search-button:hover {
+    background-color: #703a24;
+  }

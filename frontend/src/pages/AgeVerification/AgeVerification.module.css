@@ -1,0 +1,189 @@
+/* AgeVerification.module.css */
+
+.pageBackground {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #a8dadc 0%, #457b9d 100%); /* 旅行を想起させるグラデーション */
+  padding: 20px;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif; /* 一般的なフォント */
+}
+
+.container {
+  background-color: rgba(255, 255, 255, 0.95); /* 半透明の白で背景との調和を図る */
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+  backdrop-filter: blur(5px); /* 背景のグラデーションを少しぼかす */
+  -webkit-backdrop-filter: blur(5px); /* Safari対応 */
+}
+
+.title {
+  color: #1d3557; /* 深い青 */
+  margin-bottom: 25px;
+  font-size: 2.5em;
+  font-weight: bold;
+}
+
+.description {
+  color: #457b9d; /* 少し明るい青 */
+  margin-bottom: 35px;
+  line-height: 1.8;
+  font-size: 1.1em;
+}
+
+.form {
+  margin-bottom: 30px;
+}
+
+.fileInputGroup {
+  margin-bottom: 25px;
+  display: inline-block;
+  width: 100%; /* 全幅に広げる */
+}
+
+.fileInputLabel {
+  background-color: #e63946; /* 旅行アプリのアクセントカラー（赤） */
+  color: white;
+  padding: 15px 30px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.2em;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  display: inline-block;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.fileInputLabel:hover {
+  background-color: #c92c3a; /* ホバーで少し暗く */
+  transform: translateY(-2px); /* 少し浮き上がるエフェクト */
+}
+
+.hiddenFileInput {
+  display: none; /* 実際のinput要素を非表示にする */
+}
+
+.imagePreview {
+  margin-top: 25px;
+  border: 2px dashed #a8dadc; /* 水色の破線ボーダー */
+  border-radius: 10px;
+  padding: 15px;
+  display: inline-block;
+  max-width: 90%;
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.08);
+  background-color: #f1faee; /* プレビュー背景色 */
+}
+
+.previewImage {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto;
+}
+
+.message {
+  color: #e63946; /* エラーメッセージを赤 */
+  margin-top: 20px;
+  font-weight: bold;
+  font-size: 1em;
+}
+
+.submitButton {
+  background-color: #2a9d8f; /* 提出ボタンは緑系 */
+  color: white;
+  padding: 15px 40px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.2em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: auto;
+  min-width: 180px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #267e74; /* ホバーで少し暗く */
+  transform: translateY(-2px);
+}
+
+.submitButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.backButton {
+  background-color: #a8dadc; /* 背景グラデーションの色と合わせる */
+  color: #1d3557; /* 濃い青の文字色 */
+  padding: 12px 25px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.backButton:hover {
+  background-color: #8bb3b6; /* ホバーで少し暗く */
+  transform: translateY(-1px);
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+  .container {
+    padding: 30px;
+    margin: 15px;
+  }
+
+  .title {
+    font-size: 2em;
+  }
+
+  .description {
+    font-size: 1em;
+  }
+
+  .fileInputLabel,
+  .submitButton {
+    padding: 12px 25px;
+    font-size: 1.1em;
+  }
+
+  .backButton {
+    padding: 10px 20px;
+    font-size: 0.9em;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 20px;
+  }
+
+  .title {
+    font-size: 1.8em;
+  }
+
+  .description {
+    font-size: 0.9em;
+  }
+
+  .fileInputLabel,
+  .submitButton {
+    width: 100%; /* 小さい画面ではボタンを全幅に */
+    margin-bottom: 15px;
+  }
+}

@@ -21,6 +21,7 @@
   border-radius: 8px;
   font-size: 16px;
   background-color: #f9f9f9;
+  color: #333;
 }
 
 .filtersContainer {
@@ -35,6 +36,7 @@
   border: 1px solid #ddd;
   border-radius: 6px;
   background-color: white;
+  color: #333;
   font-size: 14px;
 }
 

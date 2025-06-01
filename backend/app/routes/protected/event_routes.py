@@ -13,24 +13,22 @@ import traceback
 import os
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
+from app.utils.recommend import get_event_recommendations_for_user,  get_initial_recommendations_for_user
 
 # 日本時間タイムゾーン
 JST = timezone(timedelta(hours=9))
 
 event_bp = Blueprint("event", __name__)
 
+# イベント一覧取得（認証なし）
 @event_bp.route("/events", methods=["GET"])
 def get_events():
-    # 認証チェックなし
-    # user, error_response, error_code = get_authenticated_user()
-    # if error_response:
-    #     return jsonify(error_response), error_code
-    
     # クエリパラメータの取得
     area_id = request.args.get('area_id')
     tag = request.args.get('tag')
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
+    status = request.args.get('status')  # pending, started, ended
     
     # イベントクエリのベース
     query = Event.query.filter_by(is_deleted=False)
@@ -38,6 +36,10 @@ def get_events():
     # エリアでフィルタリング
     if area_id:
         query = query.filter_by(area_id=area_id)
+    
+    # ステータスでフィルタリング
+    if status:
+        query = query.filter_by(status=status)
     
     # タグでフィルタリング
     if tag:
@@ -78,6 +80,73 @@ def get_events():
     }
     
     return jsonify(result)
+
+# おすすめイベントを表示（認証必要）
+@event_bp.route("/recommended", methods=["GET"]) 
+def get_recommended_events_for_authenticated_user():
+    user, error_response, error_code = get_authenticated_user()
+    if error_response:
+        # 認証エラーの場合は、初期推薦 (人気イベントなど) を返す
+        return jsonify(error_response), error_code
+
+    user_id = user.id
+
+    # recommend.py の推薦関数を呼び出す
+    recommended_events_data = get_event_recommendations_for_user(user_id)
+
+    if not recommended_events_data:
+        # コンテンツベースで推薦が0件だった場合、フォールバックとして初期推薦を試みる
+        print(f"ユーザー {user_id} へのコンテンツベース推薦結果が0件。初期推薦にフォールバックします。")
+        recommended_events_data = get_initial_recommendations_for_user(user_id)
+
+    # イベントの詳細情報を取得する必要があれば、IDリストからEventオブジェクトを取得する
+    recommended_event_ids = [data['id'] for data in recommended_events_data]
+    events = Event.query.filter(Event.id.in_(recommended_event_ids)).all()
+    event_map = {event.id: event for event in events}
+    
+    # to_dict() を使って整形し、similarityやreasonも付加する
+    response_data = []
+    for data in recommended_events_data:
+        event_obj = event_map.get(data['id'])
+        if event_obj:
+            event_dict = event_obj.to_dict()
+            event_dict['similarity_score'] = data.get('similarity')
+            event_dict['recommend_reason'] = data.get('reason')
+            response_data.append(event_dict)
+    
+    return jsonify({'events': response_data})
+
+# 人気イベントを表示（認証不要）
+@event_bp.route("/popular", methods=["GET"])
+def get_popular_events():
+    """人気のイベント（認証不要）"""
+    try:
+        limit = request.args.get('limit', 10, type=int)
+        
+        # 人気イベントを取得（参加者数順、最新順でソート）
+        events = Event.query.filter_by(is_deleted=False)\
+            .order_by(Event.current_persons.desc(), Event.published_at.desc())\
+            .limit(limit).all()
+        
+        # イベント情報の加工
+        events_data = []
+        for event in events:
+            event_data = event.to_dict()
+            
+            # タグ情報を追加
+            event_tags = db.session.query(TagMaster)\
+                .join(EventTagAssociation, TagMaster.id == EventTagAssociation.tag_id)\
+                .filter(EventTagAssociation.event_id == event.id)\
+                .all()
+                
+            event_data['tags'] = [{'id': tag.id, 'tag_name': tag.tag_name} for tag in event_tags]
+            events_data.append(event_data)
+        
+        return jsonify({'events': events_data})
+        
+    except Exception as e:
+        current_app.logger.error(f"人気イベント取得エラー: {str(e)}")
+        return jsonify({"error": "人気イベントの取得に失敗しました"}), 500
 
 @event_bp.route("/<event_id>", methods=["GET"])
 def get_event(event_id):
@@ -482,105 +551,31 @@ def get_event_members(event_id):
     # ユーザーが認証済みかどうかでレスポンスを調整
     if user:
         # 認証済みユーザーには詳細情報を提供
-        return jsonify({
-            "members": [
-                {
-                    "user_id": member.user_id,
-                    "event_id": member.event_id,
-                    "joined_at": member.joined_at.isoformat() if member.joined_at else None,
-                    "user": member.user.to_dict()
-                } for member in members
-            ],
-            "authenticated": True
-        })
+        members_data = [
+            {
+                "user_id": member.user_id,
+                "event_id": member.event_id,
+                "joined_at": member.joined_at.isoformat() if member.joined_at else None,
+                "user": member.user.to_dict()
+            } for member in members
+        ]
+        return jsonify({"message": "イベントのメンバー情報を取得しました", "members": members_data})
     else:
         # 未認証ユーザーには限定的な情報を提供
-        return jsonify({
-            "members": [
-                {
-                    "user_id": member.user_id,
-                    "event_id": member.event_id,
-                    "joined_at": member.joined_at.isoformat() if member.joined_at else None,
-                    "user": {
-                        "id": member.user.id,
-                        "user_name": member.user.user_name,
-                        "user_image_url": member.user.user_image_url,
-                        "is_certificated": member.user.is_certificated if hasattr(member.user, 'is_certificated') else False
-                    }
-                } for member in members
-            ],
-            "authenticated": False
-        })
-
-@event_bp.route("/recommended", methods=["GET"])
-def get_recommended_events():
-    """ユーザーのタグ設定に基づいたおすすめイベントを取得"""
-    # ユーザー認証チェック
-    user, error_response, error_code = get_authenticated_user()
-    if error_response:
-        # 未認証の場合は最新のイベントを返す
-        limit = request.args.get('limit', 10, type=int)
-        latest_events = Event.query.filter_by(is_deleted=False).order_by(Event.published_at.desc()).limit(limit).all()
-        
-        # イベント情報の加工
-        events_data = []
-        for event in latest_events:
-            event_data = event.to_dict()
-            
-            # タグ情報を追加
-            event_tags = db.session.query(TagMaster)\
-                .join(EventTagAssociation, TagMaster.id == EventTagAssociation.tag_id)\
-                .filter(EventTagAssociation.event_id == event.id)\
-                .all()
-                
-            event_data['tags'] = [{'id': tag.id, 'tag_name': tag.tag_name} for tag in event_tags]
-            events_data.append(event_data)
-            
-        return jsonify({
-            "events": events_data,
-            "authenticated": False
-        })
-    
-    # ユーザーのタグ設定を取得
-    user_tags = UserTagAssociation.query.filter_by(user_id=user.id).all()
-    user_tag_ids = [ut.tag_id for ut in user_tags]
-    
-    limit = request.args.get('limit', 10, type=int)
-    events = []
-    
-    if user_tag_ids:
-        # ユーザーのタグに関連するイベントを取得
-        tag_events = Event.query.join(
-            EventTagAssociation,
-            Event.id == EventTagAssociation.event_id
-        ).filter(
-            EventTagAssociation.tag_id.in_(user_tag_ids),
-            Event.is_deleted == False
-        ).order_by(Event.published_at.desc()).limit(limit).all()
-        
-        events = tag_events
-    else:
-        # タグ設定がない場合は最新のイベントを返す
-        events = Event.query.filter_by(is_deleted=False).order_by(Event.published_at.desc()).limit(limit).all()
-    
-    # イベント情報の加工
-    events_data = []
-    for event in events:
-        event_data = event.to_dict()
-        
-        # タグ情報を追加
-        event_tags = db.session.query(TagMaster)\
-            .join(EventTagAssociation, TagMaster.id == EventTagAssociation.tag_id)\
-            .filter(EventTagAssociation.event_id == event.id)\
-            .all()
-            
-        event_data['tags'] = [{'id': tag.id, 'tag_name': tag.tag_name} for tag in event_tags]
-        events_data.append(event_data)
-    
-    return jsonify({
-        "events": events_data,
-        "authenticated": True
-    })
+        members_data = [
+            {
+                "user_id": member.user_id,
+                "event_id": member.event_id,
+                "joined_at": member.joined_at.isoformat() if member.joined_at else None,
+                "user": {
+                    "id": member.user.id,
+                    "user_name": member.user.user_name,
+                    "user_image_url": member.user.user_image_url,
+                    "is_certificated": member.user.is_certificated if hasattr(member.user, 'is_certificated') else False
+                }
+            } for member in members
+        ]
+        return jsonify({"message": "イベントのメンバー情報を取得しました", "members": members_data})
 
 @event_bp.route("/friends", methods=["GET"])
 def get_friends_events():
@@ -673,15 +668,25 @@ def get_event_weather_info_route(event_id):
 @event_bp.route('/<event_id>/advisor-response', methods=['POST'])
 def get_advisor_response(event_id):
     """
-    アドバイザー（ボット）の応答を生成するエンドポイント
+    アドバイザー（ボット）の応答を生成するエンドポイント（AI判定による柔軟処理）
     
-    ユーザーのメッセージに対して、以下のプロセスで応答を生成します：
-    1. メッセージ内容を分析し、天気情報や位置情報が必要かどうか判断
-    2. 必要な情報を取得（天気API、位置情報API）
-    3. 会話履歴とともに統合して応答を生成
+    音声チャットと同様の高度なAI分析機能：
+    1. AI解析による詳細な意図分析
+    2. 時間指定対応の天気情報取得
+    3. AI判定による柔軟な場所検索
+    4. インテリジェントプロンプト生成
     """
-    from app.utils.openai_utils import analyze_message_needs, generate_advisor_response, get_place_info_for_prompt
-    from app.utils.event import get_event_by_id, get_event_weather_info
+    from app.routes.voice.routes import (
+        ai_analyze_user_intent, 
+        ai_generate_time_specification, 
+        ai_enhanced_nearby_places,
+        get_detailed_weather_info,
+        create_ai_intelligent_prompt,
+        get_character_system_prompt
+    )
+    from app.utils.event import get_event_by_id
+    import openai
+    import os
 
     # ユーザー認証
     user, error_response, error_code = get_authenticated_user()
@@ -722,110 +727,152 @@ def get_advisor_response(event_id):
         db.session.add(user_message)
         db.session.commit()
 
-        # 過去の会話履歴取得（最新5件に制限）
+        # AI解析によるユーザーの意図分析（音声チャットと同じ高度分析）
+        current_app.logger.info(f"AI意図解析開始: '{message[:50]}...'")
+        ai_analysis = ai_analyze_user_intent(message)
+        current_app.logger.info(f"AI意図解析結果: {ai_analysis}")
+        
+        # 必要に応じてAPIを呼び出し
+        weather_data = None
+        nearby_places = None
+        
+        # 天気情報が必要な場合のみ取得（AI判定による詳細天気）
+        if ai_analysis.get('needs_weather') and location_data:
+            current_app.logger.info("AI判定による詳細天気情報を取得中...")
+            time_spec = ai_generate_time_specification(ai_analysis.get('weather_analysis', {}))
+            weather_data = get_detailed_weather_info(event_id, location_data, time_spec)
+        
+        # 場所情報が必要な場合のみ取得（AI判定による拡張場所検索）
+        if ai_analysis.get('needs_location') and location_data:
+            current_app.logger.info("AI判定による拡張場所検索を実行中...")
+            nearby_places = ai_enhanced_nearby_places(
+                location_data['latitude'], 
+                location_data['longitude'],
+                ai_analysis.get('location_analysis', {})
+            )
+        
+        # 過去の会話履歴取得（簡潔化）
         chat_history = []
         try:
-            messages = EventMessage.query.filter_by(event_id=event_id).order_by(EventMessage.timestamp.desc()).limit(5).all()
+            messages = EventMessage.query.filter_by(event_id=event_id).order_by(EventMessage.timestamp.desc()).limit(3).all()
             chat_history = [
                 {
                     "content": msg.content,
-                    "is_bot": msg.message_type.startswith('bot_') or msg.message_type == 'bot',  # bot_で始まるメッセージタイプとbotをbotとして扱う
+                    "is_bot": msg.message_type.startswith('bot_') or msg.message_type == 'bot',
                     "timestamp": msg.timestamp.isoformat() if msg.timestamp else None
                 }
-                for msg in messages
+                for msg in messages if msg.content
             ]
-            chat_history.reverse()  # 古い順に並べ替え
+            chat_history.reverse()
         except Exception as e:
             current_app.logger.error(f"会話履歴取得エラー: {str(e)}")
-            # 履歴取得に失敗しても処理は続行
         
-        # メッセージを分析して必要な情報を判断
-        try:
-            # アプリケーションコンテキストを確保して分析を実行
-            analysis = analyze_message_needs(message, event.title)
-        except Exception as e:
-            current_app.logger.error(f"メッセージ分析エラー: {str(e)}")
-            analysis = {
-                "needs_weather": False,
-                "needs_location": False
-            }
+        # AI解析に基づくインテリジェントプロンプトを作成（音声チャットと同じシステム）
+        system_prompt = create_ai_intelligent_prompt(
+            character_id, 
+            message, 
+            ai_analysis, 
+            weather_data, 
+            nearby_places
+        )
         
-        current_app.logger.info(f"メッセージ分析結果: {analysis}")
+        # ChatGPT APIでレスポンスを生成（音声チャットと同じ設定）
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+        if not openai_api_key:
+            raise Exception("OPENAI_API_KEY環境変数が設定されていません")
         
-        # 追加情報の初期化
-        additional_info = {}
+        client = openai.OpenAI(api_key=openai_api_key)
         
-        # 天気情報が必要な場合は取得
-        if analysis.get('needs_weather', False):
-            current_app.logger.info("天気情報を取得します")
-            try:
-                weather_info = get_event_weather_info(event_id, location_data)
-                additional_info['weather_info'] = weather_info.get('weather_info')
-            except Exception as e:
-                current_app.logger.error(f"天気情報取得エラー: {str(e)}")
+        # 会話履歴を考慮したメッセージ構築
+        messages_for_api = [{"role": "system", "content": system_prompt}]
         
-        # 位置情報が必要な場合は取得
-        if analysis.get('needs_location', False) and location_data and 'latitude' in location_data and 'longitude' in location_data:
-            current_app.logger.info("位置情報と周辺施設情報を取得します")
-            try:
-                place_info = get_place_info_for_prompt(
-                    location_data["latitude"],
-                    location_data["longitude"]
-                )
-                additional_info['location_info'] = place_info
-            except Exception as e:
-                current_app.logger.error(f"位置情報取得エラー: {str(e)}")
+        # 簡潔な履歴を追加
+        if chat_history:
+            recent_history = chat_history[-2:] if len(chat_history) > 2 else chat_history
+            for msg in recent_history:
+                role = "assistant" if msg.get("is_bot") else "user"
+                messages_for_api.append({"role": role, "content": msg.get("content", "")})
         
-        # アドバイザーの応答を生成
-        try:
-            # アプリケーションコンテキストを確保して応答を生成
-            advisor_response = generate_advisor_response(
-                message=message,
-                event_title=event.title,
-                character_id=character_id,
-                chat_history=chat_history,
-                additional_info=additional_info
-            )
-        except Exception as e:
-            current_app.logger.error(f"アドバイザー応答生成エラー: {str(e)}")
-            # キャラクターごとのエラー応答
-            error_responses = {
-                "nyanta": "ごめんニャ、ちょっと考えるのに時間がかかってるニャ。もう少し待ってほしいニャ。",
-                "hitsuji": "申し訳ありません～。少し考えるのに時間がかかっているようです～。もう一度お願いできますか～？",
-                "koko": "ごめんね！ちょっと今考え中で時間がかかってるみたい！もう一度聞いてくれる？",
-                "fukurou": "申し訳ございません。只今処理に時間を要しております。少々お待ちいただくか、再度ご質問いただけますと幸いです。",
-                "toraberu": "おっと！ちょっと今考えるのに時間かかってるみたいだぜ！もう一度聞いてくれるかな？"
-            }
-            advisor_response = error_responses.get(
-                character_id,
-                "申し訳ありません、応答の生成中にエラーが発生しました。もう一度お試しください。"
-            )
+        # 最新のユーザーメッセージを追加
+        messages_for_api.append({"role": "user", "content": message})
+        
+        current_app.logger.info("ChatGPT API呼び出し開始（テキストチャット版）")
+        chat_response = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=messages_for_api,
+            max_tokens=200,  # テキストチャット用に調整
+            temperature=0.8
+        )
+        
+        advisor_response = chat_response.choices[0].message.content
+        current_app.logger.info(f"AI応答生成成功 (GPT-4.1-mini): {advisor_response[:100]}...")
         
         # アドバイザーの応答をメッセージとして保存
         bot_message = EventMessage(
             id=str(uuid.uuid4()),
             event_id=event_id,
             content=advisor_response,
-            message_type=f'bot_{character_id}',  # キャラクターごとに異なるメッセージタイプを設定
+            message_type=f'bot_{character_id}',
             timestamp=datetime.now(JST),
-            metadata={"character_id": character_id}
+            metadata=json.dumps({"character_id": character_id})
         )
         
         db.session.add(bot_message)
         db.session.commit()
         
-        # レスポンスを返す
+        # レスポンスを返す（音声チャットと同様のデバッグ情報付き）
         return jsonify({
             'response': advisor_response,
-            'message': 'アドバイザー応答を生成しました',
+            'message': 'AI判定によるアドバイザー応答を生成しました',
             'message_id': bot_message.id,
-            'analysis': analysis
+            'debug_info': {
+                'ai_analysis': ai_analysis,
+                'weather_used': weather_data is not None,
+                'location_used': nearby_places is not None,
+                'weather_data': weather_data,
+                'location_count': len(nearby_places) if nearby_places else 0
+            }
         }), 200
         
     except Exception as e:
-        current_app.logger.error(f"アドバイザー応答生成エラー: {str(e)}")
+        current_app.logger.error(f"AI判定アドバイザー応答生成エラー: {str(e)}")
         current_app.logger.error(traceback.format_exc())
-        return jsonify({"error": f"アドバイザー応答の生成に失敗しました: {str(e)}"}), 500
+        
+        # キャラクターごとのエラー応答
+        error_responses = {
+            "nyanta": "ごめんニャ、ちょっと今処理が混んでるみたいニャ。もう一度話しかけてくれるニャ？💫",
+            "hitsuji": "申し訳ありません～。少し処理に時間がかかっているようです～。もう一度お願いできますか～？✨",
+            "koko": "ごめんね！ちょっと今システムが忙しいみたい！もう一度聞いてくれる？🌟",
+            "fukurou": "申し訳ございません。現在処理に時間を要しております。少々お待ちいただくか、再度ご質問いただけますと幸いです📚💫",
+            "toraberu": "おっと！ちょっと今システムが忙しいみたいだぜ！もう一度話しかけてくれるかな？🗺️✈️"
+        }
+        
+        fallback_response = error_responses.get(
+            character_id,
+            "申し訳ありません、AI応答の生成中にエラーが発生しました。もう一度お試しください。"
+        )
+        
+        # エラー時もメッセージとして保存
+        try:
+            bot_message = EventMessage(
+                id=str(uuid.uuid4()),
+                event_id=event_id,
+                content=fallback_response,
+                message_type=f'bot_{character_id}',
+                timestamp=datetime.now(JST),
+                metadata=json.dumps({"character_id": character_id, "error": True})
+            )
+            db.session.add(bot_message)
+            db.session.commit()
+            
+            return jsonify({
+                'response': fallback_response,
+                'message': 'エラー時のフォールバック応答を生成しました',
+                'message_id': bot_message.id,
+                'error': str(e)
+            }), 500
+        except:
+            return jsonify({"error": f"AI判定アドバイザー応答の生成に失敗しました: {str(e)}"}), 500
 
 # CORSヘッダー付きのレスポンスを作成するヘルパー関数
 def create_cors_response(data, status_code=200):

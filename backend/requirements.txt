@@ -8,6 +8,7 @@ mysql-connector-python==8.0.32
 pymysql==1.0.2
 werkzeug==2.2.3
 Flask-JWT-Extended==4.5.2
+Flask-JWT-Extended==4.5.2
 
 # S3互換API用
 boto3==1.26.84
@@ -18,3 +19,27 @@ openai>=1.14.0
 
 # HTTP Requests
 requests>=2.31.0
+
+# OpenAI API
+openai>=1.14.0
+
+# HTTP Requests
+requests>=2.31.0
+
+#　機械学習用ライブラリ
+numpy>=1.20
+scikit-learn>=1.0
+janome>=0.4
+joblib>=1.0
+
+# OCR（年齢認証）用ライブラリ
+easyocr>=1.7.0
+Pillow>=9.0.0
+
+# 音声処理用ライブラリ
+pydub>=0.25.1
+ffmpeg-python>=0.2.0
+
+# 時間処理用ライブラリ
+pytz>=2023.3
+

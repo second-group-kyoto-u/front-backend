@@ -1,0 +1,322 @@
+.voiceChatOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.voiceChatModal {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 75vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  margin-bottom: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  background: linear-gradient(135deg, #5c4033, #7a5a4a);
+  color: white;
+}
+
+.characterInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.characterAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid white;
+}
+
+.characterName {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.closeButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 上部コントロールエリア */
+.topControls {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80px;
+}
+
+/* スクロール可能なコンテンツエリア */
+.scrollableContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  max-height: calc(75vh - 160px); /* 75vhベースに変更 */
+  text-align: center;
+}
+
+/* スクロールバーのスタイル */
+.scrollableContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollableContent::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.scrollableContent::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.scrollableContent::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.content {
+  padding: 30px;
+  text-align: center;
+}
+
+.error {
+  background: #fee;
+  color: #c33;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #c33;
+}
+
+.infoArea {
+  background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(92, 64, 51, 0.1);
+}
+
+.locationInfo {
+  color: #5c4033;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-direction: column;
+}
+
+.updateTime {
+  font-size: 12px;
+  color: #8a6b5a;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.weatherInfo {
+  color: #5c4033;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.statusArea {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.recordingStatus,
+.processingStatus,
+.playingStatus {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  color: #5c4033;
+}
+
+.recordingIndicator {
+  width: 12px;
+  height: 12px;
+  background: #ff4444;
+  border-radius: 50%;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-top: 2px solid #5c4033;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.playingIndicator {
+  width: 12px;
+  height: 12px;
+  background: #4CAF50;
+  border-radius: 50%;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.responseArea {
+  background: #f9f7f1;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.responseLabel {
+  font-weight: 600;
+  color: #5c4033;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.responseText {
+  color: #333;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+.controls {
+  margin-bottom: 20px;
+}
+
+.recordButton,
+.stopButton {
+  background: linear-gradient(135deg, #5c4033, #7a5a4a);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(92, 64, 51, 0.3);
+}
+
+.recordButton:hover,
+.stopButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(92, 64, 51, 0.4);
+}
+
+.stopButton {
+  background: linear-gradient(135deg, #e53e3e, #c53030);
+}
+
+.stopButton:hover {
+  box-shadow: 0 6px 20px rgba(229, 62, 62, 0.4);
+}
+
+.micIcon,
+.stopIcon {
+  font-size: 18px;
+}
+
+.instructions {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.instructions p {
+  margin: 5px 0;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 600px) {
+  .voiceChatModal {
+    width: 95%;
+    max-height: 80vh;  /* 90vhから80vhに変更 */
+    margin-bottom: 15px;  /* モバイルでも下部余白を追加 */
+  }
+
+  .topControls {
+    padding: 15px;
+    min-height: 70px;
+  }
+
+  .scrollableContent {
+    padding: 15px;
+    max-height: calc(80vh - 140px);  /* 80vhベースに変更 */
+  }
+
+  .header {
+    padding: 15px;
+  }
+
+  .characterName {
+    font-size: 16px;
+  }
+
+  .recordButton,
+  .stopButton {
+    font-size: 14px;
+    padding: 12px 20px;
+  }
+} 

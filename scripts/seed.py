@@ -332,7 +332,18 @@ with app.app_context():
     ]
     
     user_ids = {}
-    for user_data in users:
+    age_statuses = ['none', 'rejected', 'extraction_failed', 'approved', 'pending']  # 様々な年齢認証ステータス
+    
+    for i, user_data in enumerate(users):
+        # test@example.comは年齢認証未実施に設定
+        if user_data["email"] == "test@example.com":
+            age_status = 'none'
+        else:
+            # その他のユーザーは順番に異なるステータスを設定
+            age_status = age_statuses[i % len(age_statuses)]
+        
+        is_age_verified = age_status == 'approved'
+        
         user = User(
             id=user_data["id"],
             email_address=user_data["email"],
@@ -341,7 +352,9 @@ with app.app_context():
             profile_message=user_data["profile"],
             gender=user_data["gender"],
             living_place=user_data["living_place"],
-            is_certificated=True
+            is_certificated=True,
+            age_verification_status=age_status,
+            is_age_verified=is_age_verified
         )
         user.set_password(user_data["password"])
         db.session.add(user)
@@ -353,9 +366,11 @@ with app.app_context():
         image_url = upload_image(MINIO_BUCKET, user_data["image_path"], filename)
         if image_url:
             user.user_image_url = image_url
+        
+        print(f"👤 ユーザー {user_data['name']} ({user_data['email']}) - 年齢認証ステータス: {age_status}")
     
     db.session.commit()
-    print("✅ ユーザーを追加しました")
+    print("✅ ユーザーを追加しました（年齢認証ステータス設定済み）")
     
     # イベント画像をアップロード
     event_images = {}
@@ -742,8 +757,16 @@ with app.app_context():
     
     # イベントの作成とIDの取得
     event_ids = []
-    for event_data in events:
+    for i, event_data in enumerate(events):
         tags = event_data.pop("tags", [])  # tagsキーを取り出して削除
+        
+        # ステータスを設定（最初のイベントは開催中、2番目は終了、それ以外は開催予定）
+        if i == 3:
+            status = 'started'
+        elif i == 4:
+            status = 'ended'
+        else:
+            status = 'pending'
         
         event = Event(
             id=event_data["id"],
@@ -756,7 +779,7 @@ with app.app_context():
             current_persons=event_data["current"],
             published_at=event_data["published_at"],
             timestamp=event_data["published_at"],
-            status='pending'
+            status=status
         )
         db.session.add(event)
         event_ids.append(event_data["id"])

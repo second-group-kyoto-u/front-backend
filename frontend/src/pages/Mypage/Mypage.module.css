@@ -73,6 +73,22 @@
     background-color: #f0f0f0;
   }
   
+  .verifyAgeButton {
+    padding: 10px 20px;
+    background-color: #ff9800;
+    color: white;
+    border: 1px solid #ff9800;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+  }
+  
+  .verifyAgeButton:hover {
+    background-color: #f57c00;
+  }
+  
   .userInfo {
     margin-bottom: 30px;
     color: #5c4033;

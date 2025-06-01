@@ -1,93 +1,114 @@
-import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import axios from '@/lib/axios'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import styles from './VerificationSuccess.module.css'
 
 function VerificationSuccessPage() {
-  const { token } = useParams<{ token: string }>()
-  const [verified, setVerified] = useState(false)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [status, setStatus] = useState('approved') // approved, rejected, extraction_failed
+  const [age, setAge] = useState<number | null>(null)
   
   useEffect(() => {
-    const verifyEmail = async () => {
-      if (!token) {
-        setError('無効な認証リンクです')
-        setLoading(false)
-        return
-      }
-      
-      try {
-        await axios.get(`/auth/verify-email/${token}`)
-        setVerified(true)
-        setLoading(false)
-      } catch (err: any) {
-        console.error('メール認証エラー:', err)
-        setError('メール認証に失敗しました。リンクが無効または期限切れの可能性があります。')
-        setLoading(false)
-      }
+    // 前のページから渡されたstate情報を取得
+    if (location.state) {
+      const { status: resultStatus, age: resultAge } = location.state as any
+      setStatus(resultStatus || 'approved')
+      setAge(resultAge || null)
     }
     
-    verifyEmail()
-  }, [token])
+    // 成功の場合のみ自動遷移
+    if (status === 'approved') {
+      const timer = setTimeout(() => {
+        navigate('/mypage')
+      }, 5000)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [navigate, status])
   
-  if (loading) {
-    return (
-      <div className="max-w-md mx-auto p-6 bg-white rounded shadow-md mt-10 text-center">
-        <h2 className="text-2xl font-bold mb-6">メール認証中...</h2>
-        <p>しばらくお待ちください。</p>
-      </div>
-    )
+  const getStatusInfo = () => {
+    switch (status) {
+      case 'approved':
+        return {
+          icon: '✓',
+          title: '年齢認証が完了しました！',
+          iconClass: styles.successIcon,
+          messages: [
+            '年齢認証書類の確認が完了しました。',
+            age ? `推定年齢: ${age}歳` : '',
+            'すべての機能をご利用いただけます。'
+          ].filter(Boolean)
+        }
+      case 'rejected':
+        return {
+          icon: '✗',
+          title: '年齢認証に失敗しました',
+          iconClass: styles.errorIcon,
+          messages: [
+            '申し訳ございませんが、年齢認証を通過できませんでした。',
+            age ? `推定年齢: ${age}歳` : '',
+            '18歳以上の方のみご利用いただけます。'
+          ].filter(Boolean)
+        }
+      case 'extraction_failed':
+      default:
+        return {
+          icon: '⚠',
+          title: '書類の読み取りに失敗しました',
+          iconClass: styles.warningIcon,
+          messages: [
+            '書類から年齢情報を読み取れませんでした。',
+            '以下の点をご確認の上、再度お試しください：',
+            '• 書類全体が鮮明に写っている',
+            '• 光の反射で文字が見えない部分がない',
+            '• 生年月日が明確に記載されている'
+          ]
+        }
+    }
   }
   
+  const statusInfo = getStatusInfo()
+  
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded shadow-md mt-10 text-center">
-      <h2 className="text-2xl font-bold mb-6">メール認証</h2>
-      
-      {verified ? (
-        <div>
-          <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 text-left" role="alert">
-            <p>メールアドレスの認証が完了しました。</p>
-          </div>
-          
-          <p className="mb-6">
-            アカウントが有効化されました。ログインしてサービスをご利用ください。
-          </p>
-          
-          <Link 
-            to="/login" 
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline inline-block"
-          >
-            ログインページへ
-          </Link>
+    <div className={styles.pageBackground}>
+      <div className={styles.container}>
+        <div className={statusInfo.iconClass}>{statusInfo.icon}</div>
+        <h2 className={styles.title}>{statusInfo.title}</h2>
+        
+        <div className={styles.message}>
+          {statusInfo.messages.map((message, index) => (
+            <p key={index}>{message}</p>
+          ))}
         </div>
-      ) : (
-        <div>
-          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 text-left" role="alert">
-            <p>{error}</p>
-          </div>
-          
-          <p className="mb-6">
-            メール認証に問題が発生しました。
-            お手数ですが、再度登録を行うか、サポートにお問い合わせください。
-          </p>
-          
-          <div className="flex flex-col space-y-4">
-            <Link 
-              to="/register" 
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline inline-block"
-            >
-              新規登録ページへ
-            </Link>
-            
-            <Link 
-              to="/login" 
-              className="text-blue-500 hover:text-blue-700"
-            >
-              ログインページへ戻る
-            </Link>
-          </div>
+        
+        <div className={styles.buttonGroup}>
+          {status === 'approved' ? (
+            <>
+              <Link to="/mypage" className={styles.primaryButton}>
+                マイページに戻る
+              </Link>
+              <Link to="/events" className={styles.secondaryButton}>
+                イベント一覧を見る
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/age-verification" className={styles.primaryButton}>
+                再度年齢認証を行う
+              </Link>
+              <Link to="/mypage" className={styles.secondaryButton}>
+                マイページに戻る
+              </Link>
+            </>
+          )}
         </div>
-      )}
+        
+        {status === 'approved' && (
+          <p className={styles.autoRedirect}>
+            5秒後に自動的にマイページに移動します...
+          </p>
+        )}
+      </div>
     </div>
   )
 }

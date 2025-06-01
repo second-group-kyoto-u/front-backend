@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchProtected, updateProfile } from '@/api/auth/protected'
-import { getTags, Tag } from '@/api/tag'
+import { getTags } from '@/api/tag'
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import CreatableSelect from 'react-select/creatable'
@@ -31,14 +31,13 @@ interface UpdateUserData {
   favorite_tags: string[];
 }
 
-
-
 function EditMypage() {
   const { token, logout } = useAuth()
   const [userData, setUserData] = useState<UserData | null>(null)
   const [message, setMessage] = useState('')
   const [selectedTags, setSelectedTags] = useState<{ value: string; label: string }[]>([])
   const [allTagOptions, setAllTagOptions] = useState<{ value: string; label: string }[]>([])
+  const [isLoading, setIsLoading] = useState(true) // ローディング状態を追加
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -47,64 +46,63 @@ function EditMypage() {
       navigate('/login')
       return
     }
-  
+
     const fetchData = async () => {
       try {
-        const res = await fetchProtected()
-        const data = res as MypageResponse
-        setUserData(data.user)
-        setMessage(data.message)
-  
-        const tags = await getTags()
-        const tagOptions = tags.map(tag => ({
+        setIsLoading(true)
+        
+        // ユーザーデータとタグデータを並行で取得
+        const [userRes, tagsRes] = await Promise.all([
+          fetchProtected(),
+          getTags()
+        ])
+        
+        const responseData = userRes as any // 実際の構造がインターフェースと一致しないため型を修正
+        
+        // レスポンスデータからユーザー情報を抽出し、favorite_tagsを追加
+        const userDataWithTags = {
+          ...responseData.user,
+          favorite_tags: responseData.favorite_tags || []
+        }
+        
+        setUserData(userDataWithTags)
+        setMessage(responseData.message)
+
+        // 全てのタグオプションを設定
+        const tagOptions = tagsRes.map(tag => ({
           value: tag.tag_name,
           label: tag.tag_name
         }))
         setAllTagOptions(tagOptions)
-  
-        // ユーザーのタグと照合して初期選択状態にする
-        if (data.user.favorite_tags) {
-          const initialSelected = data.user.favorite_tags.map(tag => ({
+
+        // ユーザーが選択済みのタグを設定 - ルートレベルからfavorite_tagsを取得
+        if (responseData.favorite_tags && responseData.favorite_tags.length > 0) {
+          const initialSelected = responseData.favorite_tags.map(tag => ({
             value: tag,
             label: tag
           }))
+          console.log('初期選択タグを設定:', initialSelected) // デバッグ用
           setSelectedTags(initialSelected)
         }
+        
       } catch (err) {
         console.error("❌ 初期データ取得エラー:", err)
         logout()
         navigate('/login')
+      } finally {
+        setIsLoading(false)
       }
     }
-  
-    fetchData()
-  }, [token])  
 
-  // 初期化：userData.favorite_tags から selectedTags を作成
-  useEffect(() => {
-    if (userData?.favorite_tags) {
-      const initialTags = userData.favorite_tags.map(tag => ({
-        value: tag,
-        label: tag
-      }))
-      setSelectedTags(initialTags)
-    }
-  }, [userData])
+    fetchData()
+  }, [token, logout, navigate])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (!userData) return
-    const { name, value, multiple, options } = e.target
-
-    if (multiple) {
-      const selectedValues = Array.from(options)
-        .filter(option => option.selected)
-        .map(option => option.value)
-      setUserData({ ...userData, [name]: selectedValues })
-    } else {
-      setUserData({ ...userData, [name]: value })
-    }
+    
+    const { name, value } = e.target
+    setUserData({ ...userData, [name]: value })
   }
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -117,11 +115,11 @@ function EditMypage() {
         gender: userData.gender,
         favorite_tags: selectedTags.map(tag => tag.value)
       }
+
       try {
         await updateProfile(updateData)
         alert('プロフィールを更新しました！')
         navigate('/mypage')
-        window.location.reload()
       } catch (err) {
         console.error('プロフィール更新エラー:', err)
         alert('更新に失敗しました。もう一度お試しください。')
@@ -131,10 +129,20 @@ function EditMypage() {
     }
   }
 
-
   const handleLogout = () => {
     logout()
     navigate('/login')
+  }
+
+  // ローディング中の表示
+  if (isLoading) {
+    return (
+      <div className={styles.pageBackground}>
+        <div className={styles.container}>
+          <p>読み込み中...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -143,7 +151,7 @@ function EditMypage() {
         <div className={styles.headerRow}>
           <button
             className={styles.backButton}
-            onClick={() => navigate(-1 as any)}
+            onClick={() => navigate('/mypage')}
           >
             ←
           </button>
@@ -218,14 +226,34 @@ function EditMypage() {
                 isMulti
                 options={allTagOptions}
                 value={selectedTags}
-                onChange={(selected: readonly { value: string; label: string }[] | null) =>
+                onChange={(selected) => {
+                  console.log('タグ選択変更:', selected) // デバッグ用
                   setSelectedTags(selected ? [...selected] : [])
-                }                
+                }}
                 placeholder="タグを選択または入力してください"
                 className={styles.tagSelect}
+                isClearable
+                isSearchable
+                styles={{
+                  option: (provided) => ({
+                    ...provided,
+                    color: '#5c4033',
+                  }),
+                  multiValueLabel: (provided) => ({
+                    ...provided,
+                    color: '#5c4033',
+                  }),
+                  input: (provided) => ({
+                    ...provided,
+                    color: '#5c4033',
+                  }),
+                  placeholder: (provided) => ({
+                    ...provided,
+                    color: '#5c4033',
+                  }),
+                }}
               />
             </div>
-
 
             <button type="submit" className={styles.submitButton}>
               プロフィールを更新
