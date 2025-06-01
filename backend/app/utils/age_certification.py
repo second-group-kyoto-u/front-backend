@@ -2,13 +2,20 @@
 import easyocr
 import re
 from datetime import datetime
+import numpy as np
 
 
 # 処理を一つの関数に書く
 def age_certify(image):
+    # PIL ImageをEasyOCRが処理できる形式に変換
+    if hasattr(image, 'mode'):  # PIL Imageの場合
+        image_array = np.array(image)
+    else:
+        image_array = image
+        
     # OCR実行
     reader = easyocr.Reader(['ja'])
-    results = reader.readtext(image, contrast_ths=0.05, adjust_contrast=0.7, decoder='beamsearch', detail=0)  # テキストのみ抽出
+    results = reader.readtext(image_array, contrast_ths=0.05, adjust_contrast=0.7, decoder='beamsearch', detail=0)  # テキストのみ抽出
     # フラット化＆前後連結しておく
     texts = [t.strip() for t in results if t.strip()]
     windows = [''.join(texts[i:i+3]) for i in range(len(texts)-2)]

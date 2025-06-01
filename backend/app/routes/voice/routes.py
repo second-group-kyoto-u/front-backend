@@ -573,7 +573,7 @@ def voice_chat():
         return jsonify({"error": f"OpenAI APIエラー: {str(e)}"}), 500
     except Exception as e:
         print(f"音声チャットエラー: {e}")
-        return jsonify({"error": f"音声処理エラー: {str(e)}"}), 500
+        return jsonify({"error": f"音声処理エラー: {str(e)}"}), 500 
 
 def ai_analyze_user_intent(user_text: str) -> dict:
     """生成AIを使ってユーザーの意図を分析"""

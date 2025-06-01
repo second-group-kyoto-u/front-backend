@@ -59,14 +59,16 @@ export const uploadEventImage = async (
 // 年齢認証用画像アップロードAPI
 export type AgeVerificationUploadResponse = {
   message: string;
+  status: string;  // 'approved', 'rejected', 'extraction_failed'
+  age?: number | null;
   user?: {
     id: string;
     user_name: string;
     is_age_verified: boolean;
   };
-};
+}
 
-export const uploadAgeVerificationImage = async (
+const uploadAgeVerificationImageImpl = async (
   file: File,
   token: string
 ): Promise<AgeVerificationUploadResponse> => {
@@ -83,3 +85,5 @@ export const uploadAgeVerificationImage = async (
   })
   return res.data
 }
+
+export { uploadAgeVerificationImageImpl as uploadAgeVerificationImage }
