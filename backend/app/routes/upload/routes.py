@@ -157,7 +157,7 @@ def upload_age_verification():
     age = None
     error_message = None
     
-    try:        
+    try:
         # PILで画像を開く
         try:
             image = Image.open(io.BytesIO(image_data))
@@ -193,7 +193,7 @@ def upload_age_verification():
         status_message = "書類の読み取りに失敗しました。鮮明な画像で再度お試しください。"
 
     print(f"[UPLOAD] 年齢認証処理完了: result={age_verification_result}, age={age}")
-    
+
     # 年齢認証のステータスを更新
     user.age_verification_status = age_verification_result
 

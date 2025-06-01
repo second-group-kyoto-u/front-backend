@@ -15,7 +15,7 @@ import pytz
 voice_bp = Blueprint("voice", __name__)
 
 # 専用のOpenAI APIキーを取得
-CHAT_OPENAI_API_KEY = os.getenv("CHAT_OPENAI_API")
+OPENAI_API_KEY_KEY = os.getenv("OPENAI_API_KEY")
 
 def get_character_system_prompt(character_id: str) -> str:
     """キャラクターIDに基づいてシステムプロンプトを取得"""
@@ -447,8 +447,8 @@ def voice_chat():
     if error_response:
         return jsonify(error_response), error_code
 
-    if not CHAT_OPENAI_API_KEY:
-        return jsonify({"error": "CHAT_OPENAI_API環境変数が設定されていません"}), 500
+    if not OPENAI_API_KEY_KEY:
+        return jsonify({"error": "OPENAI_API_KEY環境変数が設定されていません"}), 500
 
     try:
         data = request.get_json()
@@ -460,8 +460,8 @@ def voice_chat():
         if not all([character_id, audio_data, event_id]):
             return jsonify({"error": "必要なパラメータが不足しています"}), 400
 
-        # WhisperとTTS用のOpenAIクライアント（CHAT_OPENAI_API使用）
-        audio_client = openai.OpenAI(api_key=CHAT_OPENAI_API_KEY)
+        # WhisperとTTS用のOpenAIクライアント（OPENAI_API_KEY使用）
+        audio_client = openai.OpenAI(api_key=OPENAI_API_KEY_KEY)
 
         # base64音声データをデコード
         audio_bytes = base64.b64decode(audio_data)
@@ -472,7 +472,7 @@ def voice_chat():
             temp_audio.flush()
             
             try:
-                # Whisper APIで音声をテキストに変換（CHAT_OPENAI_API使用）
+                # Whisper APIで音声をテキストに変換（OPENAI_API_KEY使用）
                 with open(temp_audio.name, "rb") as audio_file:
                     transcript = audio_client.audio.transcriptions.create(
                         model="whisper-1",
@@ -540,7 +540,7 @@ def voice_chat():
                 character_voice = get_character_voice(character_id)
                 print(f"使用する音声: {character_voice} (キャラクター: {character_id})")
                 
-                # TTS APIで音声を生成（CHAT_OPENAI_API使用）
+                # TTS APIで音声を生成（OPENAI_API_KEY使用）
                 tts_response = audio_client.audio.speech.create(
                     model="tts-1",
                     voice=character_voice,  # キャラクターごとの音声を使用
