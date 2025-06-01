@@ -43,7 +43,7 @@
 
 .fileInputGroup {
   margin-bottom: 25px;
-  display: inline-block;
+  display: block;
   width: 100%; /* 全幅に広げる */
 }
 

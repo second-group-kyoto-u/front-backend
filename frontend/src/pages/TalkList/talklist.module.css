@@ -5,6 +5,7 @@
   background-color: #f0f2ff; /* Light grey background for the whole page */
   min-height: 100vh; /* Ensure it takes full height */
   box-sizing: border-box; /* Include padding in element's total width and height */
+  overflow-x: hidden;
 }
 
 .header {
@@ -76,6 +77,8 @@
   display: flex;
   align-items: center;
   gap: 0.75rem; /* Use gap for spacing between avatar and text */
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .chatItem:hover {
@@ -92,6 +95,7 @@
   align-items: center;
   flex: 1;
   gap: 0.75rem; /* Consistent gap */
+  min-width: 0;
 }
 
 .chatAvatar {
@@ -115,6 +119,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .chatTitle {
@@ -125,6 +130,8 @@
   white-space: nowrap; /* Prevent wrapping for names */
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .chatDescription {
@@ -138,6 +145,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .chatMeta {
