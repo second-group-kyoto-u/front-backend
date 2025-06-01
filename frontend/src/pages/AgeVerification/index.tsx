@@ -11,8 +11,7 @@ const AgeVerification: React.FC = () => {
   const [message, setMessage] = useState<string>('');
   const navigate = useNavigate();
   // token: 認証トークンをAPIリクエストヘッダーに含めるため
-  // fetchProtectedUser: 年齢認証後、ユーザー情報を再取得してUIに反映させるため (例: Mypageの表示更新)
-  const { token, fetchProtectedUser } = useAuth(); 
+  const { token } = useAuth();
 
   // ファイルが選択されたときのハンドラー
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,16 +53,16 @@ const AgeVerification: React.FC = () => {
       setMessage(`${data.message}`); // バックエンドからのメッセージをそのまま表示
       console.log('Upload successful:', data);
 
-      // バックエンドから返された最新のユーザー情報でフロントエンドの状態を更新
-      // fetchProtectedUser() を呼び出すことで、Mypageでデータが再取得され最新の状態になることを期待します。
-      if (data.user) {
-        fetchProtectedUser(); // ユーザー情報を再取得してMypageなどに反映させる
-      }
-      
-      // 成功したらマイページへ遷移
+      // 成功したら結果ページへ遷移（結果情報を渡す）
       setTimeout(() => {
-        navigate('/mypage');
-      }, 3000); // 3秒後に遷移
+        navigate('/verification-success', {
+          state: {
+            status: data.status,
+            age: data.age,
+            message: data.message
+          }
+        });
+      }, 2000); // 2秒後に遷移
 
     } catch (error: any) { // エラーをany型でキャッチし、詳細なメッセージを抽出
       console.error('Upload failed:', error);

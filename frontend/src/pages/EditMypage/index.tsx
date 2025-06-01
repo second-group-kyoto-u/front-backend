@@ -151,7 +151,7 @@ function EditMypage() {
         <div className={styles.headerRow}>
           <button
             className={styles.backButton}
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/mypage')}
           >
             ←
           </button>

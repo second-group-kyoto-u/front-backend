@@ -55,3 +55,31 @@ export const uploadEventImage = async (
   })
   return res.data
 }
+
+// 年齢認証用画像アップロードAPI
+export type AgeVerificationUploadResponse = {
+  message: string;
+  user?: {
+    id: string;
+    user_name: string;
+    is_age_verified: boolean;
+  };
+};
+
+export const uploadAgeVerificationImage = async (
+  file: File,
+  token: string
+): Promise<AgeVerificationUploadResponse> => {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'multipart/form-data',
+    'Authorization': `Bearer ${token}`
+  }
+
+  const res = await axios.post<AgeVerificationUploadResponse>('upload/age-verification', formData, {
+    headers
+  })
+  return res.data
+}

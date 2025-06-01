@@ -133,6 +133,8 @@ def create_app():
     from app.routes.tag_routes import tag_bp
     app.register_blueprint(tag_bp, url_prefix="/api/tag")
 
+    from app.routes.voice.routes import voice_bp
+    app.register_blueprint(voice_bp, url_prefix="/api/voice")
 
     # modelsに定義されたモデルクラスと見て、対応するテーブルをデータベースに作成し、appではモデルクラスを介してデータベーステーブルと対話する。
     with app.app_context():

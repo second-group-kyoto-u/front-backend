@@ -4,8 +4,7 @@ import { uploadImage } from '@/api/upload';
 import { useAuth } from '@/hooks/useAuth';
 import { getDirectMessages, sendDirectMessage } from '@/api/friend';
 import { getUserProfile } from '@/api/user';
-// CSSファイル名がEventTalk.module.cssのままですが、内容に合わせて調整
-import styles from './EventTalk.module.css'; // または './DirectMessage.module.css' に変更することをお勧めします
+import styles from './DirectMessage.module.css';
 
 interface Message {
   id: string;
@@ -216,7 +215,7 @@ const DirectMessagePage = () => {
       <div className={styles.header}>
         <button
           className={styles.backButton}
-          onClick={() => navigate('/talks')} {/* トークリストページへ戻る */}
+          onClick={() => navigate('/talk')}
           aria-label="戻る"
         >
           ←

@@ -66,7 +66,8 @@ def mypage():
         "birthdate": user.birthdate,
         "living_place": user.living_place or "",
         "gender": user.gender or "",
-        "is_certificated": user.is_certificated if hasattr(user, "is_certificated") else False
+        "is_certificated": user.is_certificated if hasattr(user, "is_certificated") else False,
+        "is_age_verified": user.age_verification_status == 'approved' if hasattr(user, "age_verification_status") else False
     }
 
     # イベントデータをJSON形式で返す

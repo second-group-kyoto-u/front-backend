@@ -32,3 +32,14 @@ scikit-learn>=1.0
 janome>=0.4
 joblib>=1.0
 
+# OCR（年齢認証）用ライブラリ
+easyocr>=1.7.0
+Pillow>=9.0.0
+
+# 音声処理用ライブラリ
+pydub>=0.25.1
+ffmpeg-python>=0.2.0
+
+# 時間処理用ライブラリ
+pytz>=2023.3
+

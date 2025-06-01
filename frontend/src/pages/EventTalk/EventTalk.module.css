@@ -249,6 +249,7 @@
   border-radius: 24px;
   padding: 8px 16px;
   font-size: 16px;
+  color: #333;
   resize: none;
   outline: none;
   max-height: 120px;
@@ -647,4 +648,112 @@
 
 .menuItem:hover {
   background-color: #f5f5f5;
+}
+
+/* AI判定結果表示エリア */
+.aiAnalysisDisplay {
+  margin: 12px 16px;
+  background: linear-gradient(135deg, #e8f5e8, #f0f8ff);
+  border: 2px solid #4caf50;
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.aiAnalysisHeader {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2e7d32;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.aiAnalysisContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aiAnalysisRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.aiAnalysisLabel {
+  font-weight: 600;
+  color: #1b5e20;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.aiAnalysisValue {
+  color: #2e7d32;
+  flex: 1;
+  word-break: break-word;
+}
+
+.aiAnalysisValue.used {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.aiAnalysisValue.notUsed {
+  color: #757575;
+}
+
+.closeAiAnalysis {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #666;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.closeAiAnalysis:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 600px) {
+  .aiAnalysisDisplay {
+    margin: 8px 12px;
+    padding: 12px;
+  }
+  
+  .aiAnalysisRow {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .aiAnalysisLabel {
+    min-width: auto;
+  }
 } 

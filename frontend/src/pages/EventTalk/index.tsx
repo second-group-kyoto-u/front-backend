@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { sendEventMessage, getEvent, startEvent, endEvent, getCharacter, getEventWeatherInfo, getAdvisorResponse, getCharacters } from '@/api/event'
 import { uploadImage } from '@/api/upload'
 import { useAuth } from '@/hooks/useAuth'
@@ -7,6 +7,7 @@ import type { EventType } from '@/api/event'
 import type { ExtendedEventMessageType } from '@/types/interface'
 import styles from './EventTalk.module.css'
 import CharacterSelect from './components/CharacterSelect'
+import VoiceChat from './components/VoiceChat'
 
 // キャラクターごとのデフォルト会話内容
 const DEFAULT_CHARACTER_MESSAGES = {
@@ -36,6 +37,7 @@ function EventTalkPage() {
   const { eventId } = useParams<{ eventId: string }>()
   const { token } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -63,6 +65,8 @@ function EventTalkPage() {
     {id: 'toraberu', name: 'トラベル'}
   ]);
   const [showMenu, setShowMenu] = useState(false);
+  const [showVoiceChat, setShowVoiceChat] = useState(false);
+  const [lastAiAnalysis, setLastAiAnalysis] = useState<any>(null); // AI判定結果を保存
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -486,7 +490,7 @@ function EventTalkPage() {
         setSelectedFilePreview(null)
       } else if (newMessage.trim()) {
         if (isAdviserMode) {
-          // アドバイザーモードの場合は、新しいAPIを呼び出す
+          // アドバイザーモードの場合は、新しいAI判定APIを呼び出す
           // 位置情報を取得
           let locationData: { latitude: number; longitude: number; } | undefined = undefined;
           if (userLocation) {
@@ -496,12 +500,49 @@ function EventTalkPage() {
             };
           }
           
-          // アドバイザー応答を取得
-          await getAdvisorResponse(eventId, {
+          console.log('AI判定アドバイザーモードでメッセージを送信中...', {
+            message: newMessage.trim(),
+            character_id: selectedCharacter,
+            location: locationData ? 'あり' : 'なし'
+          });
+          
+          // AI判定アドバイザー応答を取得
+          const response = await getAdvisorResponse(eventId, {
             message: newMessage.trim(),
             character_id: selectedCharacter || undefined,
             location: locationData
           });
+          
+          // AI判定結果をログ出力
+          if (response && response.debug_info) {
+            console.log('🤖 AI判定結果:', {
+              天気API使用: response.debug_info.weather_used ? '✅' : '❌',
+              場所API使用: response.debug_info.location_used ? '✅' : '❌',
+              天気データ: response.debug_info.weather_data,
+              場所データ件数: response.debug_info.location_count,
+              AI分析: response.debug_info.ai_analysis
+            });
+            
+            // AI判定結果を状態に保存
+            setLastAiAnalysis({
+              timestamp: new Date().toLocaleTimeString(),
+              message: newMessage.trim(),
+              character: selectedCharacter,
+              ...response.debug_info
+            });
+            
+            // より詳細な分析結果を表示
+            const analysis = response.debug_info.ai_analysis;
+            if (analysis) {
+              console.log('📊 詳細AI分析:', {
+                天気情報必要: analysis.needs_weather ? '✅' : '❌',
+                場所情報必要: analysis.needs_location ? '✅' : '❌',
+                天気分析: analysis.weather_analysis,
+                場所分析: analysis.location_analysis,
+                全体判定理由: analysis.overall_reasoning
+              });
+            }
+          }
           
         } else {
           // 通常のテキスト送信
@@ -695,11 +736,18 @@ function EventTalkPage() {
 
   // キャラクター変更関数を修正
   const changeCharacter = () => {
-    // CharacterSelectモーダルを表示
-    setShowCharacterModal(true);
-    // メニューを閉じる
-    setShowMenu(false);
-  };
+    setShowCharacterModal(true)
+    setShowMenu(false)
+  }
+
+  const startVoiceChat = () => {
+    if (selectedCharacter) {
+      setShowVoiceChat(true)
+      setShowMenu(false)
+    } else {
+      alert('まずキャラクターを選択してください')
+    }
+  }
 
   // メッセージタイプからキャラクターIDを抽出する関数を追加
   const getCharacterIdFromMessageType = (messageType: string): string | null => {
@@ -751,7 +799,14 @@ function EventTalkPage() {
       <div className={styles.header}>
         <button 
           className={styles.backButton} 
-          onClick={() => navigate(`/event/${eventId}`)}
+          onClick={() => {
+            // 遷移元がTalkListの場合は/talkに戻る、それ以外はイベント詳細に戻る
+            if (location.state?.from === 'talkList') {
+              navigate('/talk')
+            } else {
+              navigate(`/event/${eventId}`)
+            }
+          }}
           aria-label="戻る"
         >
           ←
@@ -1068,10 +1123,65 @@ function EventTalkPage() {
       {showMenu && (
         <div className={styles.menuDropdown}>
           <div className={styles.menuItem} onClick={changeCharacter}>
-            キャラクターを変更
+            👤 キャラクターを変更
+          </div>
+          <div className={styles.menuItem} onClick={startVoiceChat}>
+            🎤 音声で会話
           </div>
         </div>
       )}
+
+      {/* 音声チャットモーダル */}
+      {showVoiceChat && selectedCharacter && (
+        <VoiceChat
+          characterId={selectedCharacter}
+          eventId={eventId || ''}
+          onClose={() => setShowVoiceChat(false)}
+          characterName={characterList.find(c => c.id === selectedCharacter)?.name || selectedCharacter}
+          characterAvatar={characterData?.avatar_url}
+        />
+      )}
+
+      {/* AI判定結果表示（アドバイザーモード時のみ） */}
+      {/* 
+      {isAdviserMode && lastAiAnalysis && (
+        <div className={styles.aiAnalysisDisplay}>
+          <div className={styles.aiAnalysisHeader}>
+            🤖 最新のAI判定結果 ({lastAiAnalysis.timestamp})
+          </div>
+          <div className={styles.aiAnalysisContent}>
+            <div className={styles.aiAnalysisRow}>
+              <span className={styles.aiAnalysisLabel}>メッセージ:</span>
+              <span className={styles.aiAnalysisValue}>"{lastAiAnalysis.message}"</span>
+            </div>
+            <div className={styles.aiAnalysisRow}>
+              <span className={styles.aiAnalysisLabel}>天気API:</span>
+              <span className={`${styles.aiAnalysisValue} ${lastAiAnalysis.weather_used ? styles.used : styles.notUsed}`}>
+                {lastAiAnalysis.weather_used ? '✅ 使用' : '❌ 未使用'}
+              </span>
+            </div>
+            <div className={styles.aiAnalysisRow}>
+              <span className={styles.aiAnalysisLabel}>場所API:</span>
+              <span className={`${styles.aiAnalysisValue} ${lastAiAnalysis.location_used ? styles.used : styles.notUsed}`}>
+                {lastAiAnalysis.location_used ? `✅ 使用 (${lastAiAnalysis.location_count}件)` : '❌ 未使用'}
+              </span>
+            </div>
+            {lastAiAnalysis.ai_analysis?.overall_reasoning && (
+              <div className={styles.aiAnalysisRow}>
+                <span className={styles.aiAnalysisLabel}>AI判定理由:</span>
+                <span className={styles.aiAnalysisValue}>{lastAiAnalysis.ai_analysis.overall_reasoning}</span>
+              </div>
+            )}
+          </div>
+          <button 
+            className={styles.closeAiAnalysis}
+            onClick={() => setLastAiAnalysis(null)}
+          >
+            ×
+          </button>
+        </div>
+      )}
+      */}
     </div>
   )
 }

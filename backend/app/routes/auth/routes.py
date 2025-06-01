@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from app.utils.jwt import generate_token, decode_token
 from app.models.user import get_user_by_email, get_user_by_id, User
 from app.models import db
-from backend.app.utils.email_certification import send_email_verification, send_password_reset_email, verify_token
+from app.utils.email_certification import send_email_verification, send_password_reset_email, verify_token
 import uuid
 from datetime import datetime, timezone, timedelta
 
@@ -12,22 +12,38 @@ auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
+        
+        print(f"ログイン試行: email={email}, password={'*'*len(password) if password else 'None'}")
 
-    user = get_user_by_email(email)
-    if not user:
-        return jsonify({"error": "メールアドレスが異なっています。"}), 401
+        user = get_user_by_email(email)
+        if not user:
+            print(f"ユーザーが見つかりません: email={email}")
+            return jsonify({"error": "メールアドレスが異なっています。"}), 401
+        
+        print(f"ユーザー見つかりました: id={user.id}, email={user.email_address}")
 
-    if not user.check_password(password):
-        return jsonify({"error": "パスワードが異なっています。"}), 401
+        password_check = user.check_password(password)
+        print(f"パスワードチェック結果: {password_check}")
+        
+        if not password_check:
+            print(f"パスワードが一致しません: user_id={user.id}")
+            return jsonify({"error": "パスワードが異なっています。"}), 401
 
-    user.record_login()
-    db.session.commit()
-    
-    token = generate_token(user.id)
-    return jsonify({"token": token})
+        print(f"認証成功: user_id={user.id}")
+        user.record_login()
+        db.session.commit()
+        
+        token = generate_token(user.id)
+        print(f"トークン生成成功: user_id={user.id}")
+        return jsonify({"token": token})
+        
+    except Exception as e:
+        print(f"ログイン処理でエラー: {str(e)}")
+        return jsonify({"error": "ログイン処理でエラーが発生しました"}), 500
 
 @auth_bp.route('/register', methods=['POST'])
 def register():

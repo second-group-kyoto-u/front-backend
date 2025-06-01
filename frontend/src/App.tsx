@@ -14,6 +14,8 @@ import EventTalkPage from './pages/EventTalk'
 import RegisterPage from './pages/Register'
 import TalkListPage from './pages/TalkList'
 import DirectMessagePage from './pages/DirectMessage/index.tsx'
+import AgeVerificationPage from './pages/AgeVerification/index.tsx'
+import VerificationSuccessPage from './pages/VerificationSuccess/index.tsx'
 import './App.css'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AuthRoute } from './components/AuthRoute'
@@ -32,7 +34,7 @@ const RouteLogger = () => {
   return null;
 };
 
-function App(): JSX.Element {
+function App() {
   return (
     <Router>
       <RouteLogger />
@@ -92,14 +94,16 @@ function App(): JSX.Element {
           }
         />
 
-        {/* イベント作成（認証確認なし） */}
+        {/* イベント作成（認証が必要） */}
         <Route
           path="/event/create"
           element={
-            <Layout>
-              {console.log('イベント作成ページをレンダリングします')}
-              <CreateEventPage />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                {console.log('イベント作成ページをレンダリングします')}
+                <CreateEventPage />
+              </Layout>
+            </ProtectedRoute>
           }
         />
 
@@ -107,10 +111,12 @@ function App(): JSX.Element {
         <Route
           path="/event/create/*"
           element={
-            <Layout>
-              {console.log('イベント作成ページ（ワイルドカードあり）をレンダリングします')}
-              <CreateEventPage />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                {console.log('イベント作成ページ（ワイルドカードあり）をレンダリングします')}
+                <CreateEventPage />
+              </Layout>
+            </ProtectedRoute>
           }
         />
 
@@ -152,9 +158,9 @@ function App(): JSX.Element {
           }
         />
 
-        {/* DM */}
+        {/* DM（簡潔なパス） */}
         <Route 
-          path="/friend/:userId/dm"
+          path="/dm/:userId"
           element={
             <Layout>
               <DirectMessagePage />
@@ -162,9 +168,9 @@ function App(): JSX.Element {
           }
         />
 
-        {/* 新規DMの作成 */}
+        {/* 新規DMの作成（簡潔なパス） */}
         <Route 
-          path="/friend/create-DMpage"
+          path="/dm/new"
           element={
             <Layout>
               <CreateNewDMPage />
@@ -172,7 +178,16 @@ function App(): JSX.Element {
           }
         />
 
+        {/* 互換性のため古いパスもサポート */}
+        <Route 
+          path="/friend/:userId/dm"
+          element={<Navigate to={`/dm/${window.location.pathname.split('/')[2]}`} replace />}
+        />
 
+        <Route 
+          path="/friend/create-DMpage"
+          element={<Navigate to="/dm/new" replace />}
+        />
 
         {/* ユーザープロフィール */}
         <Route
@@ -208,6 +223,30 @@ function App(): JSX.Element {
           }
         />
 
+        {/* 年齢認証 */}
+        <Route
+          path="/age-verification"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <AgeVerificationPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* 年齢認証成功 */}
+        <Route
+          path="/verification-success"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <VerificationSuccessPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
         {/* 初期表示：イベントページへ */}
         <Route
           path="/"
@@ -218,10 +257,45 @@ function App(): JSX.Element {
         <Route 
           path="*" 
           element={
-            <div>
-              <h1>404 - ページが見つかりません</h1>
-              <p>URL: {window.location.href}</p>
-            </div>
+            <Layout>
+              <div style={{ padding: '2rem', textAlign: 'center' }}>
+                <h1>404 - ページが見つかりません</h1>
+                <p>お探しのページは存在しないか、移動された可能性があります。</p>
+                <div style={{ marginTop: '1rem' }}>
+                  <button 
+                    onClick={() => window.location.href = '/events'}
+                    style={{ 
+                      margin: '0.5rem',
+                      padding: '0.5rem 1rem',
+                      backgroundColor: '#5c4033',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    イベント一覧に戻る
+                  </button>
+                  <button 
+                    onClick={() => window.location.href = '/login'}
+                    style={{ 
+                      margin: '0.5rem',
+                      padding: '0.5rem 1rem',
+                      backgroundColor: '#888',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ログイン
+                  </button>
+                </div>
+                <small style={{ display: 'block', marginTop: '1rem', color: '#888' }}>
+                  URL: {window.location.href}
+                </small>
+              </div>
+            </Layout>
           } 
         />
       </Routes>

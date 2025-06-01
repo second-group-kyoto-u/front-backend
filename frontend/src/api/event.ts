@@ -252,7 +252,24 @@ export const getAdvisorResponse = async (eventId: string, data: {
     latitude: number;
     longitude: number;
   };
-}) => {
+}): Promise<{
+  response: string;
+  message: string;
+  message_id: string;
+  debug_info?: {
+    ai_analysis: {
+      needs_weather: boolean;
+      needs_location: boolean;
+      weather_analysis?: any;
+      location_analysis?: any;
+      overall_reasoning?: string;
+    };
+    weather_used: boolean;
+    location_used: boolean;
+    weather_data?: any;
+    location_count: number;
+  };
+}> => {
   try {
     const response = await axios.post(`event/${eventId}/advisor-response`, data, {
       headers: getAuthHeader()
