@@ -2,7 +2,7 @@
 .container {
   padding: 0 0.75rem; /* Slightly reduced padding for smaller screens */
   padding-bottom: 70px; /* Space for bottom navigation */
-  background-color: #fff0f0; /* Light grey background for the whole page */
+  background-color: #f9f7f1; /* Changed to match other pages */
   min-height: 100vh; /* Ensure it takes full height */
   box-sizing: border-box; /* Include padding in element's total width and height */
   overflow-x: hidden;
@@ -15,7 +15,7 @@
   padding: 1rem 0; /* Adjust padding */
   position: sticky;
   top: 0;
-  background-color: #fff5f0; /* Match container background */
+  background-color: #f9f7f1; /* Match container background */
   z-index: 10;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Subtle shadow for header */
 }
@@ -40,10 +40,12 @@
 .searchIcon {
   width: 18px; /* Size for search icon */
   height: 18px;
-  background-color: #999; /* Placeholder color for the search icon */
-  /* mask: url('/path/to/search-icon.svg') no-repeat center / contain; */ /* Replace with actual SVG */
-  /* -webkit-mask: url('/path/to/search-icon.svg') no-repeat center / contain; */
+  color: #999; /* Changed to use color instead of background-color */
   margin-right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px; /* Font size for emoji */
 }
 
 .searchInput {
@@ -79,6 +81,7 @@
   gap: 0.75rem; /* Use gap for spacing between avatar and text */
   max-width: 100%;
   box-sizing: border-box;
+  width: 100%; /* Ensure full width on mobile */
 }
 
 .chatItem:hover {
@@ -96,22 +99,59 @@
   flex: 1;
   gap: 0.75rem; /* Consistent gap */
   min-width: 0;
+  width: 100%; /* Ensure full width */
+}
+
+.avatarContainer {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
 }
 
 .chatAvatar {
-  width: 48px;
-  height: 48px;
+  width: 56px; /* Larger avatars */
+  height: 56px;
   border-radius: 50%; /* Perfect circle */
   object-fit: cover;
   flex-shrink: 0; /* Prevent shrinking on smaller screens */
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* イベント用のアバター（角丸の四角形） */
+.chatAvatar.eventAvatar {
+  border-radius: 50%; /* 円形に戻す */
 }
 
 .chatAvatarPlaceholder {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   background-color: #ddd;
   border-radius: 50%; /* Perfect circle */
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #999;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* イベント用のプレースホルダー（角丸の四角形） */
+.chatAvatarPlaceholder.eventPlaceholder {
+  border-radius: 50%; /* 円形に戻す */
+  background-color: #e8f5e8;
+  color: #4caf50;
 }
 
 .chatText {
@@ -120,6 +160,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  width: calc(100% - 120px); /* Adjust width for mobile - leave space for avatar and meta */
 }
 
 .chatTitle {
@@ -130,7 +171,7 @@
   white-space: nowrap; /* Prevent wrapping for names */
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  width: 100%;
   min-width: 0;
 }
 
@@ -145,6 +186,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  width: 100%;
   min-width: 0;
 }
 
@@ -155,6 +197,7 @@
   margin-left: 0.5rem;
   flex-shrink: 0; /* Prevent shrinking */
   text-align: right;
+  width: 60px; /* Fixed width for mobile */
 }
 
 .timestamp {
@@ -195,6 +238,10 @@
   font-size: 0.9rem;
 }
 
+.hidden {
+  display: none;
+}
+
 /* Tablet and Desktop adjustments (e.g., from 768px onwards) */
 @media (min-width: 768px) {
   .container {
@@ -225,14 +272,39 @@
     margin-bottom: 0.85rem;
   }
 
+  .chatItemContent {
+    width: 100%; /* Reset for tablet/desktop */
+  }
+
+  .chatText {
+    width: auto; /* Reset for tablet/desktop */
+  }
+
+  .chatMeta {
+    width: auto; /* Reset for tablet/desktop */
+  }
+
+  .avatarContainer {
+    width: 56px;
+    height: 56px;
+  }
+
   .chatAvatar {
     width: 56px; /* Larger avatars */
     height: 56px;
   }
 
+  .chatAvatar.eventAvatar {
+    border-radius: 50%; /* 円形に戻す */
+  }
+
   .chatAvatarPlaceholder {
     width: 56px;
     height: 56px;
+  }
+
+  .chatAvatarPlaceholder.eventPlaceholder {
+    border-radius: 50%; /* 円形に戻す */
   }
 
   .chatTitle {
@@ -301,10 +373,23 @@
     margin-bottom: 1rem;
   }
 
+  .avatarContainer {
+    width: 64px;
+    height: 64px;
+  }
+
   .chatAvatar,
   .chatAvatarPlaceholder {
     width: 64px;
     height: 64px;
+  }
+
+  .chatAvatar.eventAvatar {
+    border-radius: 50%; /* 円形に戻す */
+  }
+
+  .chatAvatarPlaceholder.eventPlaceholder {
+    border-radius: 50%; /* 円形に戻す */
   }
 
   .chatTitle {

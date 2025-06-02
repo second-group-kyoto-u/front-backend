@@ -646,15 +646,21 @@ def get_joined_events():
         Event.is_deleted == False
     ).order_by(Event.published_at.desc()).all()
 
-    event_data = [
-        {
-            "id": e.id,
-            "title": e.title,
-            "description": e.description
-        } for e in events
-    ]
+    # event.to_dict()を使用してimage_urlを含む完全な情報を返す
+    events_data = []
+    for event in events:
+        event_data = event.to_dict()
+        
+        # タグ情報を追加（他のエンドポイントと同様）
+        event_tags = db.session.query(TagMaster)\
+            .join(EventTagAssociation, TagMaster.id == EventTagAssociation.tag_id)\
+            .filter(EventTagAssociation.event_id == event.id)\
+            .all()
+            
+        event_data['tags'] = [{'id': tag.id, 'tag_name': tag.tag_name} for tag in event_tags]
+        events_data.append(event_data)
 
-    return jsonify({"events": event_data})
+    return jsonify({"events": events_data})
 
 @event_bp.route('/<event_id>/weather-info', methods=['POST'])
 def get_event_weather_info_route(event_id):
