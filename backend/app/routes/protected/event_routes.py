@@ -674,7 +674,8 @@ def get_advisor_response(event_id):
     1. AI解析による詳細な意図分析
     2. 時間指定対応の天気情報取得
     3. AI判定による柔軟な場所検索
-    4. インテリジェントプロンプト生成
+    4. ★新機能：会話ネタ判定による参加者・イベント情報活用
+    5. インテリジェントプロンプト生成
     """
     from app.routes.voice.routes import (
         ai_analyze_user_intent, 
@@ -682,7 +683,8 @@ def get_advisor_response(event_id):
         ai_enhanced_nearby_places,
         get_detailed_weather_info,
         create_ai_intelligent_prompt,
-        get_character_system_prompt
+        get_character_system_prompt,
+        get_user_and_event_context  # ★新機能追加
     )
     from app.utils.event import get_event_by_id
     import openai
@@ -735,6 +737,7 @@ def get_advisor_response(event_id):
         # 必要に応じてAPIを呼び出し
         weather_data = None
         nearby_places = None
+        conversation_context = None  # ★新機能追加
         
         # 天気情報が必要な場合のみ取得（AI判定による詳細天気）
         if ai_analysis.get('needs_weather') and location_data:
@@ -750,6 +753,12 @@ def get_advisor_response(event_id):
                 location_data['longitude'],
                 ai_analysis.get('location_analysis', {})
             )
+        
+        # ★★★ 新機能：会話ネタが必要な場合のユーザー・イベント情報取得 ★★★
+        if ai_analysis.get('needs_conversation_topics'):
+            current_app.logger.info("AI判定による会話ネタ用コンテキスト情報を取得中...")
+            conversation_context = get_user_and_event_context(event_id, user.id)
+            current_app.logger.info(f"コンテキスト取得結果: 参加者{len(conversation_context.get('user_profiles', []))}人, 共通興味{len(conversation_context.get('shared_interests', []))}個")
         
         # 過去の会話履歴取得（簡潔化）
         chat_history = []
@@ -773,7 +782,8 @@ def get_advisor_response(event_id):
             message, 
             ai_analysis, 
             weather_data, 
-            nearby_places
+            nearby_places,
+            conversation_context  # ★新機能追加
         )
         
         # ChatGPT APIでレスポンスを生成（音声チャットと同じ設定）
@@ -800,7 +810,7 @@ def get_advisor_response(event_id):
         chat_response = client.chat.completions.create(
             model="gpt-4.1-mini",
             messages=messages_for_api,
-            max_tokens=200,  # テキストチャット用に調整
+            max_tokens=300,  # 会話が途切れないよう増量
             temperature=0.8
         )
         
@@ -829,8 +839,11 @@ def get_advisor_response(event_id):
                 'ai_analysis': ai_analysis,
                 'weather_used': weather_data is not None,
                 'location_used': nearby_places is not None,
+                'conversation_context_used': conversation_context is not None,  # ★新機能追加
                 'weather_data': weather_data,
-                'location_count': len(nearby_places) if nearby_places else 0
+                'location_count': len(nearby_places) if nearby_places else 0,
+                'participant_count': len(conversation_context.get('user_profiles', [])) if conversation_context else 0,  # ★新機能追加
+                'shared_interests_count': len(conversation_context.get('shared_interests', [])) if conversation_context else 0  # ★新機能追加
             }
         }), 200
         

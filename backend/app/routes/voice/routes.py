@@ -364,7 +364,7 @@ def get_nearby_places_for_voice(lat, lng, radius=300):
         print(f"近くの場所取得エラー: {str(e)}")
         return []
 
-def create_ai_intelligent_prompt(character_id: str, user_text: str, ai_analysis: dict, weather_data=None, nearby_places=None):
+def create_ai_intelligent_prompt(character_id: str, user_text: str, ai_analysis: dict, weather_data=None, nearby_places=None, conversation_context=None):
     """AI解析結果に基づいたインテリジェントプロンプトを作成"""
     # 基本的なキャラクタープロンプト
     base_prompt = get_character_system_prompt(character_id)
@@ -418,6 +418,70 @@ def create_ai_intelligent_prompt(character_id: str, user_text: str, ai_analysis:
         
         print(f"AI判定による簡潔場所情報をプロンプトに追加: {len(nearby_places)}件の施設")
     
+    # ★★★ 新機能：会話ネタが必要な場合のコンテキスト情報追加 ★★★
+    if ai_analysis.get('needs_conversation_topics') and conversation_context:
+        conversation_text = "会話ネタ情報：\n"
+        
+        # イベント情報
+        event_info = conversation_context.get('event_info', {})
+        if event_info:
+            conversation_text += f"・このイベント「{event_info.get('title', '')}」について: {event_info.get('description', '')[:50]}...\n"
+            conversation_text += f"・参加者: {event_info.get('current_persons', 0)}/{event_info.get('limit_persons', 0)}人\n"
+        
+        # イベントのタグ
+        event_tags = conversation_context.get('event_tags', [])
+        if event_tags:
+            conversation_text += f"・イベントのテーマ: {', '.join(event_tags[:3])}\n"
+        
+        # 参加者の詳細情報（★修正：名前と自己紹介を明示的に含める）
+        user_profiles = conversation_context.get('user_profiles', [])
+        if user_profiles:
+            conversation_text += f"・参加者情報:\n"
+            for i, profile in enumerate(user_profiles[:4]):  # 最大4人まで表示
+                user_name = profile.get('user_name', f'ユーザー{i+1}')
+                self_intro = profile.get('self_introduction', '')
+                conversation_text += f"  - {user_name}さん"
+                if self_intro:
+                    # 自己紹介が長い場合は短縮
+                    intro_short = self_intro[:30] + '...' if len(self_intro) > 30 else self_intro
+                    conversation_text += f": {intro_short}"
+                conversation_text += "\n"
+        
+        # ★ハイラックスさんの過去のイベント情報を追加
+        hyrax_events = conversation_context.get('hyrax_other_events', [])
+        if hyrax_events:
+            conversation_text += f"・ハイラックスさんの過去の参加イベント:\n"
+            for event_info in hyrax_events[:3]:  # 最大3件まで表示
+                title = event_info['title']
+                tags = ', '.join(event_info['tags'][:2])  # 最大2つのタグ
+                conversation_text += f"  - 「{title}」({tags})\n"
+        
+        # 参加者の共通興味
+        shared_interests = conversation_context.get('shared_interests', [])
+        if shared_interests:
+            conversation_text += f"・参加者の共通興味: {', '.join(shared_interests[:3])}\n"
+        
+        # 参加者のタグ
+        participant_tags = conversation_context.get('participant_tags', [])
+        if participant_tags:
+            conversation_text += f"・参加者の興味分野: {', '.join(participant_tags[:5])}\n"
+        
+        # ★全参加者の過去のイベント情報を追加
+        all_participants_events = conversation_context.get('all_participants_events', {})
+        if all_participants_events:
+            conversation_text += f"・参加者の過去のイベント履歴:\n"
+            for participant_name, events in all_participants_events.items():
+                if events:  # イベント履歴がある場合のみ表示
+                    conversation_text += f"  - {participant_name}さん:\n"
+                    for event_info in events[:2]:  # 最大2件まで表示
+                        title = event_info['title']
+                        tags = ', '.join(event_info['tags'][:2])  # 最大2つのタグ
+                        conversation_text += f"    「{title}」({tags})\n"
+        
+        additional_context.append(conversation_text.strip())
+        
+        print(f"AI判定による会話ネタ情報をプロンプトに追加: イベント情報、{len(user_profiles)}人の参加者情報、{len(shared_interests)}個の共通興味、{len(all_participants_events)}人分のイベント履歴")
+    
     # 拡張されたシステムプロンプトを構築
     if additional_context:
         enhanced_prompt = f"""{base_prompt}
@@ -425,7 +489,15 @@ def create_ai_intelligent_prompt(character_id: str, user_text: str, ai_analysis:
 現在の状況:
 {chr(10).join(additional_context)}
 
-この情報を参考に、親しみやすく簡潔に答えてください♪ 自己紹介は省略し、質問に関連する情報があれば自然に活用してくださいね✨"""
+【会話のコツ】参加者の情報を自然に活用してください：
+- 「そういえば、○○さんは○○が好きなんだね！」のように参加者の趣味・興味を話題にする
+- 「○○さんは過去に○○のイベントに参加してたから詳しそう！」のように過去の経験を活用する
+- 特定の誰かについて質問されたら、その人の情報を詳しく教える
+- 会話が自然に盛り上がるよう、参加者同士の共通点や違いを見つけて話題にする
+
+【重要】必ず完結した文章で答えてください。途中で文章が切れないよう、簡潔にまとめて答えてくださいね。
+
+この情報を参考に、親しみやすく簡潔に答えてください♪ 参加者の情報があれば自然に活用して、楽しい会話のきっかけを作ってくださいね✨"""
     else:
         enhanced_prompt = base_prompt
         print("AI判定: 追加情報なし - 基本プロンプトのみ使用")
@@ -506,13 +578,22 @@ def voice_chat():
                         ai_analysis.get('location_analysis', {})
                     )
                 
+                # 会話ネタ用のコンテキスト情報を取得
+                # ★★★ 新機能：会話ネタが必要な場合のユーザー・イベント情報取得 ★★★
+                conversation_context = None
+                if ai_analysis.get('needs_conversation_topics'):
+                    print("AI判定による会話ネタ用コンテキスト情報を取得中...")
+                    conversation_context = get_user_and_event_context(event_id, user.id)
+                    print(f"コンテキスト取得結果: 参加者{len(conversation_context.get('user_profiles', []))}人, 共通興味{len(conversation_context.get('shared_interests', []))}個")
+                
                 # AI解析に基づくインテリジェントプロンプトを作成
                 system_prompt = create_ai_intelligent_prompt(
                     character_id, 
                     user_text, 
                     ai_analysis, 
                     weather_data, 
-                    nearby_places
+                    nearby_places,
+                    conversation_context
                 )
                 
                 # ChatGPT応答生成用のOpenAIクライアント（OPENAI_API_KEY使用）
@@ -529,7 +610,7 @@ def voice_chat():
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_text}
                     ],
-                    max_tokens=250,  # より詳細な回答のため増量
+                    max_tokens=400,  # 会話が途切れないよう増量
                     temperature=0.8
                 )
                 
@@ -544,7 +625,8 @@ def voice_chat():
                 tts_response = audio_client.audio.speech.create(
                     model="tts-1",
                     voice=character_voice,  # キャラクターごとの音声を使用
-                    input=response_text
+                    input=response_text,
+                    speed=2.0  # 音声スピードを2倍に設定
                 )
                 
                 # 音声データをbase64エンコード
@@ -559,8 +641,11 @@ def voice_chat():
                         "intent_analysis": ai_analysis,
                         "weather_used": weather_data is not None,
                         "location_used": nearby_places is not None,
+                        "conversation_context_used": conversation_context is not None,
                         "weather_data": weather_data,
-                        "location_count": len(nearby_places) if nearby_places else 0
+                        "location_count": len(nearby_places) if nearby_places else 0,
+                        "participant_count": len(conversation_context.get('user_profiles', [])) if conversation_context else 0,
+                        "shared_interests_count": len(conversation_context.get('shared_interests', [])) if conversation_context else 0
                     }
                 })
                 
@@ -607,6 +692,7 @@ def ai_analyze_user_intent(user_text: str) -> dict:
 {{
   "needs_weather": boolean,
   "needs_location": boolean,
+  "needs_conversation_topics": boolean,
   "weather_analysis": {{
     "time_type": "current|hourly|daily|time_of_day|none",
     "time_description": "時間の説明",
@@ -621,15 +707,38 @@ def ai_analyze_user_intent(user_text: str) -> dict:
     "detailed_requirements": ["詳細要求1", "詳細要求2"],
     "reasoning": "判定理由"
   }},
+  "conversation_analysis": {{
+    "topic_request_type": "general_chat|group_bonding|icebreaker|shared_interests|event_related|specific_person_inquiry|none",
+    "conversation_context": ["文脈1", "文脈2"],
+    "social_need": "話題提供|会話継続|雰囲気改善|グループ結束|特定人物情報",
+    "target_person": "特定の人物名（該当する場合）",
+    "reasoning": "判定理由"
+  }},
   "overall_reasoning": "全体的な判定理由"
 }}
 
 判定ガイドライン：
+
+【従来機能】
 1. 天気情報が必要かどうかを判定（天気、気温、雨、服装、傘など）
 2. 場所情報が必要かどうかを判定（おすすめ、近く、カフェ、レストランなど）
-3. 時間指定があれば解析（今、明日、3時間後、夕方など）
-4. 場所検索の種類を特定（カフェ、レストラン、コンビニなど）
-5. 詳細な検索要求を抽出（安い、個室、24時間営業など）
+
+【新機能：会話ネタ判定】
+3. 会話のネタが必要かどうかを判定：
+   - "何話そう"、"話題ない"、"盛り上がらない"、"静か"
+   - "みんなで話せること"、"共通の話題"、"面白い話"
+   - "初対面"、"緊張"、"アイスブレイク"
+   - "グループの雰囲気"、"仲良くなりたい"、"絆を深める"
+   - "イベントについて"、"参加者について"、"興味のあること"
+   - "○○さんについて教えて"、"○○さんはどんな人"、"○○さんと話したい"（特定人物への質問）
+
+会話ネタが必要な場合のタイプ：
+- general_chat: 一般的な雑談ネタ
+- group_bonding: グループの絆を深める話題
+- icebreaker: 初対面での会話のきっかけ
+- shared_interests: 共通の興味・関心事
+- event_related: イベント関連の話題
+- specific_person_inquiry: 特定の参加者に関する質問
 
 時間指定の例：
 - "今"/"現在" → current
@@ -655,7 +764,7 @@ def ai_analyze_user_intent(user_text: str) -> dict:
                 {"role": "system", "content": "あなたは優秀な自然言語解析AIです。ユーザーの発話を正確に分析してJSONで回答してください。"},
                 {"role": "user", "content": analysis_prompt}
             ],
-            max_tokens=500,
+            max_tokens=700,  # 新機能追加のため増量
             temperature=0.1  # 安定した結果のため低めに設定
         )
         
@@ -690,7 +799,30 @@ def ai_analyze_user_intent(user_text: str) -> dict:
 
 def fallback_analyze_user_intent(user_text: str) -> dict:
     """AIが失敗した場合のフォールバック解析"""
-    return analyze_user_intent(user_text)
+    # 従来のキーワードベース解析に会話ネタ判定も追加
+    base_result = analyze_user_intent(user_text)
+    
+    # 会話ネタ関連のキーワード判定を追加
+    conversation_keywords = [
+        '何話そう', '話題ない', '盛り上がらない', '静か',
+        'みんなで話せること', '共通の話題', '面白い話',
+        '初対面', '緊張', 'アイスブレイク',
+        'グループの雰囲気', '仲良くなりたい', '絆を深める',
+        'イベントについて', '参加者について', '興味のあること'
+    ]
+    
+    needs_conversation_topics = any(keyword in user_text for keyword in conversation_keywords)
+    
+    # 新機能の判定結果を追加
+    base_result['needs_conversation_topics'] = needs_conversation_topics
+    base_result['conversation_analysis'] = {
+        'topic_request_type': 'general_chat' if needs_conversation_topics else 'none',
+        'conversation_context': [kw for kw in conversation_keywords if kw in user_text],
+        'social_need': '話題提供' if needs_conversation_topics else 'none',
+        'reasoning': f"キーワードマッチング: {[kw for kw in conversation_keywords if kw in user_text]}"
+    }
+    
+    return base_result
 
 def ai_generate_time_specification(weather_analysis: dict) -> dict:
     """AI解析結果から時間指定オブジェクトを生成"""
@@ -848,3 +980,154 @@ def ai_enhanced_nearby_places(lat, lng, location_analysis: dict, radius=500):
     except Exception as e:
         print(f"AI拡張場所検索エラー: {str(e)}")
         return [] 
+
+def get_user_and_event_context(event_id: str, user_id: str = None) -> dict:
+    """ユーザーとイベントの詳細情報を取得して会話ネタ用のコンテキストを作成"""
+    try:
+        from app.models.event import Event, UserMemberGroup, TagMaster, EventTagAssociation, UserTagAssociation
+        from app.models.user import User
+        from app.models import db
+        
+        context = {
+            'event_info': {},
+            'participants': [],
+            'user_profiles': [],
+            'shared_interests': [],
+            'event_tags': [],
+            'participant_tags': []
+        }
+        
+        # イベント情報の取得
+        event = Event.query.get(event_id)
+        if event:
+            context['event_info'] = {
+                'title': event.title,
+                'description': event.description,
+                'status': event.status,
+                'current_persons': event.current_persons,
+                'limit_persons': event.limit_persons,
+                'area_id': event.area_id
+            }
+            
+            # イベントのタグ情報
+            event_tags = db.session.query(TagMaster)\
+                .join(EventTagAssociation, TagMaster.id == EventTagAssociation.tag_id)\
+                .filter(EventTagAssociation.event_id == event.id)\
+                .all()
+            context['event_tags'] = [tag.tag_name for tag in event_tags]
+        
+        # ★デバッグ強化：参加者情報の詳細取得
+        print(f"[DEBUG] イベントID: {event_id} の参加者を検索中...")
+        
+        # まず基本的なクエリで参加者を取得
+        members_query = UserMemberGroup.query.filter_by(event_id=event_id)
+        print(f"[DEBUG] UserMemberGroup数: {members_query.count()}件")
+        
+        # JOINして詳細取得
+        members = members_query.join(User, UserMemberGroup.user_id == User.id).all()
+        print(f"[DEBUG] JOIN後の参加者数: {len(members)}人")
+        
+        participant_tags_set = set()
+        for i, member in enumerate(members):
+            print(f"[DEBUG] 参加者{i+1}詳細:")
+            print(f"  - ユーザーID: {member.user.id}")
+            print(f"  - ユーザー名: {member.user.user_name}")
+            print(f"  - メールアドレス: {getattr(member.user, 'email', 'なし')}")
+            
+            # self_introductionフィールドの確認
+            self_intro = getattr(member.user, 'self_introduction', None)
+            profile_msg = getattr(member.user, 'profile_message', None)
+            print(f"  - 自己紹介: {self_intro}")
+            print(f"  - プロフィールメッセージ: {profile_msg}")
+            
+            user_profile = {
+                'user_id': member.user.id,
+                'user_name': member.user.user_name,
+                'email': getattr(member.user, 'email', ''),
+                'self_introduction': self_intro or profile_msg or '',  # フォールバック
+                'is_current_user': member.user.id == user_id if user_id else False
+            }
+            context['user_profiles'].append(user_profile)
+            
+            # ユーザーのタグ情報も取得
+            user_tags = db.session.query(TagMaster)\
+                .join(UserTagAssociation, TagMaster.id == UserTagAssociation.tag_id)\
+                .filter(UserTagAssociation.user_id == member.user.id)\
+                .all()
+            
+            user_tag_names = [tag.tag_name for tag in user_tags]
+            print(f"  - タグ: {user_tag_names}")
+            for tag_name in user_tag_names:
+                participant_tags_set.add(tag_name)
+        
+        context['participant_tags'] = list(participant_tags_set)
+        
+        # 共通の興味・関心事を分析
+        event_tags_set = set(context['event_tags'])
+        participant_tags_set = set(context['participant_tags'])
+        context['shared_interests'] = list(event_tags_set.intersection(participant_tags_set))
+        
+        # 他の参加イベント情報（特定ユーザー向け）
+        if user_id:
+            try:
+                # ★全参加者の過去のイベント参加履歴を取得
+                all_participants_events = {}
+                for profile in context['user_profiles']:
+                    participant_id = profile['user_id']
+                    participant_name = profile['user_name']
+                    
+                    # 各参加者の過去のイベント履歴を取得
+                    participant_events = db.session.query(Event)\
+                        .join(UserMemberGroup, Event.id == UserMemberGroup.event_id)\
+                        .filter(UserMemberGroup.user_id == participant_id, Event.id != event_id, Event.is_deleted == False)\
+                        .limit(3).all()  # 各参加者3件まで
+                    
+                    if participant_events:
+                        all_participants_events[participant_name] = [
+                            {
+                                'title': e.title,
+                                'description': e.description[:30] + '...' if len(e.description) > 30 else e.description,
+                                'tags': [tag.tag_name for tag in db.session.query(TagMaster).join(EventTagAssociation, TagMaster.id == EventTagAssociation.tag_id).filter(EventTagAssociation.event_id == e.id).all()]
+                            }
+                            for e in participant_events
+                        ]
+                
+                context['all_participants_events'] = all_participants_events
+                print(f"[DEBUG] 全参加者の過去のイベント履歴: {len(all_participants_events)}人分取得")
+                for name, events in all_participants_events.items():
+                    print(f"  - {name}さん: {len(events)}件のイベント履歴")
+                    for event_info in events:
+                        print(f"    「{event_info['title']}」({', '.join(event_info['tags'])})")
+                        
+            except Exception as e:
+                print(f"参加者のイベント履歴取得エラー: {str(e)}")
+                context['all_participants_events'] = {}
+        
+        print(f"ユーザー・イベントコンテキスト取得成功: 参加者{len(context['user_profiles'])}人, 共通興味{len(context['shared_interests'])}個")
+        
+        # デバッグ: 詳細情報をログ出力
+        print(f"[DEBUG] イベント情報: {context['event_info']}")
+        print(f"[DEBUG] イベントタグ: {context['event_tags']}")
+        print(f"[DEBUG] 参加者プロフィール:")
+        for i, profile in enumerate(context['user_profiles']):
+            user_name = profile.get('user_name', f'ユーザー{i+1}')
+            self_intro = profile.get('self_introduction', '')
+            intro_preview = self_intro[:20] + '...' if len(self_intro) > 20 else self_intro
+            print(f"  参加者{i+1}: {user_name}さん - {intro_preview}")
+        print(f"[DEBUG] 参加者タグ: {context['participant_tags']}")
+        print(f"[DEBUG] 共通興味: {context['shared_interests']}")
+        
+        return context
+        
+    except Exception as e:
+        print(f"ユーザー・イベントコンテキスト取得エラー: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {
+            'event_info': {},
+            'participants': [],
+            'user_profiles': [],
+            'shared_interests': [],
+            'event_tags': [],
+            'participant_tags': []
+        } 
