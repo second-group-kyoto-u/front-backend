@@ -23,7 +23,7 @@ from werkzeug.utils import secure_filename
 from botocore.exceptions import ClientError
 
 # MinIO設定
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "http://minio:9000")
+MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "http://57.182.254.92:9000")
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadmin")
 MINIO_BUCKET = os.getenv("MINIO_BUCKET", "user-profile-images")
@@ -89,10 +89,8 @@ def upload_image(bucket, path, key):
             s3.upload_fileobj(f, bucket, key)
             print(f"🖼️ 画像アップロード成功: {key}")
         
-        # 環境変数からパブリックホストを取得
-        public_host = os.getenv('PUBLIC_HOST', 'localhost')
-        # nginxプロキシ経由でアクセス
-        return f"http://{public_host}/minio/{bucket}/{key}"
+        # 直接MinIOエンドポイントのIPアドレスを使用
+        return f"http://57.182.254.92:9000/{bucket}/{key}"
     except FileNotFoundError:
         print(f"⚠️ {path} が見つかりません。")
         return None

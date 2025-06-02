@@ -148,16 +148,22 @@ const CharacterSelect: React.FC<Props> = ({ onSelect, isModal = false }) => {
 
   // 画像URLを処理する関数
   const processImageUrl = (url: string | null): string => {
-    if (!url) return 'https://via.placeholder.com/80x80?text=Character';
+    if (!url) return '/default-character.jpg';
     
-    // MinIOのURLを修正（内部ネットワークのURLを外部アクセス可能なURLに変換）
-    if (url.includes(':9000/')) {
-      // MinIOのURLの場合、nginxプロキシ経由に変換
-      const urlParts = url.split(':9000/');
-      if (urlParts.length === 2) {
-        const newUrl = `http://${window.location.hostname}/minio/${urlParts[1]}`;
-        return newUrl;
+    // MinIOのURLを修正
+    if (url.includes('localhost:9000') || url.includes('127.0.0.1:9000') || url.includes('minio:9000')) {
+      // URLがローカルのMinioを指している場合、実際のIPアドレスに修正
+      const pathMatch = url.match(/\/([^\/]+)\/(.+)$/);
+      if (pathMatch) {
+        const bucket = pathMatch[1];
+        const key = pathMatch[2];
+        return `http://57.182.254.92:9000/${bucket}/${key}`;
       }
+    }
+    
+    // 既に正しいIPアドレスを使用している場合はそのまま返す
+    if (url.includes('57.182.254.92:9000')) {
+      return url;
     }
     
     return url;
@@ -290,7 +296,6 @@ const CharacterSelect: React.FC<Props> = ({ onSelect, isModal = false }) => {
                     alt={character.name} 
                     className={styles.avatarImage}
                     onError={(e: React.ChangeEvent<HTMLImageElement>) => {
-                      // 画像読み込みエラー時の処理
                       const target = e.target;
                       target.style.display = 'none';
                       target.parentElement?.classList.add(styles.avatarPlaceholder);

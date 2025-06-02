@@ -127,16 +127,22 @@ function UserProfilePage() {
 
   // 画像URLを処理する関数
   const processImageUrl = (url: string | null): string => {
-    if (!url) return 'https://via.placeholder.com/200x200?text=No+Image';
+    if (!url) return '/default-avatar.jpg';
     
-    // MinIOのURLを修正（内部ネットワークのURLを外部アクセス可能なURLに変換）
-    if (url.includes(':9000/')) {
-      // MinIOのURLの場合、nginxプロキシ経由に変換
-      const urlParts = url.split(':9000/');
-      if (urlParts.length === 2) {
-        const newUrl = `http://${window.location.hostname}/minio/${urlParts[1]}`;
-        return newUrl;
+    // MinIOのURLを修正
+    if (url.includes('localhost:9000') || url.includes('127.0.0.1:9000') || url.includes('minio:9000')) {
+      // URLがローカルのMinioを指している場合、実際のIPアドレスに修正
+      const pathMatch = url.match(/\/([^\/]+)\/(.+)$/);
+      if (pathMatch) {
+        const bucket = pathMatch[1];
+        const key = pathMatch[2];
+        return `http://57.182.254.92:9000/${bucket}/${key}`;
       }
+    }
+    
+    // 既に正しいIPアドレスを使用している場合はそのまま返す
+    if (url.includes('57.182.254.92:9000')) {
+      return url;
     }
     
     return url;

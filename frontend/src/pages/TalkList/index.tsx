@@ -43,18 +43,19 @@ const TalkListPage = () => {
     if (!url) return null;
     
     // MinIOのURLを修正
-    if (url.includes('localhost:9000')) {
-      // URLがlocalhostのMinioを指している場合
-      const parsed = new URL(url);
-      const newUrl = `http://${window.location.hostname}:9000${parsed.pathname}`;
-      return newUrl;
+    if (url.includes('localhost:9000') || url.includes('127.0.0.1:9000') || url.includes('minio:9000')) {
+      // URLがローカルのMinioを指している場合、実際のIPアドレスに修正
+      const pathMatch = url.match(/\/([^\/]+)\/(.+)$/);
+      if (pathMatch) {
+        const bucket = pathMatch[1];
+        const key = pathMatch[2];
+        return `http://57.182.254.92:9000/${bucket}/${key}`;
+      }
     }
     
-    // その他のローカル環境のURL修正
-    if (url.includes('127.0.0.1:9000')) {
-      const parsed = new URL(url);
-      const newUrl = `http://${window.location.hostname}:9000${parsed.pathname}`;
-      return newUrl;
+    // 既に正しいIPアドレスを使用している場合はそのまま返す
+    if (url.includes('57.182.254.92:9000')) {
+      return url;
     }
     
     return url;
