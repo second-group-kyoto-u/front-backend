@@ -2,7 +2,7 @@
 .container {
   padding: 0 0.75rem; /* Slightly reduced padding for smaller screens */
   padding-bottom: 70px; /* Space for bottom navigation */
-  background-color: #f0f2ff; /* Light grey background for the whole page */
+  background-color: #fff0f0; /* Light grey background for the whole page */
   min-height: 100vh; /* Ensure it takes full height */
   box-sizing: border-box; /* Include padding in element's total width and height */
   overflow-x: hidden;
@@ -15,7 +15,7 @@
   padding: 1rem 0; /* Adjust padding */
   position: sticky;
   top: 0;
-  background-color: #f0f2ff; /* Match container background */
+  background-color: #fff5f0; /* Match container background */
   z-index: 10;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Subtle shadow for header */
 }
@@ -30,7 +30,7 @@
 .searchBarContainer {
   display: flex;
   align-items: center;
-  background-color: #e0e2e5; /* Lighter background for search bar */
+  background-color: #e5e3e0; /* Lighter background for search bar */
   border-radius: 20px; /* More rounded corners */
   padding: 0.5rem 1rem;
   margin-bottom: 1rem;
