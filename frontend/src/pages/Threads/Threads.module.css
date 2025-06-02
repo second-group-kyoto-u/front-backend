@@ -172,13 +172,16 @@
   align-items: center;
   justify-content: center;
   border: none;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   z-index: 1000;
 }
 
 .createButton:hover {
   background-color: #3e2b22;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
 }
 
 .navigation {
