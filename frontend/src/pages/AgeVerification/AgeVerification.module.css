@@ -56,8 +56,9 @@
   font-size: 1.2em;
   font-weight: bold;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  display: inline-block;
+  display: block;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
 }
 
 .fileInputLabel:hover {
