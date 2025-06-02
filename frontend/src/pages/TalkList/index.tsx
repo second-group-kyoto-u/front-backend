@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getJoinedEvents, EventType } from '@/api/event'
 import { getDirectMessageOverview } from '@/api/friend'
+import Layout from '@/components/Layout/Layout'
 import styles from './talklist.module.css'
 
 interface DirectMessageOverview {
@@ -143,63 +144,73 @@ const TalkListPage = () => {
     target.style.display = 'none'; // 画像を非表示にしてプレースホルダーを表示
   }
 
-  if (loading) return <div className={styles.message}>読み込み中...</div>
-  if (error) return <div className={styles.error}>{error}</div>
+  if (loading) return (
+    <Layout>
+      <div className={styles.message}>読み込み中...</div>
+    </Layout>
+  )
+  if (error) return (
+    <Layout>
+      <div className={styles.error}>{error}</div>
+    </Layout>
+  )
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.pageTitle}>トーク</h1>
-      </div>
-      <div className={styles.searchBarContainer}>
-        <div className={styles.searchIcon}>🔍</div> {/* Search icon */}
-        <input
-          type="text"
-          placeholder="キーワードで検索"
-          className={styles.searchInput}
-        />
-      </div>
+    <Layout>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.pageTitle}>トーク</h1>
+        </div>
+        <div className={styles.searchBarContainer}>
+          <div className={styles.searchIcon}>🔍</div> {/* Search icon */}
+          <input
+            type="text"
+            placeholder="キーワードで検索"
+            className={styles.searchInput}
+          />
+        </div>
 
-      {chatList.length === 0 ? (
-        <p className={styles.message}>会話がありません。</p>
-      ) : (
-        <ul className={styles.chatList}>
-          {chatList.map((item) => (
-            <li
-              key={item.id + item.type} // Unique key for combined list
-              className={styles.chatItem}
-              onClick={() => handleChatItemClick(item)}
-            >
-              <div className={styles.chatItemContent}>
-                <div className={styles.avatarContainer}>
-                  {item.imageUrl ? (
-                    <img
-                      src={item.imageUrl}
-                      alt={`${item.name}のプロフィール画像`}
-                      className={`${styles.chatAvatar} ${item.type === 'event' ? styles.eventAvatar : ''}`}
-                      onError={handleImageError}
-                    />
-                  ) : null}
-                  <div className={`${styles.chatAvatarPlaceholder} ${item.type === 'event' ? styles.eventPlaceholder : ''} ${item.imageUrl ? styles.hidden : ''}`}>
-                    {item.type === 'event' ? '📅' : '👤'}
+        {chatList.length === 0 ? (
+          <p className={styles.message}>会話がありません。</p>
+        ) : (
+          <ul className={styles.chatList}>
+            {chatList.map((item) => (
+              <li
+                key={item.id + item.type} // Unique key for combined list
+                className={styles.chatItem}
+                onClick={() => handleChatItemClick(item)}
+              >
+                <div className={styles.chatItemContent}>
+                  <div className={styles.avatarContainer}>
+                    {item.imageUrl ? (
+                      <img
+                        src={item.imageUrl}
+                        alt={`${item.name}のプロフィール画像`}
+                        className={`${styles.chatAvatar} ${item.type === 'event' ? styles.eventAvatar : ''}`}
+                        onError={handleImageError}
+                      />
+                    ) : null}
+                    <div className={`${styles.chatAvatarPlaceholder} ${item.type === 'event' ? styles.eventPlaceholder : ''} ${item.imageUrl ? styles.hidden : ''}`}>
+                      {item.type === 'event' ? '📅' : '👤'}
+                    </div>
+                  </div>
+                  <div className={styles.chatText}>
+                    <h2 className={styles.chatTitle}>{item.name}</h2>
+                    <p className={styles.chatMessage}>{item.latestMessage}</p>
+                  </div>
+                  <div className={styles.chatMeta}>
+                    <span className={styles.timestamp}>{item.timestamp}</span>
+                    {item.unreadCount !== undefined && item.unreadCount > 0 && (
+                      <div className={styles.unreadCount}>{item.unreadCount}</div>
+                    )}
                   </div>
                 </div>
-                <div className={styles.chatText}>
-                  <h2 className={styles.chatTitle}>{item.name}</h2>
-                  <p className={styles.chatMessage}>{item.latestMessage}</p>
-                </div>
-                <div className={styles.chatMeta}>
-                  <span className={styles.timestamp}>{item.timestamp}</span>
-                  {item.unreadCount !== undefined && item.unreadCount > 0 && (
-                    <div className={styles.unreadCount}>{item.unreadCount}</div>
-                  )}
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </Layout>
   )
 }
 

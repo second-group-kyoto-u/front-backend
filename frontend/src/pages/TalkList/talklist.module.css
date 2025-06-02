@@ -107,11 +107,12 @@
   width: 48px;
   height: 48px;
   flex-shrink: 0;
+  margin-right: 8px; /* アバターと文字の間にマージンを追加 */
 }
 
 .chatAvatar {
-  width: 56px; /* Larger avatars */
-  height: 56px;
+  width: 48px; /* モバイル用にサイズ調整 */
+  height: 48px;
   border-radius: 50%; /* Perfect circle */
   object-fit: cover;
   flex-shrink: 0; /* Prevent shrinking on smaller screens */
@@ -129,15 +130,15 @@
 }
 
 .chatAvatarPlaceholder {
-  width: 56px;
-  height: 56px;
+  width: 48px; /* モバイル用にサイズ調整 */
+  height: 48px;
   background-color: #ddd;
   border-radius: 50%; /* Perfect circle */
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 20px; /* アイコンのサイズも調整 */
   color: #999;
   position: absolute;
   top: 0;
@@ -160,7 +161,8 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  width: calc(100% - 120px); /* Adjust width for mobile - leave space for avatar and meta */
+  width: calc(100% - 100px); /* アバターとメタ部分のスペースを考慮してより狭く調整 */
+  max-width: 100%; /* 最大幅を100%に制限 */
 }
 
 .chatTitle {
@@ -168,11 +170,12 @@
   font-weight: 600;
   margin: 0;
   color: #333;
-  white-space: nowrap; /* Prevent wrapping for names */
+  white-space: nowrap; /* 改行を防ぐ */
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
   min-width: 0;
+  max-width: 100%; /* 最大幅を100%に制限 */
 }
 
 .chatDescription {
@@ -180,24 +183,26 @@
 }
 
 .chatMessage {
-  font-size: 0.85rem; /* Slightly smaller font for message */
+  font-size: 0.85rem; /* モバイル用に少し小さめのフォント */
   color: #666;
-  margin: 0.2rem 0 0; /* Reduced top margin */
+  margin: 0.2rem 0 0; /* 上部マージンを削減 */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 100%;
   min-width: 0;
+  max-width: 100%; /* 最大幅を100%に制限 */
+  line-height: 1.2; /* 行の高さを調整 */
 }
 
 .chatMeta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  margin-left: 0.5rem;
+  margin-left: 8px; /* 左マージンを調整 */
   flex-shrink: 0; /* Prevent shrinking */
   text-align: right;
-  width: 60px; /* Fixed width for mobile */
+  width: 50px; /* モバイル用に幅を狭く調整 */
 }
 
 .timestamp {
