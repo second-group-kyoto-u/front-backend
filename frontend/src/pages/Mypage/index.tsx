@@ -90,14 +90,43 @@ function Mypage() {
     navigate('/login')
   }
 
-  const handleShareProfile = () => {
+  // HTTPSやlocalhostでしか使えないシェア機能
+  /*const handleShareProfile = () => {
     if (!userData) return
   
     const publicProfileUrl = `${window.location.origin}/user/${userData.id}`
     navigator.clipboard.writeText(publicProfileUrl)
       .then(() => alert('シェアリンクをコピーしました'))
       .catch(() => alert('コピーに失敗しました'))
-  }
+  }*/
+
+  const handleShareProfile = () => {
+    if (!userData) return
+  
+    const publicProfileUrl = `${window.location.origin}/user/${userData.id}`
+  
+    try {
+      const textArea = document.createElement('textarea')
+      textArea.value = publicProfileUrl
+      textArea.style.position = 'fixed' // avoid scrolling to bottom
+      textArea.style.opacity = '0'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+  
+      const success = document.execCommand('copy')
+      document.body.removeChild(textArea)
+  
+      if (success) {
+        alert('シェアリンクをコピーしました！')
+      } else {
+        alert('コピーに失敗しました。手動でコピーしてください。')
+      }
+    } catch (err) {
+      console.error('❌ 旧式コピー失敗:', err)
+      alert('コピーに失敗しました。ブラウザが対応していない可能性があります。')
+    }
+  }      
 
   return (
     <div className={styles.pageBackground}>
