@@ -356,7 +356,7 @@ const EventsPage: React.FC = () => {
         onClick={handleCreateButtonClick}
         aria-label="イベントを作成"
       >
-        +
+        ＋
       </button>
     </div>
   );

@@ -189,7 +189,11 @@ function ThreadsPage() {
         </div>
       )}
 
-      <button className={styles.createButton} onClick={handleCreateThread}>
+      <button 
+        className={styles.createButton} 
+        onClick={handleCreateThread}
+        aria-label="スレッドを作成"
+      >
         ＋
       </button>
 
