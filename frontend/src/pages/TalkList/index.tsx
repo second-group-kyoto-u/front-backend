@@ -1,14 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getJoinedEvents } from '@/api/event'
+import { getJoinedEvents, EventType } from '@/api/event'
 import { getDirectMessageOverview } from '@/api/friend'
 import styles from './talklist.module.css'
-
-interface Event {
-  id: string
-  title: string
-  description: string // Keeping for potential use, but will hide visually
-}
 
 interface DirectMessageOverview {
   partner_id: string
@@ -43,6 +37,28 @@ const TalkListPage = () => {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
+  // 画像URLを処理する関数
+  const processImageUrl = (url: string | null): string | null => {
+    if (!url) return null;
+    
+    // MinIOのURLを修正
+    if (url.includes('localhost:9000')) {
+      // URLがlocalhostのMinioを指している場合
+      const parsed = new URL(url);
+      const newUrl = `http://${window.location.hostname}:9000${parsed.pathname}`;
+      return newUrl;
+    }
+    
+    // その他のローカル環境のURL修正
+    if (url.includes('127.0.0.1:9000')) {
+      const parsed = new URL(url);
+      const newUrl = `http://${window.location.hostname}:9000${parsed.pathname}`;
+      return newUrl;
+    }
+    
+    return url;
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -51,24 +67,37 @@ const TalkListPage = () => {
           getDirectMessageOverview(),
         ])
 
+        console.log('Events response:', eventRes); // デバッグ用
+        console.log('DM response:', dmRes); // デバッグ用
+
         // Map events to ChatItem format
-        const eventChats: ChatItem[] = eventRes.events.map((event) => ({
-          id: event.id,
-          type: 'event',
-          name: event.title,
-          // Placeholder image or logic to fetch event image if available
-          imageUrl: null, // Assuming no event image for now based on original data
-          latestMessage: event.description || 'タップして会話を開始', // Use description as latest message for events
-          timestamp: '15:30', // Placeholder, ideally from actual event activity
-          unreadCount: Math.floor(Math.random() * 5), // Random for demo, replace with actual
-        }))
+        const eventChats: ChatItem[] = eventRes.events.map((event: EventType) => {
+          console.log('Processing event:', event.id, 'image_url:', event.image_url); // デバッグ用
+          const processedImageUrl = processImageUrl(event.image_url);
+          console.log('Processed image URL:', processedImageUrl); // デバッグ用
+          
+          return {
+            id: event.id,
+            type: 'event',
+            name: event.title,
+            imageUrl: processedImageUrl, // Use actual event image
+            latestMessage: event.description || 'タップして会話を開始', // Use description as latest message for events
+            timestamp: event.published_at 
+              ? new Date(event.published_at).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+              : '15:30', // Fallback placeholder
+            unreadCount: undefined, // TODO: 実際の未読数をAPIから取得予定
+          }
+        })
 
         // Map DMs to ChatItem format
-        const dmChats: ChatItem[] = dmRes.map((dm) => ({
+        const dmChats: ChatItem[] = dmRes.map((dm: DirectMessageOverview) => ({
           id: dm.partner_id,
           type: 'dm',
           name: dm.partner.user_name,
-          imageUrl: dm.partner.user_image_url,
+          imageUrl: processImageUrl(dm.partner.user_image_url),
           latestMessage: dm.latest_message
             ? dm.latest_message.message_type === 'image'
               ? '画像メッセージ'
@@ -80,7 +109,7 @@ const TalkListPage = () => {
                 minute: '2-digit',
               })
             : '',
-          unreadCount: dm.partner_id === 'some-id-with-unread' ? 3 : undefined, // Example for unread count
+          unreadCount: undefined, // TODO: 実際の未読数をAPIから取得予定
         }))
 
         // Combine and sort by timestamp (latest first)
@@ -107,6 +136,13 @@ const TalkListPage = () => {
     }
   }
 
+  // 画像のロード時のエラーハンドリング
+  const handleImageError = (e: any) => {
+    const target = e.target as HTMLImageElement;
+    console.log('Image load error for:', target.src); // デバッグ用
+    target.style.display = 'none'; // 画像を非表示にしてプレースホルダーを表示
+  }
+
   if (loading) return <div className={styles.message}>読み込み中...</div>
   if (error) return <div className={styles.error}>{error}</div>
 
@@ -116,7 +152,7 @@ const TalkListPage = () => {
         <h1 className={styles.pageTitle}>トーク</h1>
       </div>
       <div className={styles.searchBarContainer}>
-        <div className={styles.searchIcon}></div> {/* Placeholder for search icon */}
+        <div className={styles.searchIcon}>🔍</div> {/* Search icon */}
         <input
           type="text"
           placeholder="キーワードで検索"
@@ -135,22 +171,26 @@ const TalkListPage = () => {
               onClick={() => handleChatItemClick(item)}
             >
               <div className={styles.chatItemContent}>
-                {item.imageUrl ? (
-                  <img
-                    src={item.imageUrl}
-                    alt={`${item.name}のプロフィール画像`}
-                    className={styles.chatAvatar}
-                  />
-                ) : (
-                  <div className={styles.chatAvatarPlaceholder}></div>
-                )}
+                <div className={styles.avatarContainer}>
+                  {item.imageUrl ? (
+                    <img
+                      src={item.imageUrl}
+                      alt={`${item.name}のプロフィール画像`}
+                      className={`${styles.chatAvatar} ${item.type === 'event' ? styles.eventAvatar : ''}`}
+                      onError={handleImageError}
+                    />
+                  ) : null}
+                  <div className={`${styles.chatAvatarPlaceholder} ${item.type === 'event' ? styles.eventPlaceholder : ''} ${item.imageUrl ? styles.hidden : ''}`}>
+                    {item.type === 'event' ? '📅' : '👤'}
+                  </div>
+                </div>
                 <div className={styles.chatText}>
                   <h2 className={styles.chatTitle}>{item.name}</h2>
                   <p className={styles.chatMessage}>{item.latestMessage}</p>
                 </div>
                 <div className={styles.chatMeta}>
                   <span className={styles.timestamp}>{item.timestamp}</span>
-                  {item.unreadCount && item.unreadCount > 0 && (
+                  {item.unreadCount !== undefined && item.unreadCount > 0 && (
                     <div className={styles.unreadCount}>{item.unreadCount}</div>
                   )}
                 </div>

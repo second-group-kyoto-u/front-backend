@@ -2,7 +2,18 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './AgeVerification.module.css';
 import { useAuth } from '@/hooks/useAuth'; // 認証トークンを取得するためにuseAuthをインポート
-import { uploadAgeVerificationImage, AgeVerificationUploadResponse } from '@/api/upload'; // 新しいAPI関数と型をインポート
+import axios from '@/lib/axios';
+
+interface AgeVerificationUploadResponse {
+  message: string;
+  status: string;
+  age?: number | null;
+  user?: {
+    id: string;
+    user_name: string;
+    is_age_verified: boolean;
+  };
+}
 
 const AgeVerification: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -12,6 +23,25 @@ const AgeVerification: React.FC = () => {
   const navigate = useNavigate();
   // token: 認証トークンをAPIリクエストヘッダーに含めるため
   const { token } = useAuth();
+
+  // 年齢認証用画像アップロード関数をローカルで定義
+  const uploadAgeVerificationImage = async (
+    file: File,
+    token: string
+  ): Promise<AgeVerificationUploadResponse> => {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'multipart/form-data',
+      'Authorization': `Bearer ${token}`
+    }
+
+    const res = await axios.post<AgeVerificationUploadResponse>('upload/age-verification', formData, {
+      headers
+    })
+    return res.data
+  }
 
   // ファイルが選択されたときのハンドラー
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,7 +97,7 @@ const AgeVerification: React.FC = () => {
     } catch (error: any) { // エラーをany型でキャッチし、詳細なメッセージを抽出
       console.error('Upload failed:', error);
       // バックエンドからのエラーレスポンス構造に応じてメッセージを抽出
-      const errorMessage = error.message || (error.response && error.response.data && error.response.data.message) || error.error || '不明なエラーが発生しました。';
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || '不明なエラーが発生しました。';
       setMessage(`アップロードに失敗しました: ${errorMessage}`);
     } finally {
       setIsLoading(false); // ローディング状態を終了
@@ -92,7 +122,7 @@ const AgeVerification: React.FC = () => {
             <input
               type="file"
               id="document-upload"
-              accept="image/*" // 画像ファイルのみ許可
+              accept="image/*,application/pdf" // 画像ファイルとPDFを許可
               onChange={handleFileChange}
               className={styles.hiddenFileInput}
             />
