@@ -13,6 +13,7 @@
   justify-content: center; /* Center the title */
   align-items: center;
   padding: 1rem 0; /* Adjust padding */
+  height: 60px; /* ヘッダーの固定高さを設定 */
   position: sticky;
   top: 0;
   background-color: #f9f7f1; /* Match container background */
@@ -69,7 +70,7 @@
 }
 
 .chatItem {
-  background-color: #fff;
+  background-color: #fafafa; /* 青色から白っぽいグレーに変更 */
   border-radius: 12px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Softer shadow */
   padding: 0.8rem 1rem; /* Reduced padding */
@@ -82,10 +83,12 @@
   max-width: 100%;
   box-sizing: border-box;
   width: 100%; /* Ensure full width on mobile */
+  height: 60px; /* ヘッダーと同じ高さに設定 */
+  overflow: hidden; /* オーバーフローを隠す */
 }
 
 .chatItem:hover {
-  background-color: #f8f8f8;
+  background-color: #f0f0f0; /* ホバー時も自然なグレーに変更 */
   transform: translateY(-1px); /* Slight lift on hover */
 }
 
@@ -160,9 +163,11 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  justify-content: center; /* 垂直方向の中央揃え */
   min-width: 0;
   width: calc(100% - 100px); /* アバターとメタ部分のスペースを考慮してより狭く調整 */
-  max-width: 100%; /* 最大幅を100%に制限 */
+  max-width: calc(100% - 100px); /* 最大幅も明示的に制限 */
+  height: 100%; /* コンテナの高さいっぱいに */
 }
 
 .chatTitle {
@@ -176,6 +181,7 @@
   width: 100%;
   min-width: 0;
   max-width: 100%; /* 最大幅を100%に制限 */
+  line-height: 1.2; /* 行の高さを調整 */
 }
 
 .chatDescription {
@@ -199,10 +205,13 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  justify-content: center; /* 垂直方向の中央揃え */
   margin-left: 8px; /* 左マージンを調整 */
   flex-shrink: 0; /* Prevent shrinking */
   text-align: right;
   width: 50px; /* モバイル用に幅を狭く調整 */
+  height: 100%; /* コンテナの高さいっぱいに */
+  overflow: hidden; /* オーバーフローを隠す */
 }
 
 .timestamp {
@@ -210,6 +219,9 @@
   color: #999;
   margin-bottom: 0.2rem;
   white-space: nowrap; /* Prevent wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%; /* 最大幅制限 */
 }
 
 .unreadCount {
@@ -257,6 +269,7 @@
 
   .header {
     padding: 1.25rem 0;
+    height: 70px; /* タブレット用に高さを少し大きく */
   }
 
   .pageTitle {
@@ -275,6 +288,12 @@
   .chatItem {
     padding: 1rem 1.25rem; /* More generous padding */
     margin-bottom: 0.85rem;
+    height: 70px; /* タブレット用に高さを大きく */
+    background-color: #fafafa; /* 背景色を統一 */
+  }
+
+  .chatItem:hover {
+    background-color: #f0f0f0; /* ホバー時の背景色も統一 */
   }
 
   .chatItemContent {
@@ -283,10 +302,12 @@
 
   .chatText {
     width: auto; /* Reset for tablet/desktop */
+    max-width: calc(100% - 120px); /* タブレット用に調整 */
   }
 
   .chatMeta {
     width: auto; /* Reset for tablet/desktop */
+    width: 60px; /* タブレット用に幅を調整 */
   }
 
   .avatarContainer {
@@ -362,6 +383,7 @@
 
   .header {
     padding: 1.5rem 0;
+    height: 80px; /* デスクトップ用に高さをさらに大きく */
   }
 
   .pageTitle {
@@ -376,6 +398,20 @@
   .chatItem {
     padding: 1.25rem 1.5rem;
     margin-bottom: 1rem;
+    height: 80px; /* デスクトップ用に高さをさらに大きく */
+    background-color: #fafafa; /* 背景色を統一 */
+  }
+
+  .chatItem:hover {
+    background-color: #f0f0f0; /* ホバー時の背景色も統一 */
+  }
+
+  .chatText {
+    max-width: calc(100% - 140px); /* デスクトップ用に調整 */
+  }
+
+  .chatMeta {
+    width: 70px; /* デスクトップ用に幅を調整 */
   }
 
   .avatarContainer {
