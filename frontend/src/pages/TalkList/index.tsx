@@ -39,27 +39,29 @@ const TalkListPage = () => {
   const navigate = useNavigate()
 
   // 画像URLを処理する関数
-  const processImageUrl = (url: string | null): string | null => {
-    if (!url) return null;
+  const processImageUrl = (url: string | null): string => {
+    if (!url) return '/default-avatar.jpg';
     
     // MinIOのURLを修正
     if (url.includes('localhost:9000') || url.includes('127.0.0.1:9000') || url.includes('minio:9000')) {
-      // URLがローカルのMinioを指している場合、実際のIPアドレスに修正
+      // URLがローカルのMinioを指している場合、nginxプロキシ経由のパスに修正
       const pathMatch = url.match(/\/([^\/]+)\/(.+)$/);
       if (pathMatch) {
         const bucket = pathMatch[1];
         const key = pathMatch[2];
-        return `http://57.182.254.92:9000/${bucket}/${key}`;
+        // nginxプロキシ経由でアクセス（/minio/パス）
+        const baseUrl = window.location.origin;
+        return `${baseUrl}/minio/${bucket}/${key}`;
       }
     }
     
-    // 既に正しいIPアドレスを使用している場合はそのまま返す
-    if (url.includes('57.182.254.92:9000')) {
+    // 既にプロキシ経由のパスを使用している場合はそのまま返す
+    if (url.includes('/minio/')) {
       return url;
     }
     
     return url;
-  }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,11 +81,11 @@ const TalkListPage = () => {
           console.log('Processed image URL:', processedImageUrl); // デバッグ用
           
           return {
-            id: event.id,
-            type: 'event',
-            name: event.title,
+          id: event.id,
+          type: 'event',
+          name: event.title,
             imageUrl: processedImageUrl, // Use actual event image
-            latestMessage: event.description || 'タップして会話を開始', // Use description as latest message for events
+          latestMessage: event.description || 'タップして会話を開始', // Use description as latest message for events
             timestamp: event.published_at 
               ? new Date(event.published_at).toLocaleTimeString([], {
                   hour: '2-digit',
@@ -158,59 +160,59 @@ const TalkListPage = () => {
 
   return (
     <Layout>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.pageTitle}>トーク</h1>
-        </div>
-        <div className={styles.searchBarContainer}>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1 className={styles.pageTitle}>トーク</h1>
+      </div>
+      <div className={styles.searchBarContainer}>
           <div className={styles.searchIcon}>🔍</div> {/* Search icon */}
-          <input
-            type="text"
-            placeholder="キーワードで検索"
-            className={styles.searchInput}
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="キーワードで検索"
+          className={styles.searchInput}
+        />
+      </div>
 
-        {chatList.length === 0 ? (
-          <p className={styles.message}>会話がありません。</p>
-        ) : (
-          <ul className={styles.chatList}>
-            {chatList.map((item) => (
-              <li
-                key={item.id + item.type} // Unique key for combined list
-                className={styles.chatItem}
-                onClick={() => handleChatItemClick(item)}
-              >
-                <div className={styles.chatItemContent}>
+      {chatList.length === 0 ? (
+        <p className={styles.message}>会話がありません。</p>
+      ) : (
+        <ul className={styles.chatList}>
+          {chatList.map((item) => (
+            <li
+              key={item.id + item.type} // Unique key for combined list
+              className={styles.chatItem}
+              onClick={() => handleChatItemClick(item)}
+            >
+              <div className={styles.chatItemContent}>
                   <div className={styles.avatarContainer}>
-                    {item.imageUrl ? (
-                      <img
-                        src={item.imageUrl}
-                        alt={`${item.name}のプロフィール画像`}
+                {item.imageUrl ? (
+                  <img
+                    src={item.imageUrl}
+                    alt={`${item.name}のプロフィール画像`}
                         className={`${styles.chatAvatar} ${item.type === 'event' ? styles.eventAvatar : ''}`}
                         onError={handleImageError}
-                      />
+                  />
                     ) : null}
                     <div className={`${styles.chatAvatarPlaceholder} ${item.type === 'event' ? styles.eventPlaceholder : ''} ${item.imageUrl ? styles.hidden : ''}`}>
                       {item.type === 'event' ? '📅' : '👤'}
                     </div>
                   </div>
-                  <div className={styles.chatText}>
-                    <h2 className={styles.chatTitle}>{item.name}</h2>
-                    <p className={styles.chatMessage}>{item.latestMessage}</p>
-                  </div>
-                  <div className={styles.chatMeta}>
-                    <span className={styles.timestamp}>{item.timestamp}</span>
-                    {item.unreadCount !== undefined && item.unreadCount > 0 && (
-                      <div className={styles.unreadCount}>{item.unreadCount}</div>
-                    )}
-                  </div>
+                <div className={styles.chatText}>
+                  <h2 className={styles.chatTitle}>{item.name}</h2>
+                  <p className={styles.chatMessage}>{item.latestMessage}</p>
                 </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                <div className={styles.chatMeta}>
+                  <span className={styles.timestamp}>{item.timestamp}</span>
+                    {item.unreadCount !== undefined && item.unreadCount > 0 && (
+                    <div className={styles.unreadCount}>{item.unreadCount}</div>
+                  )}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
     </Layout>
   )
 }

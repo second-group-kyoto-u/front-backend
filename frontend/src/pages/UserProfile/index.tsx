@@ -131,17 +131,19 @@ function UserProfilePage() {
     
     // MinIOのURLを修正
     if (url.includes('localhost:9000') || url.includes('127.0.0.1:9000') || url.includes('minio:9000')) {
-      // URLがローカルのMinioを指している場合、実際のIPアドレスに修正
+      // URLがローカルのMinioを指している場合、nginxプロキシ経由のパスに修正
       const pathMatch = url.match(/\/([^\/]+)\/(.+)$/);
       if (pathMatch) {
         const bucket = pathMatch[1];
         const key = pathMatch[2];
-        return `http://57.182.254.92:9000/${bucket}/${key}`;
+        // nginxプロキシ経由でアクセス（/minio/パス）
+        const baseUrl = window.location.origin;
+        return `${baseUrl}/minio/${bucket}/${key}`;
       }
     }
     
-    // 既に正しいIPアドレスを使用している場合はそのまま返す
-    if (url.includes('57.182.254.92:9000')) {
+    // 既にプロキシ経由のパスを使用している場合はそのまま返す
+    if (url.includes('/minio/')) {
       return url;
     }
     
