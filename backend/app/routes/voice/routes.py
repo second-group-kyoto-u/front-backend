@@ -626,7 +626,7 @@ def voice_chat():
                     model="tts-1",
                     voice=character_voice,  # キャラクターごとの音声を使用
                     input=response_text,
-                    speed=2.0  # 音声スピードを2倍に設定
+                    speed=1.5  # 音声スピードを2倍に設定
                 )
                 
                 # 音声データをbase64エンコード
