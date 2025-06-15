@@ -1,195 +1,144 @@
-# 本番用(開発の際はdevelopブランチを使って下さい。)
+# Tripple - 旅行マッチングアプリケーション
 
-## 説明
+## 🌍 アプリケーション概要
 
-旅行用のマッチングアプリケーションの開発レポジトリです。
+Trippleは、同じ旅行先や期間で旅行を計画している人々をマッチングする革新的なWebアプリケーションです。一人旅の不安を解消し、新しい出会いと共に忘れられない旅行体験を提供します。
 
-## 準備(必須条件)
+### アプリケーション画面
 
-次のツールがインストールされている必要があります。
+![アプリケーション画面(一部)](sample_images/スクリーンショット%202025-06-15%2020.39.52.png)
+### 使用例
 
+![生成AIバックエンド処理概要](sample_images/スクリーンショット%202025-06-15%2020.40.02.png)
+
+### 主な特徴
+
+- **旅行者マッチング**: 行き先、日程、興味が合う旅行者を自動的にマッチング
+- **プロフィール機能**: 自己紹介、旅行スタイル、興味などを登録
+- **チャット機能**: マッチした相手とリアルタイムでコミュニケーション
+- **旅行内容共有**: 旅程や観光スポットの情報を共有
+
+## 💻 技術スタック
+
+### フロントエンド
+- **React** (TypeScript) - ユーザーインターフェース
+- **Vite** - 高速な開発環境
+- **CSS Modules** - スタイリング
+
+### バックエンド
+- **Flask** (Python) - APIサーバー
+- **PostgreSQL** - データベース
+- **MinIO** - 画像ストレージ
+
+### インフラ
+- **Docker & Docker Compose** - コンテナ化
+- **AWS EC2** - クラウドホスティング
+
+## 🚀 クイックスタート
+
+### 必要条件
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
 
-## 🚀 EC2ワンクリックデプロイ
+### ローカル環境での起動
 
-EC2インスタンスで1つのコマンドでデプロイできます：
+1. **環境設定ファイルの準備**
+   ```bash
+   cp .env.example .env
+   # .envファイルを編集して必要な設定を行う
+   ```
 
-### 1. EC2インスタンスの準備
-- Amazon Linux 2023を推奨
-- インスタンスタイプ: t3.micro以上
-- セキュリティグループで以下のポートを開放：
-  - 22 (SSH)
-  - 80 (HTTP) - フロントエンド・API
-  - 9000-9001 (MinIO)
+2. **アプリケーションの起動**
+   ```bash
+   docker compose up --build -d
+   ```
 
-### 2. プロジェクトファイルをEC2にアップロード
-```sh
-# ローカルからEC2にファイルをコピー
-scp -r . ec2-user@<EC2のパブリックIP>:~/front-backend-1/
-```
+3. **初期データの投入**
+   ```bash
+   docker compose exec backend python scripts/seed.py
+   ```
 
-### 3. EC2でワンクリックデプロイ実行
-```sh
-# EC2にSSH接続
-ssh ec2-user@<EC2のパブリックIP>
-
-# プロジェクトディレクトリに移動
-cd front-backend-1
-
-# デプロイスクリプトを実行可能にして実行
-chmod +x deploy-ec2.sh
-./deploy-ec2.sh
-```
-
-### 4. アクセス確認
-デプロイ完了後、以下のURLでアクセスできます：
-- **フロントエンド**: `http://<EC2のパブリックIP>`
-- **バックエンドAPI**: `http://<EC2のパブリックIP>/api/`
-- **MinIOコンソール**: `http://<EC2のパブリックIP>:9001`
-
-### セキュリティグループ自動設定（オプション）
-AWS CLIが設定済みの場合、セキュリティグループを自動設定できます：
-```sh
-chmod +x setup-security-group.sh
-./setup-security-group.sh <your-security-group-id>
-```
-
----
-
-## ローカル開発環境
+4. **アクセス**
+   - フロントエンド: http://localhost:3000
+   - バックエンドAPI: http://localhost:5000/api/
+   - MinIOコンソール: http://localhost:9001
 
 ## 使い方
-# .env を生成する
-（ただし、共有した内容を入力・保存した上で実行）
-```sh
-cp .env.example .env
+
+1. **アカウント登録**
+   - メールアドレスとパスワードで新規登録
+   - プロフィール情報（名前、年齢、趣味など）を入力
+
+2. **旅行内容の投稿**
+   - イベントに関する質問や過去のイベントの共有を実施
+
+3. **マッチング**
+   - 条件に合う旅行者が自動的に表示
+   - 気になる相手にいいね！を送信
+
+4. **コミュニケーション**
+   - マッチが成立したらチャット開始
+   - 旅行プランの詳細を相談
+
+
+## 🔧 開発者向け情報
+
+### プロジェクト構造
+```
+front-backend-1/
+├── frontend/          # Reactアプリケーション
+│   ├── src/
+│   │   ├── api/      # API通信
+│   │   ├── hooks/    # カスタムフック
+│   │   ├── pages/    # ページコンポーネント
+│   │   └── lib/      # ユーティリティ
+│   └── public/       # 静的ファイル
+├── backend/          # Flaskアプリケーション
+├── docker-compose.yml
+└── README.md
 ```
 
-### Dockerの立ち上げ
-1. Docker.app が起動していることを確認
-2. 以下で一括起動（-dを付けることで、ターミナルがそのまま使える）
+### 開発コマンド
 
-```sh
-docker compose up --build -d
+**ログの確認**
+```bash
+docker compose logs -f backend
+docker compose logs -f frontend
 ```
-seedデータの導入・既存のテーブルの初期化
-```sh
+
+**環境の停止**
+```bash
+docker compose down
+```
+
+**データベースのリセット**
+```bash
+docker compose down -v
+docker compose up -d
 docker compose exec backend python scripts/seed.py
 ```
 
-# ログ確認（問題があれば）
-```sh
-docker compose logs -f backend
-```
 
-## 状況を確認
-### フロントエンド
-React: http://localhost:3000
+## 🌐 本番環境へのデプロイ
 
-### バケットの確認
-http://localhost:9001 
+### AWS EC2でのワンクリックデプロイ
 
+1. **EC2インスタンスの準備**
+   - Amazon Linux 2023推奨
+   - t3.micro以上のインスタンスタイプ
+   - セキュリティグループで必要なポートを開放
 
+2. **デプロイの実行**
+   ```bash
+   # プロジェクトをEC2にアップロード
+   scp -r . ec2-user@<EC2のパブリックIP>:~/front-backend-1/
+   
+   # EC2にSSH接続してデプロイ
+   ssh ec2-user@<EC2のパブリックIP>
+   cd front-backend-1
+   chmod +x deploy-ec2.sh
+   ./deploy-ec2.sh
+   ```
 
-### バックエンド（/api/helloのルートの場合(多分使わないし、使っても拒否されると思う。)）
-Flask: http://localhost:5000/api/login
-
-## Docker環境の終了
-```sh
-docker-compose down
-```
-
-## うまくいっているかログを確認したい時
-方法1. アプリブラウザ>検証>console 
-方法2. docker desktop上でログを確認
-
-
-
-
-<開発の際につまづいた時のメモ(過去の遺物)>
-<関本>
-## npm install等で社内プロキシサーバーに引っかかるとき
-'''
-### 一時的に緩める
-npm config set strict-ssl false
-npm config set registry http://registry.npmjs.org/
-
-### 再実行
-npm install
-
-### 成功後に戻す
-npm config set strict-ssl true
-npm config set registry https://registry.npmjs.org/
-'''
-
-export $(cat .env | grep -v ^# | xargs)
-echo $CORS_ALLOWED   
-
-## Viteプロジェクトの基本構成
-my-vite-app/
-├── index.html                 ← エントリHTML(ビルドの起点)
-├── package.json               ← プロジェクト情報や依存ライブラリ、npmスクリプトを定義・管理
-├── tsconfig.json              ← TypeScript設定。型チェックの厳密さやパスエイリアスなどを定義できる。
-├── vite.config.ts             ← Vite用の設定ファイル
-├── node_modules/              ← npm依存ライブラリ（install後）
-├── public/                    ← 静的ファイル（favicon, imagesなど）
-└── src/                       ← アプリ本体
-    ├── main.tsx              ← アプリのエントリポイント(JSのスタート地点。ここで、App.tsxを呼び出し、#rootにマウントする)
-    ├── App.tsx               ← 最初に表示されるReactコンポーネント。最初の画面UI。!!まずはここを書き換えてUIを構築していく。
-    └── その他のComponentやPage
-
-## 実行系のコマンド
-'''　React（TypeScript）プロジェクトのルート（frontend/）で以下を実行
-npm run dev //開発サーバー起動（http://localhost:5173）
-'''
-npm run build //本番用ビルド（dist/に出力）
-'''
-npm run preview //ビルド成果物のローカル確認用サーバー起動
-'''
-
-## フロント（React + Vite + TypeScript）開発環境の立ち上げ
-'''
-cd frontend
-npm install //package.jsonでライブラリ等を一括読み込み
-npm run dev //package.json の中にある scripts の "dev" に定義されたコマンド"vite"を実行し、開発用サーバーを起動
-'''
-
-## 今のプロジェクト構成の状況
-src/
-├── api/               # ✅ バックエンドとの通信を管理
-│   ├── auth/          # 認証関連API
-│   │   ├── login.ts        ← ログインPOST処理
-│   │   ├── protected.ts    ← 認証済みページの取得
-│   │   └── register.ts     ← 新規登録（予定）
-│   ├── user/          # ユーザー情報取得API（予定）
-│   └── index.ts       # （将来的にまとめ用）
-│
-├── assets/            # 🎨 画像やアイコンなど（現状なし）
-│
-├── hooks/             # 🔄 React用の状態・ロジック管理
-│   ├── useAuth.ts     ← トークンやログイン状態の管理
-│   └── useUser.ts     ← ユーザー情報の取得・管理（予定）
-│
-├── lib/               # 🧩 汎用ライブラリ（axiosの設定など）
-│   └── axios.ts       ← 共通APIクライアント
-│
-├── pages/             # 📄 ページUIコンポーネント
-│   ├── Login/
-│   │   └── index.tsx       ← ログインフォーム
-│   └── Mypage/
-│       ├── index.tsx       ← 認証済みユーザー画面
-│       └── Mypage.module.css ← スタイル
-│
-├── App.tsx            # 🌳 アプリのルート（ルーティングなど）
-├── main.tsx           # アプリ起動のエントリーポイント
-└── vite-env.d.ts      # 環境変数定義
-
-
-<大林>
-
-<中塚>
-
-<山本>
-
-<陳>
+3. **アクセス確認**
+   - `http://<EC2のパブリックIP>` でアプリケーションにアクセス
